@@ -1,6 +1,7 @@
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import EmptyState from '@/Components/EmptyState.vue';
+import AuditInfo from '@/Components/AuditInfo.vue';
 import { Head, Link, router } from '@inertiajs/vue3';
 
 defineProps({ expenses: Object, filters: Object });
@@ -39,6 +40,8 @@ const formatDate = (date) => new Date(date).toLocaleDateString('id-ID');
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Deskripsi</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Kategori</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Jumlah</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase hidden xl:table-cell">Dibuat</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase hidden xl:table-cell">Diubah</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Aksi</th>
                             </tr>
                         </thead>
@@ -48,6 +51,12 @@ const formatDate = (date) => new Date(date).toLocaleDateString('id-ID');
                                 <td class="px-6 py-4 text-sm">{{ expense.description }}</td>
                                 <td class="px-6 py-4 text-sm">{{ expense.category }}</td>
                                 <td class="px-6 py-4 text-sm font-semibold">{{ formatCurrency(expense.amount) }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-xs text-gray-500 hidden xl:table-cell">
+                                    <AuditInfo :user="expense.creator" :timestamp="expense.created_at" label="Dibuat" />
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-xs text-gray-500 hidden xl:table-cell">
+                                    <AuditInfo :user="expense.updater" :timestamp="expense.updated_at" label="Diubah" />
+                                </td>
                                 <td class="px-6 py-4 text-sm">
                                     <button @click="router.delete(route('expenses.destroy', expense.id))" class="text-red-600 hover:text-red-900">Hapus</button>
                                 </td>

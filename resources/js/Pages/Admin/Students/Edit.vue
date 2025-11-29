@@ -17,6 +17,7 @@ const form = useForm({
     password: '',
     nis: props.student.nis,
     kelas: props.student.kelas,
+    jenjang: props.student.jenjang || '',
     balance: props.student.balance,
     rfid_uid: props.student.rfid_uid || '',
     foto: null,
@@ -97,12 +98,13 @@ const submit = () => {
 
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div>
-                                    <InputLabel for="nis" value="NIS" />
+                                    <InputLabel for="nis" value="NISN" />
                                     <TextInput
                                         id="nis"
                                         type="text"
                                         v-model="form.nis"
                                         class="mt-1 block w-full"
+                                        placeholder="Nomor Induk Siswa Nasional"
                                         required
                                     />
                                     <InputError :message="form.errors.nis" class="mt-2" />
@@ -122,6 +124,21 @@ const submit = () => {
                             </div>
 
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <InputLabel for="jenjang" value="Jenjang" />
+                                    <select
+                                        id="jenjang"
+                                        v-model="form.jenjang"
+                                        class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm"
+                                        required
+                                    >
+                                        <option value="" disabled>Pilih Jenjang</option>
+                                        <option value="SMA Taruna Nusantara Indonesia">SMA Taruna Nusantara Indonesia</option>
+                                        <option value="SMK Taruna Nusantara Jaya">SMK Taruna Nusantara Jaya</option>
+                                    </select>
+                                    <InputError :message="form.errors.jenjang" class="mt-2" />
+                                </div>
+
                                 <div>
                                     <InputLabel for="balance" value="Saldo (Rp)" />
                                     <TextInput

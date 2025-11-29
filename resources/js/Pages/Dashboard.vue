@@ -34,7 +34,9 @@ const formatCurrency = (value) => {
 };
 
 const getTypeColor = (type) => {
-    return type === 'credit'
+    // topup, credit, redeem, voucher, return are credits (add balance) = green
+    // purchase, debit are debits (reduce balance) = red
+    return ['topup', 'credit', 'redeem', 'return'].includes(type)
         ? 'text-green-600 dark:text-green-400'
         : 'text-red-600 dark:text-red-400';
 };
@@ -416,12 +418,29 @@ const topProductsChartOptions = {
                             </div>
                             <div v-for="transaction in recentTransactions" :key="transaction.id" class="flex justify-between items-center p-3 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700">
                                 <div class="flex-1">
-                                    <p class="font-semibold text-sm text-gray-900 dark:text-gray-100">{{ transaction.student.user.name }}</p>
-                                    <p class="text-xs text-gray-600 dark:text-gray-400 truncate">{{ transaction.description }}</p>
+                                    <div class="flex items-center gap-2">
+                                        <p class="font-semibold text-sm text-gray-900 dark:text-gray-100">{{ transaction.student.user.name }}</p>
+                                        <span v-if="transaction.transaction_method" :class="[
+                                            'px-2 py-0.5 rounded text-xs font-medium',
+                                            transaction.transaction_method === 'manual' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' :
+                                            transaction.transaction_method === 'rfid' ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400' :
+                                            transaction.transaction_method === 'barcode' ? 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400' :
+                                            transaction.transaction_method === 'voucher' ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400' :
+                                            'bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-400'
+                                        ]">
+                                            {{ transaction.transaction_method === 'manual' ? '✍️ Manual' :
+                                               transaction.transaction_method === 'rfid' ? '📡 RFID' :
+                                               transaction.transaction_method === 'barcode' ? '📊 Barcode' :
+                                               transaction.transaction_method === 'voucher' ? '🎫 Voucher' :
+                                               '⚙️ System'
+                                            }}
+                                        </span>
+                                    </div>
+                                    <p class="text-xs text-gray-600 dark:text-gray-400 truncate mt-1">{{ transaction.description }}</p>
                                 </div>
                                 <div class="text-right ml-4">
                                     <p class="font-bold text-sm" :class="getTypeColor(transaction.type)">
-                                        {{ transaction.type === 'credit' ? '+' : '-' }}{{ formatCurrency(transaction.amount) }}
+                                        {{ ['topup', 'credit', 'voucher', 'redeem', 'return'].includes(transaction.type) ? '+' : '-' }}{{ formatCurrency(transaction.amount) }}
                                     </p>
                                     <p class="text-xs text-gray-500 dark:text-gray-400">
                                         {{ new Date(transaction.created_at).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) }}

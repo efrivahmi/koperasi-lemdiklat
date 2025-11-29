@@ -13,9 +13,9 @@ class StockIn extends Model
         'product_id',
         'user_id',
         'quantity',
-        'harga_beli',
         'supplier',
         'notes',
+        'created_by',
         'updated_by',
     ];
 

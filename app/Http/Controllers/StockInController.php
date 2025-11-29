@@ -15,7 +15,7 @@ class StockInController extends Controller
      */
     public function index(Request $request)
     {
-        $query = StockIn::with(['product', 'user']);
+        $query = StockIn::with(['product', 'user', 'creator', 'updater']);
 
         if ($request->has('search')) {
             $search = $request->search;
@@ -24,7 +24,7 @@ class StockInController extends Controller
             });
         }
 
-        $stock_ins = $query->latest()->paginate(10);
+        $stock_ins = $query->oldest()->paginate(10);
 
         return Inertia::render('Admin/StockIns/Index', [
             'stock_ins' => $stock_ins,
@@ -52,7 +52,6 @@ class StockInController extends Controller
         $validated = $request->validate([
             'product_id' => 'required|exists:products,id',
             'quantity' => 'required|integer|min:1',
-            'harga_beli' => 'required|numeric|min:0',
             'supplier' => 'nullable|string|max:255',
             'keterangan' => 'nullable|string',
         ]);
@@ -62,10 +61,9 @@ class StockInController extends Controller
         // Create stock in record
         StockIn::create($validated);
 
-        // Update product stock and harga_beli
+        // Update product stock only
         $product = Product::find($validated['product_id']);
         $product->increment('stock', $validated['quantity']);
-        $product->update(['harga_beli' => $validated['harga_beli']]);
 
         return redirect()->route('stock-ins.index')
             ->with('success', 'Barang masuk berhasil dicatat.');
@@ -77,7 +75,7 @@ class StockInController extends Controller
     public function show(StockIn $stockIn)
     {
         return Inertia::render('Admin/StockIns/Show', [
-            'stock_in' => $stockIn->load(['product', 'user'])
+            'stockIn' => $stockIn->load(['product', 'user', 'creator', 'updater'])
         ]);
     }
 
@@ -89,7 +87,7 @@ class StockInController extends Controller
         $products = Product::with('category')->get();
 
         return Inertia::render('Admin/StockIns/Edit', [
-            'stock_in' => $stockIn->load(['product', 'user']),
+            'stockIn' => $stockIn->load(['product', 'user', 'creator', 'updater']),
             'products' => $products
         ]);
     }
@@ -102,7 +100,6 @@ class StockInController extends Controller
         $validated = $request->validate([
             'product_id' => 'required|exists:products,id',
             'quantity' => 'required|integer|min:1',
-            'harga_beli' => 'required|numeric|min:0',
             'supplier' => 'nullable|string|max:255',
             'keterangan' => 'nullable|string',
         ]);
@@ -117,7 +114,6 @@ class StockInController extends Controller
         // Add new stock
         $newProduct = Product::find($validated['product_id']);
         $newProduct->increment('stock', $validated['quantity']);
-        $newProduct->update(['harga_beli' => $validated['harga_beli']]);
 
         return redirect()->route('stock-ins.index')
             ->with('success', 'Data barang masuk berhasil diupdate.');

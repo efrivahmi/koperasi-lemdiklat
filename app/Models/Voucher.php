@@ -3,9 +3,12 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Traits\Auditable;
 
 class Voucher extends Model
 {
+    use Auditable;
+
     protected $fillable = [
         'code',
         'nominal',
@@ -14,6 +17,8 @@ class Voucher extends Model
         'student_id',
         'used_by',
         'used_at',
+        'created_by',
+        'updated_by',
     ];
 
     protected $casts = [

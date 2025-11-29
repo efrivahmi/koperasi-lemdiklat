@@ -8,6 +8,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Redirect;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -37,7 +38,46 @@ class ProfileController extends Controller
 
         $request->user()->save();
 
-        return Redirect::route('profile.edit');
+        return Redirect::route('profile.edit')->with('success', 'Profil berhasil diperbarui!');
+    }
+
+    /**
+     * Upload profile photo.
+     */
+    public function uploadPhoto(Request $request): RedirectResponse
+    {
+        $request->validate([
+            'photo' => ['required', 'image', 'max:2048'], // Max 2MB
+        ]);
+
+        $user = $request->user();
+
+        // Delete old photo if exists
+        if ($user->photo) {
+            Storage::disk('public')->delete($user->photo);
+        }
+
+        // Store new photo
+        $path = $request->file('photo')->store('profile-photos', 'public');
+
+        $user->update(['photo' => $path]);
+
+        return Redirect::route('profile.edit')->with('success', 'Foto profil berhasil diperbarui!');
+    }
+
+    /**
+     * Delete profile photo.
+     */
+    public function deletePhoto(Request $request): RedirectResponse
+    {
+        $user = $request->user();
+
+        if ($user->photo) {
+            Storage::disk('public')->delete($user->photo);
+            $user->update(['photo' => null]);
+        }
+
+        return Redirect::route('profile.edit')->with('success', 'Foto profil berhasil dihapus!');
     }
 
     /**

@@ -13,7 +13,7 @@ class ExpenseController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Expense::with('user');
+        $query = Expense::with(['user', 'creator', 'updater']);
 
         if ($request->has('search')) {
             $search = $request->search;
@@ -25,7 +25,7 @@ class ExpenseController extends Controller
             $query->where('category', $request->category);
         }
 
-        $expenses = $query->latest()->paginate(10);
+        $expenses = $query->oldest()->paginate(10);
 
         return Inertia::render('Admin/Expenses/Index', [
             'expenses' => $expenses,

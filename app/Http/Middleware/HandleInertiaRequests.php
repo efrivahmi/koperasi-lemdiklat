@@ -19,8 +19,7 @@ class HandleInertiaRequests extends Middleware
      */
     public function version(Request $request): ?string
     {
-        // Use manifest file hash to ensure proper cache busting
-        return md5_file(public_path('build/manifest.json'));
+        return parent::version($request);
     }
 
     /**

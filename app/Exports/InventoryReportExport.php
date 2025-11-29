@@ -7,11 +7,12 @@ use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithMapping;
 use Maatwebsite\Excel\Concerns\WithStyles;
-use Maatwebsite\Excel\Concerns\WithTitle;
+use Maatwebsite\Excel\Concerns\WithColumnWidths;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
+use PhpOffice\PhpSpreadsheet\Style\Alignment;
 
-class InventoryReportExport implements FromCollection, WithHeadings, WithMapping, WithStyles, WithTitle
+class InventoryReportExport implements FromCollection, WithHeadings, WithMapping, WithStyles, WithColumnWidths
 {
     protected $categoryId;
     protected $stockStatus;
@@ -79,14 +80,14 @@ class InventoryReportExport implements FromCollection, WithHeadings, WithMapping
         return [
             $product->id,
             $product->name,
-            $product->category->name,
+            $product->category->name ?? '-',
             $product->barcode ?? '-',
             $product->stock,
-            $product->harga_beli,
-            $product->harga_jual,
-            $stockValue,
-            $potentialRevenue,
-            $potentialProfit,
+            number_format($product->harga_beli, 0, ',', '.'),
+            number_format($product->harga_jual, 0, ',', '.'),
+            number_format($stockValue, 0, ',', '.'),
+            number_format($potentialRevenue, 0, ',', '.'),
+            number_format($potentialProfit, 0, ',', '.'),
             $status,
         ];
     }
@@ -95,18 +96,37 @@ class InventoryReportExport implements FromCollection, WithHeadings, WithMapping
     {
         return [
             1 => [
-                'font' => ['bold' => true, 'size' => 12],
+                'font' => [
+                    'bold' => true,
+                    'size' => 12,
+                    'color' => ['rgb' => 'FFFFFF'],
+                ],
                 'fill' => [
                     'fillType' => Fill::FILL_SOLID,
-                    'startColor' => ['rgb' => '10B981']
+                    'startColor' => ['rgb' => '3B82F6'],
                 ],
-                'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],
+                'alignment' => [
+                    'horizontal' => Alignment::HORIZONTAL_CENTER,
+                    'vertical' => Alignment::VERTICAL_CENTER,
+                ],
             ],
         ];
     }
 
-    public function title(): string
+    public function columnWidths(): array
     {
-        return 'Laporan Inventaris';
+        return [
+            'A' => 12,  // Kode Produk
+            'B' => 30,  // Nama Produk
+            'C' => 20,  // Kategori
+            'D' => 15,  // Barcode
+            'E' => 10,  // Stok
+            'F' => 15,  // Harga Beli
+            'G' => 15,  // Harga Jual
+            'H' => 18,  // Nilai Stok (Beli)
+            'I' => 18,  // Potensi Revenue
+            'J' => 18,  // Potensi Profit
+            'K' => 12,  // Status
+        ];
     }
 }

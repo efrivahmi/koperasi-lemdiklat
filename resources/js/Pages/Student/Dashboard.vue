@@ -44,7 +44,7 @@ const getTransactionColor = (type) => {
                 <div class="bg-gradient-to-r from-purple-600 to-indigo-600 text-white p-8 rounded-lg shadow-lg">
                     <div class="flex items-center justify-between">
                         <div>
-                            <p class="text-sm opacity-90">NIS</p>
+                            <p class="text-sm opacity-90">NISN</p>
                             <p class="text-2xl font-bold">{{ student.nis }}</p>
                             <p class="mt-4 text-sm opacity-90">Kelas</p>
                             <p class="text-lg font-semibold">{{ student.class }}</p>

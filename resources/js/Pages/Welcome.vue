@@ -1,54 +1,170 @@
 <script setup>
 import { Head, Link } from '@inertiajs/vue3';
+import { ref, onMounted } from 'vue';
 
 defineProps({
-    canLogin: {
-        type: Boolean,
+    canLogin: Boolean,
+    canRegister: Boolean,
+});
+
+const features = [
+    {
+        icon: '🏪',
+        title: 'Point of Sale (POS)',
+        description: 'Sistem kasir modern dengan scan barcode & RFID untuk transaksi cepat dan akurat',
+        color: 'from-blue-500 to-cyan-500'
     },
-    canRegister: {
-        type: Boolean,
+    {
+        icon: '👥',
+        title: 'Manajemen Siswa',
+        description: 'Kelola data siswa, saldo, dan kartu RFID dengan mudah dan terorganisir',
+        color: 'from-purple-500 to-pink-500'
     },
+    {
+        icon: '📦',
+        title: 'Manajemen Stok',
+        description: 'Pantau stok produk real-time, termasuk barang masuk dan notifikasi stok menipis',
+        color: 'from-green-500 to-emerald-500'
+    },
+    {
+        icon: '📊',
+        title: 'Laporan Lengkap',
+        description: 'Dashboard analitik dengan laporan penjualan, keuangan, dan transaksi siswa',
+        color: 'from-orange-500 to-red-500'
+    },
+    {
+        icon: '💳',
+        title: 'Sistem Voucher',
+        description: 'Buat dan kelola voucher diskon untuk promosi dan reward siswa',
+        color: 'from-indigo-500 to-purple-500'
+    },
+    {
+        icon: '🖨️',
+        title: 'Print & Export',
+        description: 'Cetak struk, barcode, kartu siswa, dan export laporan ke Excel/PDF',
+        color: 'from-pink-500 to-rose-500'
+    },
+    {
+        icon: '👤',
+        title: 'User Management',
+        description: 'Kelola pengguna dengan role-based access (Admin, Staf Koperasi, dll)',
+        color: 'from-teal-500 to-cyan-500'
+    },
+    {
+        icon: '💰',
+        title: 'Top-up Saldo',
+        description: 'Sistem top-up saldo siswa yang mudah dan aman dengan tracking lengkap',
+        color: 'from-yellow-500 to-orange-500'
+    }
+];
+
+const workflow = [
+    {
+        step: 1,
+        title: 'Pendaftaran Siswa',
+        description: 'Admin mendaftarkan siswa dan menerbitkan kartu RFID',
+        icon: '📝'
+    },
+    {
+        step: 2,
+        title: 'Top-up Saldo',
+        description: 'Siswa atau orangtua melakukan top-up saldo ke akun siswa',
+        icon: '💵'
+    },
+    {
+        step: 3,
+        title: 'Belanja di Koperasi',
+        description: 'Siswa scan kartu RFID atau barcode produk di kasir',
+        icon: '🛒'
+    },
+    {
+        step: 4,
+        title: 'Transaksi Otomatis',
+        description: 'Sistem memproses pembayaran dan mengurangi saldo otomatis',
+        icon: '⚡'
+    },
+    {
+        step: 5,
+        title: 'Struk Digital',
+        description: 'Cetak struk transaksi sebagai bukti pembelian',
+        icon: '🧾'
+    },
+    {
+        step: 6,
+        title: 'Laporan Real-time',
+        description: 'Admin monitoring transaksi dan keuangan secara real-time',
+        icon: '📈'
+    }
+];
+
+const stats = [
+    { value: '100%', label: 'Cashless', icon: '💳' },
+    { value: '< 5s', label: 'Transaksi', icon: '⚡' },
+    { value: 'Real-time', label: 'Monitoring', icon: '📊' },
+    { value: '24/7', label: 'Akses', icon: '🌐' }
+];
+
+// Shooting stars animation
+const createShootingStar = () => {
+    const star = document.createElement('div');
+    star.className = 'shooting-star';
+    star.style.top = Math.random() * 50 + '%';
+    star.style.right = '0';
+    star.style.animationDelay = Math.random() * 3 + 's';
+    document.querySelector('.galaxy-bg')?.appendChild(star);
+
+    setTimeout(() => star.remove(), 3000);
+};
+
+onMounted(() => {
+    // Create shooting stars periodically
+    setInterval(createShootingStar, 2000);
 });
 </script>
 
 <template>
-    <Head title="Selamat Datang - Koperasi Lemdiklat TNI" />
+    <Head title="Koperasi Lemdiklat Taruna Nusantara Indonesia - Sistem Manajemen Koperasi Modern" />
 
-    <div class="min-h-screen bg-gradient-to-br from-blue-900 via-blue-800 to-indigo-900 relative overflow-hidden">
-        <!-- Animated Background Elements -->
-        <div class="absolute inset-0 overflow-hidden pointer-events-none">
-            <div class="absolute top-20 left-10 w-72 h-72 bg-blue-500/10 rounded-full blur-3xl animate-pulse"></div>
-            <div class="absolute bottom-20 right-10 w-96 h-96 bg-indigo-500/10 rounded-full blur-3xl animate-pulse delay-1000"></div>
-        </div>
+    <div class="min-h-screen galaxy-bg text-white relative">
+        <!-- Planets -->
+        <div class="planet planet-1"></div>
+        <div class="planet planet-2"></div>
 
         <!-- Navigation -->
-        <nav class="bg-white/10 backdrop-blur-md border-b border-white/20 sticky top-0 z-50">
+        <nav class="glass sticky top-0 z-50 border-b border-white/10">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div class="flex justify-between items-center h-16">
-                    <div class="flex items-center space-x-3">
-                        <div class="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
-                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
-                            </svg>
+                <div class="flex justify-between items-center h-20">
+                    <div class="flex items-center space-x-4">
+                        <div class="w-12 h-12 rounded-xl gradient-purple-blue flex items-center justify-center shadow-lg">
+                            <span class="text-2xl">🏪</span>
                         </div>
-                        <div class="text-white font-bold text-xl">
-                            Koperasi Lemdiklat TNI
+                        <div>
+                            <div class="font-bold text-xl galaxy-text">Koperasi Lemdiklat Taruna Nusantara Indonesia</div>
+                            <div class="text-xs text-gray-300">SMA Taruna Nusantara Indonesia | SMK Taruna Nusantara Jaya</div>
+                            <div class="text-xs text-gray-300">Kab. Bandung Barat</div>
                         </div>
                     </div>
                     <div v-if="canLogin" class="flex items-center space-x-4">
                         <Link
                             v-if="$page.props.auth.user"
                             :href="route('dashboard')"
-                            class="px-6 py-2.5 rounded-lg bg-white text-blue-900 font-semibold hover:bg-blue-50 transition-all duration-300 transform hover:scale-105 shadow-lg"
+                            class="galaxy-btn"
                         >
                             Dashboard
                         </Link>
                         <template v-else>
                             <Link
                                 :href="route('login')"
-                                class="px-6 py-2.5 rounded-lg bg-white/10 text-white font-semibold hover:bg-white/20 transition-all duration-300 border border-white/30"
+                                class="px-6 py-3 rounded-lg glass hover:bg-white/20 transition-all duration-300 border border-white/20"
                             >
-                                Masuk
+                                Login
+                            </Link>
+                            <Link
+                                v-if="canRegister"
+                                :href="route('register')"
+                                class="galaxy-btn"
+                            >
+                                Register
                             </Link>
                         </template>
                     </div>
@@ -57,236 +173,235 @@ defineProps({
         </nav>
 
         <!-- Hero Section -->
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-24 relative z-10">
-            <div class="text-center">
-                <!-- Logo / Icon -->
-                <div class="flex justify-center mb-8 animate-fade-in-down">
-                    <div class="w-28 h-28 bg-gradient-to-br from-white/20 to-white/10 backdrop-blur-md rounded-3xl flex items-center justify-center shadow-2xl border border-white/30 transform hover:scale-110 transition-transform duration-300">
-                        <svg class="w-14 h-14 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
-                        </svg>
-                    </div>
-                </div>
+        <section class="relative py-20 px-4 sm:px-6 lg:px-8 overflow-hidden">
+            <div class="max-w-7xl mx-auto">
+                <div class="grid lg:grid-cols-2 gap-12 items-center">
+                    <!-- Left Content -->
+                    <div class="text-center lg:text-left space-y-8 float">
+                        <div class="inline-block px-4 py-2 rounded-full glass border border-purple-400/30 text-sm">
+                            <span class="galaxy-text font-semibold">✨ Powered by LEMDIKLAT Taruna Nusantara Indonesia</span>
+                        </div>
 
-                <!-- Title -->
-                <h1 class="text-5xl md:text-7xl font-extrabold text-white mb-4 tracking-tight animate-fade-in">
-                    Koperasi Lemdiklat
-                </h1>
-                <h2 class="text-3xl md:text-5xl font-bold bg-gradient-to-r from-blue-200 to-blue-100 bg-clip-text text-transparent mb-8 animate-fade-in-up">
-                    Taruna Nusantara Indonesia
-                </h2>
+                        <h1 class="text-5xl lg:text-7xl font-bold leading-tight">
+                            Koperasi
+                            <span class="galaxy-text block">Digital</span>
+                            untuk TARUNA
+                        </h1>
 
-                <!-- Description -->
-                <p class="text-lg md:text-xl text-blue-100 mb-12 max-w-3xl mx-auto leading-relaxed animate-fade-in-up">
-                    Sistem Point of Sale modern dengan teknologi <span class="font-semibold text-white">RFID Card</span> dan
-                    <span class="font-semibold text-white">Barcode Scanner</span> untuk transaksi cepat, aman, dan praktis
-                </p>
+                        <h3 class="text-3xl lg:text-2xl font-bold leading-tight">
+                            <span class="galaxy-text block">SMA Taruna Nusantara Indonesia | SMK Taruna Nusantara Jaya</span>
+                        </h3>
 
-                <!-- Stats Cards -->
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto mb-16">
-                    <div class="group bg-gradient-to-br from-white/15 to-white/5 backdrop-blur-md rounded-2xl p-8 border border-white/20 hover:border-white/40 transition-all duration-300 transform hover:-translate-y-2 hover:shadow-2xl">
-                        <div class="text-5xl font-extrabold text-white mb-3 group-hover:scale-110 transition-transform">⚡</div>
-                        <div class="text-2xl font-bold text-white mb-2">Fast</div>
-                        <div class="text-blue-200">Transaksi kilat dengan scan RFID</div>
-                    </div>
-                    <div class="group bg-gradient-to-br from-white/15 to-white/5 backdrop-blur-md rounded-2xl p-8 border border-white/20 hover:border-white/40 transition-all duration-300 transform hover:-translate-y-2 hover:shadow-2xl">
-                        <div class="text-5xl font-extrabold text-white mb-3 group-hover:scale-110 transition-transform">🔒</div>
-                        <div class="text-2xl font-bold text-white mb-2">Secure</div>
-                        <div class="text-blue-200">Sistem keamanan berlapis</div>
-                    </div>
-                    <div class="group bg-gradient-to-br from-white/15 to-white/5 backdrop-blur-md rounded-2xl p-8 border border-white/20 hover:border-white/40 transition-all duration-300 transform hover:-translate-y-2 hover:shadow-2xl">
-                        <div class="text-5xl font-extrabold text-white mb-3 group-hover:scale-110 transition-transform">✨</div>
-                        <div class="text-2xl font-bold text-white mb-2">Easy</div>
-                        <div class="text-blue-200">Interface intuitif & mudah</div>
-                    </div>
-                </div>
+                        <p class="text-xl text-gray-300 max-w-2xl">
+                            Sistem manajemen koperasi modern dengan teknologi RFID, cashless payment,
+                            dan real-time reporting untuk operasional yang lebih efisien.
+                        </p>
 
-                <!-- School Info -->
-                <div class="bg-gradient-to-br from-white/15 to-white/5 backdrop-blur-md rounded-3xl p-10 max-w-5xl mx-auto border border-white/30 shadow-2xl mb-12">
-                    <div class="flex items-center justify-center mb-6">
-                        <svg class="w-8 h-8 text-blue-300 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                        </svg>
-                        <h3 class="text-3xl font-bold text-white">Melayani Dua Jenjang Pendidikan</h3>
-                    </div>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                        <div class="bg-white/10 rounded-2xl p-6 backdrop-blur-sm border border-white/20 hover:bg-white/15 transition-all duration-300 transform hover:scale-105">
-                            <div class="flex items-start space-x-4">
-                                <div class="w-12 h-12 bg-blue-500/30 rounded-xl flex items-center justify-center flex-shrink-0">
-                                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                    </svg>
-                                </div>
-                                <div class="text-left">
-                                    <div class="text-white font-bold text-xl mb-1">SMA Taruna Nusantara Indonesia</div>
-                                    <div class="text-blue-200">Melayani siswa & staff SMA dengan sistem pembayaran digital</div>
-                                </div>
+                        <!-- Stats -->
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 pt-8">
+                            <div v-for="stat in stats" :key="stat.label" class="galaxy-card text-center">
+                                <div class="text-3xl mb-2">{{ stat.icon }}</div>
+                                <div class="text-2xl font-bold galaxy-text">{{ stat.value }}</div>
+                                <div class="text-sm text-gray-400">{{ stat.label }}</div>
                             </div>
                         </div>
-                        <div class="bg-white/10 rounded-2xl p-6 backdrop-blur-sm border border-white/20 hover:bg-white/15 transition-all duration-300 transform hover:scale-105">
-                            <div class="flex items-start space-x-4">
-                                <div class="w-12 h-12 bg-indigo-500/30 rounded-xl flex items-center justify-center flex-shrink-0">
-                                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                    </svg>
-                                </div>
-                                <div class="text-left">
-                                    <div class="text-white font-bold text-xl mb-1">SMK Taruna Nusantara Jaya</div>
-                                    <div class="text-blue-200">Melayani siswa & staff SMK dengan sistem pembayaran digital</div>
-                                </div>
-                            </div>
+
+                        <div class="flex flex-col sm:flex-row gap-4 pt-4">
+                            <Link
+                                v-if="!$page.props.auth.user"
+                                :href="route('login')"
+                                class="galaxy-btn text-center"
+                            >
+                                Mulai Sekarang →
+                            </Link>
+                            <a
+                                href="#features"
+                                class="px-8 py-4 rounded-lg glass hover:bg-white/20 transition-all duration-300 border border-white/20 text-center font-semibold"
+                            >
+                                Lihat Fitur
+                            </a>
                         </div>
                     </div>
-                </div>
 
-                <!-- CTA Button -->
-                <div class="mt-12 animate-bounce-slow">
-                    <Link
-                        v-if="!$page.props.auth.user"
-                        :href="route('login')"
-                        class="inline-flex items-center space-x-2 px-10 py-5 bg-white text-blue-900 font-bold text-xl rounded-2xl hover:bg-blue-50 transition-all duration-300 transform hover:scale-110 shadow-2xl hover:shadow-white/20"
-                    >
-                        <span>Mulai Sekarang</span>
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                        </svg>
-                    </Link>
+                    <!-- Right Content - Floating Cards -->
+                    <div class="relative h-[600px] hidden lg:block">
+                        <div class="absolute top-0 right-0 galaxy-card w-64 float" style="animation-delay: 0s;">
+                            <div class="flex items-center space-x-3 mb-3">
+                                <div class="w-12 h-12 rounded-lg gradient-purple-blue flex items-center justify-center">
+                                    <span class="text-2xl">💳</span>
+                                </div>
+                                <div>
+                                    <div class="font-bold">RFID Payment</div>
+                                    <div class="text-xs text-gray-400">Tap & Pay</div>
+                                </div>
+                            </div>
+                            <div class="text-sm text-gray-300">Transaksi cepat dengan tap kartu RFID</div>
+                        </div>
+
+                        <div class="absolute top-40 right-20 galaxy-card w-72 float glow" style="animation-delay: -2s;">
+                            <div class="flex items-center space-x-3 mb-3">
+                                <div class="w-12 h-12 rounded-lg gradient-purple-blue flex items-center justify-center">
+                                    <span class="text-2xl">📊</span>
+                                </div>
+                                <div>
+                                    <div class="font-bold">Real-time Analytics</div>
+                                    <div class="text-xs text-gray-400">Live Dashboard</div>
+                                </div>
+                            </div>
+                            <div class="h-32 bg-white/5 rounded-lg mt-3 flex items-end justify-around p-2">
+                                <div class="w-8 bg-gradient-to-t from-blue-500 to-purple-500 rounded" style="height: 60%"></div>
+                                <div class="w-8 bg-gradient-to-t from-blue-500 to-purple-500 rounded" style="height: 80%"></div>
+                                <div class="w-8 bg-gradient-to-t from-blue-500 to-purple-500 rounded" style="height: 40%"></div>
+                                <div class="w-8 bg-gradient-to-t from-blue-500 to-purple-500 rounded" style="height: 90%"></div>
+                            </div>
+                        </div>
+
+                        <div class="absolute bottom-20 right-10 galaxy-card w-64 float" style="animation-delay: -4s;">
+                            <div class="flex items-center space-x-3 mb-3">
+                                <div class="w-12 h-12 rounded-lg gradient-purple-blue flex items-center justify-center">
+                                    <span class="text-2xl">🖨️</span>
+                                </div>
+                                <div>
+                                    <div class="font-bold">Auto Print</div>
+                                    <div class="text-xs text-gray-400">Receipt & Reports</div>
+                                </div>
+                            </div>
+                            <div class="text-sm text-gray-300">Cetak struk & laporan otomatis</div>
+                        </div>
+                    </div>
                 </div>
             </div>
-        </div>
+        </section>
 
         <!-- Features Section -->
-        <div class="bg-white/5 backdrop-blur-sm border-t border-white/10 relative z-10">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+        <section id="features" class="py-20 px-4 sm:px-6 lg:px-8 relative">
+            <div class="max-w-7xl mx-auto">
                 <div class="text-center mb-16">
-                    <h3 class="text-4xl md:text-5xl font-extrabold text-white mb-4">Fitur Unggulan</h3>
-                    <p class="text-blue-200 text-lg max-w-2xl mx-auto">Sistem terintegrasi untuk manajemen koperasi sekolah yang modern dan efisien</p>
-                </div>
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-                    <div class="group text-center bg-gradient-to-br from-white/10 to-white/5 rounded-3xl p-8 backdrop-blur-sm border border-white/20 hover:border-blue-400 transition-all duration-300 transform hover:-translate-y-3 hover:shadow-2xl">
-                        <div class="w-20 h-20 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-xl group-hover:scale-110 transition-transform duration-300">
-                            <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
-                            </svg>
-                        </div>
-                        <h4 class="text-white font-bold text-xl mb-3">Point of Sale Modern</h4>
-                        <p class="text-blue-200 leading-relaxed">Interface seperti e-commerce dengan keranjang belanja digital untuk pengalaman kasir yang cepat dan intuitif</p>
-                    </div>
-                    <div class="group text-center bg-gradient-to-br from-white/10 to-white/5 rounded-3xl p-8 backdrop-blur-sm border border-white/20 hover:border-green-400 transition-all duration-300 transform hover:-translate-y-3 hover:shadow-2xl">
-                        <div class="w-20 h-20 bg-gradient-to-br from-green-500 to-green-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-xl group-hover:scale-110 transition-transform duration-300">
-                            <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                            </svg>
-                        </div>
-                        <h4 class="text-white font-bold text-xl mb-3">RFID Card System</h4>
-                        <p class="text-blue-200 leading-relaxed">Kartu pelajar dengan chip RFID untuk pembayaran cashless yang praktis dan aman tanpa perlu bawa uang tunai</p>
-                    </div>
-                    <div class="group text-center bg-gradient-to-br from-white/10 to-white/5 rounded-3xl p-8 backdrop-blur-sm border border-white/20 hover:border-purple-400 transition-all duration-300 transform hover:-translate-y-3 hover:shadow-2xl">
-                        <div class="w-20 h-20 bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-xl group-hover:scale-110 transition-transform duration-300">
-                            <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 00-2-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                            </svg>
-                        </div>
-                        <h4 class="text-white font-bold text-xl mb-3">Dashboard & Laporan</h4>
-                        <p class="text-blue-200 leading-relaxed">Analitik real-time dengan chart interaktif dan export ke Excel untuk monitoring bisnis yang komprehensif</p>
-                    </div>
-                    <div class="group text-center bg-gradient-to-br from-white/10 to-white/5 rounded-3xl p-8 backdrop-blur-sm border border-white/20 hover:border-yellow-400 transition-all duration-300 transform hover:-translate-y-3 hover:shadow-2xl">
-                        <div class="w-20 h-20 bg-gradient-to-br from-yellow-500 to-yellow-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-xl group-hover:scale-110 transition-transform duration-300">
-                            <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                        </div>
-                        <h4 class="text-white font-bold text-xl mb-3">Flexible Payment</h4>
-                        <p class="text-blue-200 leading-relaxed">Mendukung pembayaran tunai dan saldo digital siswa, lengkap dengan top-up dan riwayat transaksi</p>
-                    </div>
+                    <h2 class="text-4xl lg:text-5xl font-bold mb-4">
+                        <span class="galaxy-text">Fitur Lengkap</span>
+                    </h2>
+                    <p class="text-xl text-gray-300 max-w-3xl mx-auto">
+                        Semua yang Anda butuhkan untuk mengelola koperasi modern dalam satu platform
+                    </p>
                 </div>
 
-                <!-- Additional Benefits -->
-                <div class="mt-20 grid grid-cols-1 md:grid-cols-3 gap-8">
-                    <div class="flex items-start space-x-4 bg-white/5 rounded-2xl p-6 backdrop-blur-sm border border-white/10">
-                        <div class="w-12 h-12 bg-blue-500/20 rounded-xl flex items-center justify-center flex-shrink-0">
-                            <svg class="w-6 h-6 text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
-                            </svg>
+                <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div
+                        v-for="(feature, index) in features"
+                        :key="index"
+                        class="galaxy-card group cursor-pointer"
+                    >
+                        <div class="feature-icon mx-auto mb-4" :class="`bg-gradient-to-br ${feature.color}`">
+                            <span class="text-3xl">{{ feature.icon }}</span>
                         </div>
-                        <div>
-                            <h5 class="text-white font-bold text-lg mb-2">Barcode Scanner</h5>
-                            <p class="text-blue-200 text-sm">Scan produk dengan barcode untuk transaksi yang lebih cepat dan akurat</p>
-                        </div>
+                        <h3 class="text-xl font-bold mb-3 text-center">{{ feature.title }}</h3>
+                        <p class="text-gray-400 text-center text-sm leading-relaxed">
+                            {{ feature.description }}
+                        </p>
                     </div>
-                    <div class="flex items-start space-x-4 bg-white/5 rounded-2xl p-6 backdrop-blur-sm border border-white/10">
-                        <div class="w-12 h-12 bg-green-500/20 rounded-xl flex items-center justify-center flex-shrink-0">
-                            <svg class="w-6 h-6 text-green-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                            </svg>
-                        </div>
-                        <div>
-                            <h5 class="text-white font-bold text-lg mb-2">Thermal Receipt</h5>
-                            <p class="text-blue-200 text-sm">Cetak struk otomatis dengan printer thermal 58mm untuk setiap transaksi</p>
-                        </div>
-                    </div>
-                    <div class="flex items-start space-x-4 bg-white/5 rounded-2xl p-6 backdrop-blur-sm border border-white/10">
-                        <div class="w-12 h-12 bg-purple-500/20 rounded-xl flex items-center justify-center flex-shrink-0">
-                            <svg class="w-6 h-6 text-purple-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                            </svg>
-                        </div>
-                        <div>
-                            <h5 class="text-white font-bold text-lg mb-2">Role Management</h5>
-                            <p class="text-blue-200 text-sm">4 tingkat akses: Master, Admin, Kasir, dan Siswa dengan permission lengkap</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Workflow Section -->
+        <section class="py-20 px-4 sm:px-6 lg:px-8 relative">
+            <div class="max-w-7xl mx-auto">
+                <div class="text-center mb-16">
+                    <h2 class="text-4xl lg:text-5xl font-bold mb-4">
+                        <span class="galaxy-text">Cara Kerja Sistem</span>
+                    </h2>
+                    <p class="text-xl text-gray-300 max-w-3xl mx-auto">
+                        Alur transaksi yang simple dan efisien dari pendaftaran hingga pelaporan
+                    </p>
+                </div>
+
+                <div class="relative">
+                    <!-- Timeline Line -->
+                    <div class="hidden lg:block absolute top-1/2 left-0 right-0 h-1 bg-gradient-to-r from-purple-500 via-blue-500 to-pink-500 transform -translate-y-1/2 opacity-30"></div>
+
+                    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8 relative">
+                        <div
+                            v-for="(step, index) in workflow"
+                            :key="index"
+                            class="galaxy-card relative"
+                        >
+                            <div class="absolute -top-6 left-1/2 transform -translate-x-1/2 w-12 h-12 rounded-full gradient-purple-blue flex items-center justify-center font-bold text-lg shadow-lg glow">
+                                {{ step.step }}
+                            </div>
+                            <div class="text-5xl text-center mb-4 mt-8">{{ step.icon }}</div>
+                            <h3 class="text-lg font-bold mb-2 text-center">{{ step.title }}</h3>
+                            <p class="text-gray-400 text-sm text-center leading-relaxed">
+                                {{ step.description }}
+                            </p>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
+        </section>
+
+        <!-- CTA Section -->
+        <section class="py-20 px-4 sm:px-6 lg:px-8 relative">
+            <div class="max-w-4xl mx-auto">
+                <div class="galaxy-card text-center p-12 glow animated-border">
+                    <h2 class="text-4xl lg:text-5xl font-bold mb-6">
+                        Siap untuk
+                        <span class="galaxy-text block mt-2">Digitalisasi Koperasi?</span>
+                    </h2>
+                    <p class="text-xl text-gray-300 mb-8 max-w-2xl mx-auto">
+                        Bergabunglah dengan sistem manajemen koperasi modern yang telah dipercaya
+                        oleh Taruna Nusantara Indonesia untuk operasional yang lebih efisien
+                    </p>
+                    <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                        <Link
+                            v-if="!$page.props.auth.user"
+                            :href="route('login')"
+                            class="galaxy-btn text-lg px-10 py-4"
+                        >
+                            Login Sekarang →
+                        </Link>
+                        <Link
+                            v-else
+                            :href="route('dashboard')"
+                            class="galaxy-btn text-lg px-10 py-4"
+                        >
+                            Ke Dashboard →
+                        </Link>
+                    </div>
+                </div>
+            </div>
+        </section>
 
         <!-- Footer -->
-        <footer class="bg-black/30 backdrop-blur-md border-t border-white/10 relative z-10">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
-                    <div>
-                        <div class="flex items-center space-x-3 mb-4">
-                            <div class="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
-                                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
-                                </svg>
-                            </div>
-                            <div class="text-white font-bold text-lg">Koperasi Lemdiklat TNI</div>
-                        </div>
-                        <p class="text-blue-200 text-sm">Sistem Point of Sale modern untuk melayani kebutuhan siswa dan staff dengan teknologi terkini</p>
+        <footer class="glass border-t border-white/10 py-8 px-4 relative">
+            <div class="max-w-7xl mx-auto text-center">
+                <div class="flex items-center justify-center space-x-3 mb-4">
+                    <div class="w-10 h-10 rounded-lg gradient-purple-blue flex items-center justify-center">
+                        <span class="text-xl">🏪</span>
                     </div>
-                    <div>
-                        <h4 class="text-white font-bold mb-4">Melayani</h4>
-                        <ul class="space-y-2 text-blue-200 text-sm">
-                            <li class="flex items-center space-x-2">
-                                <svg class="w-4 h-4 text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                </svg>
-                                <span>SMA Taruna Nusantara Indonesia</span>
-                            </li>
-                            <li class="flex items-center space-x-2">
-                                <svg class="w-4 h-4 text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                </svg>
-                                <span>SMK Taruna Nusantara Jaya</span>
-                            </li>
-                        </ul>
-                    </div>
-                    <div>
-                        <h4 class="text-white font-bold mb-4">Sistem</h4>
-                        <ul class="space-y-2 text-blue-200 text-sm">
-                            <li>🔐 Keamanan Berlapis</li>
-                            <li>📊 Dashboard Analitik</li>
-                            <li>💳 RFID & Barcode</li>
-                            <li>🖨️ Thermal Printer</li>
-                        </ul>
-                    </div>
+                    <span class="font-bold text-lg galaxy-text">Koperasi Lemdiklat Taruna Nusantara Indonesia</span>
                 </div>
-                <div class="border-t border-white/10 pt-8 text-center text-blue-200">
-                    <p class="mb-2">&copy; 2025 Koperasi Lemdiklat Taruna Nusantara Indonesia. All rights reserved.</p>
-                    <p class="text-sm opacity-75">Built with Laravel 12, Vue 3, Inertia.js & Tailwind CSS</p>
-                </div>
+                <p class="text-gray-400 text-sm mb-2">
+                    SMA Taruna Nusantara Indonesia | SMK Taruna Nusantara Jaya
+                </p>
+                <p class="text-gray-400 text-sm mb-4">
+                    Kab. Bandung Barat
+                </p>
+                <p class="text-gray-500 text-xs">
+                    &copy; {{ new Date().getFullYear() }} Koperasi Lemdiklat Taruna Nusantara Indonesia. All rights reserved.
+                </p>
             </div>
         </footer>
     </div>
 </template>
+
+<style scoped>
+/* Additional smooth scrolling */
+html {
+    scroll-behavior: smooth;
+}
+
+/* Delay animations */
+.delay-1000 {
+    animation-delay: 1s;
+}
+</style>

@@ -7,11 +7,12 @@ use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithMapping;
 use Maatwebsite\Excel\Concerns\WithStyles;
-use Maatwebsite\Excel\Concerns\WithTitle;
+use Maatwebsite\Excel\Concerns\WithColumnWidths;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
+use PhpOffice\PhpSpreadsheet\Style\Alignment;
 
-class StudentTransactionsExport implements FromCollection, WithHeadings, WithMapping, WithStyles, WithTitle
+class StudentTransactionsExport implements FromCollection, WithHeadings, WithMapping, WithStyles, WithColumnWidths
 {
     protected $dateFrom;
     protected $dateTo;
@@ -35,7 +36,7 @@ class StudentTransactionsExport implements FromCollection, WithHeadings, WithMap
 
         if ($this->class) {
             $query->whereHas('student', function($q) {
-                $q->where('class', $this->class);
+                $q->where('kelas', $this->class);
             });
         }
 
@@ -88,12 +89,12 @@ class StudentTransactionsExport implements FromCollection, WithHeadings, WithMap
             $sale->created_at->format('d/m/Y H:i:s'),
             $sale->student->user->name,
             $sale->student->nis,
-            $sale->student->class,
+            $sale->student->kelas ?? '-',
             $products,
             $totalQty,
-            $sale->total,
+            'Rp ' . number_format($sale->total, 0, ',', '.'),
             $sale->payment_method === 'cash' ? 'Tunai' : 'Saldo',
-            $transaction ? $transaction->ending_balance : $sale->student->balance,
+            'Rp ' . number_format($transaction ? $transaction->ending_balance : $sale->student->balance, 0, ',', '.'),
         ];
     }
 
@@ -101,18 +102,35 @@ class StudentTransactionsExport implements FromCollection, WithHeadings, WithMap
     {
         return [
             1 => [
-                'font' => ['bold' => true, 'size' => 12],
+                'font' => [
+                    'bold' => true,
+                    'size' => 12,
+                    'color' => ['rgb' => 'FFFFFF'],
+                ],
                 'fill' => [
                     'fillType' => Fill::FILL_SOLID,
-                    'startColor' => ['rgb' => '8B5CF6']
+                    'startColor' => ['rgb' => '8B5CF6'],
                 ],
-                'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],
+                'alignment' => [
+                    'horizontal' => Alignment::HORIZONTAL_CENTER,
+                    'vertical' => Alignment::VERTICAL_CENTER,
+                ],
             ],
         ];
     }
 
-    public function title(): string
+    public function columnWidths(): array
     {
-        return 'Transaksi Siswa';
+        return [
+            'A' => 18,  // Tanggal & Waktu
+            'B' => 25,  // Nama Siswa
+            'C' => 12,  // NIS
+            'D' => 10,  // Kelas
+            'E' => 40,  // Nama Barang
+            'F' => 15,  // Total Barang (QTY)
+            'G' => 18,  // Total Transaksi
+            'H' => 18,  // Metode Pembayaran
+            'I' => 18,  // Saldo Akhir Siswa
+        ];
     }
 }

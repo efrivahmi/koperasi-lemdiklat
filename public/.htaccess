@@ -5,6 +5,25 @@
 
     RewriteEngine On
 
+    # Security Headers
+    <IfModule mod_headers.c>
+        # Remove server signature
+        Header unset Server
+        Header always unset X-Powered-By
+
+        # Cache Control for static assets
+        <FilesMatch "\.(css|js|jpg|jpeg|png|gif|ico|svg|woff|woff2|ttf|eot)$">
+            Header set Cache-Control "public, max-age=31536000, immutable"
+        </FilesMatch>
+
+        # Prevent caching of HTML files
+        <FilesMatch "\.(html|htm)$">
+            Header set Cache-Control "no-cache, no-store, must-revalidate"
+            Header set Pragma "no-cache"
+            Header set Expires 0
+        </FilesMatch>
+    </IfModule>
+
     # Handle Authorization Header
     RewriteCond %{HTTP:Authorization} .
     RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]

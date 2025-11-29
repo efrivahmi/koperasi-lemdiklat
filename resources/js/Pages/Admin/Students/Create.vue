@@ -13,6 +13,7 @@ const form = useForm({
     password: '',
     nis: '',
     kelas: '',
+    jenjang: '',
     balance: 0,
     rfid_uid: '',
     foto: null,
@@ -91,12 +92,13 @@ const submit = () => {
                                 </div>
 
                                 <div>
-                                    <InputLabel for="nis" value="NIS" />
+                                    <InputLabel for="nis" value="NISN" />
                                     <TextInput
                                         id="nis"
                                         type="text"
                                         v-model="form.nis"
                                         class="mt-1 block w-full"
+                                        placeholder="Nomor Induk Siswa Nasional"
                                         required
                                     />
                                     <InputError :message="form.errors.nis" class="mt-2" />
@@ -118,6 +120,23 @@ const submit = () => {
                                 </div>
 
                                 <div>
+                                    <InputLabel for="jenjang" value="Jenjang" />
+                                    <select
+                                        id="jenjang"
+                                        v-model="form.jenjang"
+                                        class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm"
+                                        required
+                                    >
+                                        <option value="" disabled>Pilih Jenjang</option>
+                                        <option value="SMA Taruna Nusantara Indonesia">SMA Taruna Nusantara Indonesia</option>
+                                        <option value="SMK Taruna Nusantara Jaya">SMK Taruna Nusantara Jaya</option>
+                                    </select>
+                                    <InputError :message="form.errors.jenjang" class="mt-2" />
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
                                     <InputLabel for="balance" value="Saldo Awal (Rp)" />
                                     <TextInput
                                         id="balance"
@@ -129,19 +148,19 @@ const submit = () => {
                                     />
                                     <InputError :message="form.errors.balance" class="mt-2" />
                                 </div>
-                            </div>
 
-                            <div>
-                                <InputLabel for="rfid_uid" value="RFID UID (Opsional)" />
-                                <TextInput
-                                    id="rfid_uid"
-                                    type="text"
-                                    v-model="form.rfid_uid"
-                                    class="mt-1 block w-full"
-                                    placeholder="Kosongkan jika belum memiliki kartu RFID"
-                                />
-                                <p class="mt-1 text-sm text-gray-500">Atau daftarkan RFID setelah siswa dibuat</p>
-                                <InputError :message="form.errors.rfid_uid" class="mt-2" />
+                                <div>
+                                    <InputLabel for="rfid_uid" value="RFID UID (Opsional)" />
+                                    <TextInput
+                                        id="rfid_uid"
+                                        type="text"
+                                        v-model="form.rfid_uid"
+                                        class="mt-1 block w-full"
+                                        placeholder="Kosongkan untuk auto-generate"
+                                    />
+                                    <p class="mt-1 text-sm text-gray-500">RFID UID akan di-generate otomatis jika dikosongkan</p>
+                                    <InputError :message="form.errors.rfid_uid" class="mt-2" />
+                                </div>
                             </div>
 
                             <div>

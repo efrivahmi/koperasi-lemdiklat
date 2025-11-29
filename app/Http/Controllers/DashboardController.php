@@ -22,6 +22,11 @@ class DashboardController extends Controller
             return redirect()->route('student.dashboard');
         }
 
+        // Staff Dashboard - Simplified professional view
+        if (auth()->user()->role === 'kasir') {
+            return $this->kasirDashboard();
+        }
+
         // Today's sales statistics
         $today = Carbon::today();
         $todaySales = Sale::whereDate('created_at', $today)->get();
@@ -57,7 +62,7 @@ class DashboardController extends Controller
 
         // Recent transactions (last 10)
         $recentTransactions = Transaction::with(['student.user'])
-            ->latest()
+            ->oldest()
             ->limit(10)
             ->get();
 
@@ -131,6 +136,57 @@ class DashboardController extends Controller
             'topProducts' => $topProducts,
             'lowStockList' => $lowStockList,
             'salesChart' => $salesChart,
+        ]);
+    }
+
+    private function kasirDashboard()
+    {
+        $today = Carbon::today();
+
+        // Today's sales
+        $todaySales = Sale::whereDate('created_at', $today)->get();
+        $todayRevenue = $todaySales->sum('total');
+        $todayTransactions = $todaySales->count();
+
+        // My sales (if kasir created any sales)
+        $mySales = Sale::where('created_by', auth()->id())
+            ->whereDate('created_at', $today)
+            ->get();
+        $myRevenue = $mySales->sum('total');
+        $myTransactionsCount = $mySales->count();
+
+        // Low stock products that need attention
+        $lowStockList = Product::with('category')
+            ->where('stock', '<=', 10)
+            ->orderBy('stock', 'asc')
+            ->limit(8)
+            ->get();
+
+        // Recent sales today
+        $recentSales = Sale::with(['items.product', 'student.user', 'creator'])
+            ->whereDate('created_at', $today)
+            ->oldest()
+            ->limit(8)
+            ->get();
+
+        // Quick stats
+        $totalProducts = Product::count();
+        $totalCategories = \App\Models\Category::count();
+        $outOfStockProducts = Product::where('stock', 0)->count();
+
+        return Inertia::render('Kasir/Dashboard', [
+            'stats' => [
+                'todayRevenue' => $todayRevenue,
+                'todayTransactions' => $todayTransactions,
+                'myRevenue' => $myRevenue,
+                'myTransactions' => $myTransactionsCount,
+                'totalProducts' => $totalProducts,
+                'totalCategories' => $totalCategories,
+                'lowStockCount' => $lowStockList->count(),
+                'outOfStockProducts' => $outOfStockProducts,
+            ],
+            'recentSales' => $recentSales,
+            'lowStockList' => $lowStockList,
         ]);
     }
 }

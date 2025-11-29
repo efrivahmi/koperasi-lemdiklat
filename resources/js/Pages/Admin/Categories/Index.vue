@@ -1,6 +1,7 @@
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import EmptyState from '@/Components/EmptyState.vue';
+import AuditInfo from '@/Components/AuditInfo.vue';
 import { Head, Link } from '@inertiajs/vue3';
 import { router } from '@inertiajs/vue3';
 
@@ -50,6 +51,8 @@ const deleteCategory = (id) => {
                                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
                                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama</th>
                                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Deskripsi</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden xl:table-cell">Dibuat</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden xl:table-cell">Diubah</th>
                                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
                                     </tr>
                                 </thead>
@@ -58,6 +61,12 @@ const deleteCategory = (id) => {
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ category.id }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ category.name }}</td>
                                         <td class="px-6 py-4 text-sm text-gray-500">{{ category.description || '-' }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-xs text-gray-500 hidden xl:table-cell">
+                                            <AuditInfo :user="category.creator" :timestamp="category.created_at" label="Dibuat" />
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-xs text-gray-500 hidden xl:table-cell">
+                                            <AuditInfo :user="category.updater" :timestamp="category.updated_at" label="Diubah" />
+                                        </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                             <Link :href="route('categories.edit', category.id)" class="text-indigo-600 hover:text-indigo-900 mr-3">Edit</Link>
                                             <button @click="deleteCategory(category.id)" class="text-red-600 hover:text-red-900">Hapus</button>

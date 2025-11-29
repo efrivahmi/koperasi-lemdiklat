@@ -36,7 +36,7 @@ const submit = () => {
                             <h3 class="text-lg font-semibold mb-3">Informasi Siswa</h3>
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
-                                    <p class="text-sm text-gray-600">NIS</p>
+                                    <p class="text-sm text-gray-600">NISN</p>
                                     <p class="font-medium">{{ student.nis }}</p>
                                 </div>
                                 <div>

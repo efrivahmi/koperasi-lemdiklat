@@ -1,5 +1,6 @@
 <script setup>
 import EmptyState from '@/Components/EmptyState.vue';
+import AuditInfo from '@/Components/AuditInfo.vue';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head, Link, router } from '@inertiajs/vue3';
 import { ref, watch } from 'vue';
@@ -88,23 +89,37 @@ const formatDate = (date) => {
                                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Harga Beli</th>
                                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Total</th>
                                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Supplier</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase hidden xl:table-cell">Dibuat</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase hidden xl:table-cell">Diubah</th>
                                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Aksi</th>
                                     </tr>
                                 </thead>
                                 <tbody class="bg-white divide-y divide-gray-200">
                                     <tr v-for="stock in stock_ins.data" :key="stock.id">
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm">{{ formatDate(stock.created_at) }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm">
+                                            <div>{{ formatDate(stock.created_at) }}</div>
+                                            <div class="text-xs text-gray-500">
+                                                {{ new Date(stock.created_at).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) }}
+                                            </div>
+                                        </td>
                                         <td class="px-6 py-4 text-sm font-medium">{{ stock.product.name }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm">{{ stock.quantity }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm">{{ formatCurrency(stock.harga_beli) }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold">{{ formatCurrency(stock.quantity * stock.harga_beli) }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm">{{ formatCurrency(stock.product.harga_beli) }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold">{{ formatCurrency(stock.quantity * stock.product.harga_beli) }}</td>
                                         <td class="px-6 py-4 text-sm">{{ stock.supplier || '-' }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-xs text-gray-500 hidden xl:table-cell">
+                                            <AuditInfo :user="stock.creator" :timestamp="stock.created_at" label="Dibuat" />
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-xs text-gray-500 hidden xl:table-cell">
+                                            <AuditInfo :user="stock.updater" :timestamp="stock.updated_at" label="Diubah" />
+                                        </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                            <Link :href="route('stock-ins.show', stock.id)" class="text-blue-600 hover:text-blue-900 mr-3">Detail</Link>
                                             <button @click="deleteStockIn(stock.id)" class="text-red-600 hover:text-red-900">Hapus</button>
                                         </td>
                                     </tr>
                                     <tr v-if="stock_ins.data.length === 0 && search">
-                                        <td colspan="7" class="px-6 py-12 text-center">
+                                        <td colspan="9" class="px-6 py-12 text-center">
                                             <div class="text-gray-400">
                                                 <svg class="mx-auto h-12 w-12 text-gray-300 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -119,17 +134,22 @@ const formatDate = (date) => {
                         </div>
 
                         <div v-if="stock_ins.links.length > 3" class="mt-4 flex justify-center space-x-2">
-                            <Link
-                                v-for="link in stock_ins.links"
-                                :key="link.label"
-                                :href="link.url"
-                                v-html="link.label"
-                                :class="[
-                                    'px-3 py-2 rounded',
-                                    link.active ? 'bg-blue-500 text-white' : 'bg-gray-200 hover:bg-gray-300',
-                                    !link.url ? 'opacity-50 cursor-not-allowed' : ''
-                                ]"
-                            />
+                            <template v-for="link in stock_ins.links" :key="link.label">
+                                <Link
+                                    v-if="link.url"
+                                    :href="link.url"
+                                    v-html="link.label"
+                                    :class="[
+                                        'px-3 py-2 rounded',
+                                        link.active ? 'bg-blue-500 text-white' : 'bg-gray-200 hover:bg-gray-300'
+                                    ]"
+                                />
+                                <span
+                                    v-else
+                                    v-html="link.label"
+                                    :class="'px-3 py-2 rounded bg-gray-200 text-gray-400 opacity-50 cursor-not-allowed'"
+                                />
+                            </template>
                         </div>
                     </div>
                 </div>

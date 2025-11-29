@@ -1,5 +1,6 @@
 <script setup>
 import EmptyState from '@/Components/EmptyState.vue';
+import AuditInfo from '@/Components/AuditInfo.vue';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head, Link, router } from '@inertiajs/vue3';
 import { ref, watch } from 'vue';
@@ -10,6 +11,8 @@ const props = defineProps({
 });
 
 const search = ref(props.filters.search || '');
+const selectedStudents = ref(new Set());
+const selectAll = ref(false);
 
 watch(search, (value) => {
     router.get(route('students.index'), { search: value }, {
@@ -31,6 +34,65 @@ const formatCurrency = (value) => {
         minimumFractionDigits: 0
     }).format(value);
 };
+
+const toggleSelectAll = () => {
+    if (selectAll.value) {
+        props.students.data.forEach(student => {
+            selectedStudents.value.add(student.id);
+        });
+    } else {
+        selectedStudents.value.clear();
+    }
+};
+
+const toggleStudent = (studentId) => {
+    if (selectedStudents.value.has(studentId)) {
+        selectedStudents.value.delete(studentId);
+    } else {
+        selectedStudents.value.add(studentId);
+    }
+    selectAll.value = selectedStudents.value.size === props.students.data.length;
+};
+
+const isSelected = (studentId) => {
+    return selectedStudents.value.has(studentId);
+};
+
+const printCard = (studentId) => {
+    window.open(route('students.card.generate', studentId), '_blank');
+};
+
+const printBatchCards = () => {
+    if (selectedStudents.value.size === 0) {
+        alert('Pilih minimal 1 siswa untuk mencetak kartu');
+        return;
+    }
+
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = route('students.cards.batch');
+    form.target = '_blank';
+
+    // CSRF Token
+    const csrfInput = document.createElement('input');
+    csrfInput.type = 'hidden';
+    csrfInput.name = '_token';
+    csrfInput.value = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+    form.appendChild(csrfInput);
+
+    // Student IDs
+    selectedStudents.value.forEach(id => {
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = 'student_ids[]';
+        input.value = id;
+        form.appendChild(input);
+    });
+
+    document.body.appendChild(form);
+    form.submit();
+    document.body.removeChild(form);
+};
 </script>
 
 <template>
@@ -40,9 +102,18 @@ const formatCurrency = (value) => {
         <template #header>
             <div class="flex justify-between items-center">
                 <h2 class="font-semibold text-xl text-gray-800 leading-tight">Data Siswa</h2>
-                <Link :href="route('students.create')" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-                    Tambah Siswa
-                </Link>
+                <div class="flex gap-2">
+                    <button
+                        v-if="selectedStudents.size > 0"
+                        @click="printBatchCards"
+                        class="bg-purple-500 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded flex items-center gap-2"
+                    >
+                        🖨️ Cetak {{ selectedStudents.size }} Kartu
+                    </button>
+                    <Link :href="route('students.create')" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                        Tambah Siswa
+                    </Link>
+                </div>
             </div>
         </template>
 
@@ -66,7 +137,7 @@ const formatCurrency = (value) => {
                             <input
                                 v-model="search"
                                 type="text"
-                                placeholder="Cari siswa (NIS, nama, email, kelas)..."
+                                placeholder="Cari siswa (NISN, nama, email, kelas)..."
                                 class="w-full md:w-1/2 border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm"
                             />
                         </div>
@@ -75,18 +146,36 @@ const formatCurrency = (value) => {
                             <table class="min-w-full divide-y divide-gray-200">
                                 <thead class="bg-gray-50">
                                     <tr>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            <input
+                                                v-model="selectAll"
+                                                @change="toggleSelectAll"
+                                                type="checkbox"
+                                                class="w-4 h-4 rounded border-gray-300 text-purple-600 focus:ring-purple-500"
+                                            />
+                                        </th>
                                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Foto</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">NIS</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">NISN</th>
                                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama</th>
                                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
                                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kelas</th>
                                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Saldo</th>
                                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">RFID</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden xl:table-cell">Dibuat</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden xl:table-cell">Diubah</th>
                                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
                                     </tr>
                                 </thead>
                                 <tbody class="bg-white divide-y divide-gray-200">
-                                    <tr v-for="student in students.data" :key="student.id">
+                                    <tr v-for="student in students.data" :key="student.id" :class="{ 'bg-purple-50': isSelected(student.id) }">
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <input
+                                                :checked="isSelected(student.id)"
+                                                @change="toggleStudent(student.id)"
+                                                type="checkbox"
+                                                class="w-4 h-4 rounded border-gray-300 text-purple-600 focus:ring-purple-500"
+                                            />
+                                        </td>
                                         <td class="px-6 py-4 whitespace-nowrap">
                                             <img
                                                 v-if="student.foto"
@@ -111,14 +200,21 @@ const formatCurrency = (value) => {
                                                 Belum
                                             </span>
                                         </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-xs text-gray-500 hidden xl:table-cell">
+                                            <AuditInfo :user="student.creator" :timestamp="student.created_at" label="Dibuat" />
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-xs text-gray-500 hidden xl:table-cell">
+                                            <AuditInfo :user="student.updater" :timestamp="student.updated_at" label="Diubah" />
+                                        </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                            <button @click="printCard(student.id)" class="text-purple-600 hover:text-purple-900 mr-3">🖨️ Kartu</button>
                                             <Link :href="route('students.edit', student.id)" class="text-indigo-600 hover:text-indigo-900 mr-3">Edit</Link>
                                             <Link v-if="!student.rfid_uid" :href="route('students.rfid.register', student.id)" class="text-green-600 hover:text-green-900 mr-3">RFID</Link>
                                             <button @click="deleteStudent(student.id)" class="text-red-600 hover:text-red-900">Hapus</button>
                                         </td>
                                     </tr>
                                     <tr v-if="students.data.length === 0 && search">
-                                        <td colspan="8" class="px-6 py-12 text-center">
+                                        <td colspan="11" class="px-6 py-12 text-center">
                                             <div class="text-gray-400">
                                                 <svg class="mx-auto h-12 w-12 text-gray-300 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -134,17 +230,22 @@ const formatCurrency = (value) => {
 
                         <!-- Pagination -->
                         <div v-if="students.links.length > 3" class="mt-4 flex justify-center space-x-2">
-                            <Link
-                                v-for="link in students.links"
-                                :key="link.label"
-                                :href="link.url"
-                                v-html="link.label"
-                                :class="[
-                                    'px-3 py-2 rounded',
-                                    link.active ? 'bg-blue-500 text-white' : 'bg-gray-200 hover:bg-gray-300',
-                                    !link.url ? 'opacity-50 cursor-not-allowed' : ''
-                                ]"
-                            />
+                            <template v-for="link in students.links" :key="link.label">
+                                <Link
+                                    v-if="link.url"
+                                    :href="link.url"
+                                    v-html="link.label"
+                                    :class="[
+                                        'px-3 py-2 rounded',
+                                        link.active ? 'bg-blue-500 text-white' : 'bg-gray-200 hover:bg-gray-300'
+                                    ]"
+                                />
+                                <span
+                                    v-else
+                                    v-html="link.label"
+                                    :class="'px-3 py-2 rounded bg-gray-200 text-gray-400 opacity-50 cursor-not-allowed'"
+                                />
+                            </template>
                         </div>
                     </div>
                 </div>

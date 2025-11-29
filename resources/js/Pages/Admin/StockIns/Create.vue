@@ -13,7 +13,6 @@ const props = defineProps({
 const form = useForm({
     product_id: '',
     quantity: '',
-    harga_beli: '',
     supplier: '',
     keterangan: '',
 });
@@ -52,33 +51,17 @@ const submit = () => {
                                 <InputError :message="form.errors.product_id" class="mt-2" />
                             </div>
 
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div>
-                                    <InputLabel for="quantity" value="Jumlah / Quantity" />
-                                    <TextInput
-                                        id="quantity"
-                                        type="number"
-                                        v-model="form.quantity"
-                                        class="mt-1 block w-full"
-                                        min="1"
-                                        required
-                                    />
-                                    <InputError :message="form.errors.quantity" class="mt-2" />
-                                </div>
-
-                                <div>
-                                    <InputLabel for="harga_beli" value="Harga Beli (per unit)" />
-                                    <TextInput
-                                        id="harga_beli"
-                                        type="number"
-                                        v-model="form.harga_beli"
-                                        class="mt-1 block w-full"
-                                        min="0"
-                                        step="0.01"
-                                        required
-                                    />
-                                    <InputError :message="form.errors.harga_beli" class="mt-2" />
-                                </div>
+                            <div>
+                                <InputLabel for="quantity" value="Jumlah / Quantity" />
+                                <TextInput
+                                    id="quantity"
+                                    type="number"
+                                    v-model="form.quantity"
+                                    class="mt-1 block w-full"
+                                    min="1"
+                                    required
+                                />
+                                <InputError :message="form.errors.quantity" class="mt-2" />
                             </div>
 
                             <div>

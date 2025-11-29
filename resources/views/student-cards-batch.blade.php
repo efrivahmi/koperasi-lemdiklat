@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cetak Kartu Siswa Batch 2-Sided</title>
+    <style>
+        @media print {
+            @page {
+                size: A4 landscape;
+                margin: 10mm;
+            }
+            body {
+                margin: 0;
+                padding: 0;
+            }
+            .no-print {
+                display: none !important;
+            }
+            .card-pair {
+                page-break-inside: avoid;
+                margin-bottom: 8mm;
+            }
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: #f3f4f6;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* Print Controls */
+        .print-controls {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: #1E40AF;
+            color: white;
+            box-shadow: 0 4px 12px rgba(30, 64, 175, 0.3);
+        }
+
+        .btn-primary:hover {
+            background: #1E3A8A;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(30, 64, 175, 0.4);
+        }
+
+        .btn-secondary {
+            background: #6B7280;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #4B5563;
+        }
+
+        .info-banner {
+            background: #EFF6FF;
+            border-left: 4px solid #3B82F6;
+            padding: 16px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+        }
+
+        /* Cards Grid */
+        .cards-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+        }
+
+        .card-pair {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            padding: 10px;
+            border: 1px dashed #D1D5DB;
+            border-radius: 8px;
+            background: #FAFAFA;
+        }
+
+        .card-container {
+            width: 85.6mm; /* 3.375 inches */
+            height: 53.98mm; /* 2.125 inches */
+            background: white;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            border-radius: 8px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* ========== FRONT SIDE ========== */
+        .card-front {
+            border: 2px solid #1E40AF;
+        }
+
+        .card-front .card-header {
+            background: linear-gradient(135deg, #1E40AF 0%, #3B82F6 100%);
+            color: white;
+            padding: 6px 10px;
+            text-align: center;
+        }
+
+        .card-front .school-logo {
+            width: 28px;
+            height: 28px;
+            background: #FBBF24;
+            border-radius: 50%;
+            margin: 0 auto 3px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .card-front .school-name {
+            font-size: 8px;
+            font-weight: bold;
+            line-height: 1.2;
+        }
+
+        .card-front .school-subtitle {
+            font-size: 6px;
+            opacity: 0.9;
+            margin-top: 2px;
+        }
+
+        .card-front .card-body {
+            padding: 8px 10px;
+            display: flex;
+            gap: 8px;
+            height: calc(100% - 55px);
+        }
+
+        .card-front .photo-section {
+            flex-shrink: 0;
+        }
+
+        .card-front .photo {
+            width: 65px;
+            height: 85px;
+            background: #E5E7EB;
+            border: 2px solid #1E40AF;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 9px;
+            color: #6B7280;
+            text-align: center;
+            padding: 4px;
+            overflow: hidden;
+        }
+
+        .card-front .photo img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .card-front .info-section {
+            flex: 1;
+            font-size: 7.5px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .card-front .student-name {
+            font-size: 10px;
+            font-weight: bold;
+            color: #1E40AF;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+            line-height: 1.2;
+            max-height: 22px;
+            overflow: hidden;
+        }
+
+        .card-front .info-row {
+            margin-bottom: 3px;
+            display: flex;
+            align-items: flex-start;
+        }
+
+        .card-front .info-label {
+            font-weight: 600;
+            color: #4B5563;
+            min-width: 35px;
+        }
+
+        .card-front .info-value {
+            color: #111827;
+            font-weight: 500;
+            flex: 1;
+        }
+
+        .card-front .barcode-section {
+            margin-top: auto;
+            background: white;
+            padding: 4px;
+            border: 1px solid #E5E7EB;
+            border-radius: 3px;
+            text-align: center;
+        }
+
+        .card-front .barcode-image {
+            width: 100%;
+            height: 25px;
+            background: repeating-linear-gradient(
+                90deg,
+                #000 0px,
+                #000 2px,
+                #fff 2px,
+                #fff 4px
+            );
+            margin-bottom: 2px;
+        }
+
+        .card-front .barcode-text {
+            font-family: 'Courier New', monospace;
+            font-size: 7px;
+            font-weight: bold;
+            color: #111827;
+        }
+
+        .card-front .card-footer {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: #1E40AF;
+            padding: 3px 10px;
+            font-size: 6px;
+            color: white;
+            text-align: center;
+        }
+
+        /* ========== BACK SIDE ========== */
+        .card-back {
+            border: 2px solid #8B5CF6;
+            background: linear-gradient(135deg, #F9FAFB 0%, #F3F4F6 100%);
+        }
+
+        .card-back .rfid-header {
+            background: linear-gradient(135deg, #8B5CF6 0%, #A78BFA 100%);
+            color: white;
+            padding: 8px 10px;
+            text-align: center;
+        }
+
+        .card-back .rfid-icon {
+            width: 32px;
+            height: 32px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 50%;
+            margin: 0 auto 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+
+        .card-back .rfid-title {
+            font-size: 9px;
+            font-weight: bold;
+            margin-bottom: 3px;
+        }
+
+        .card-back .rfid-uid-display {
+            font-family: 'Courier New', monospace;
+            font-size: 11px;
+            font-weight: bold;
+            background: rgba(255,255,255,0.25);
+            padding: 4px 8px;
+            border-radius: 4px;
+            letter-spacing: 1px;
+        }
+
+        .card-back .card-body {
+            padding: 8px 10px;
+        }
+
+        .card-back .info-block {
+            margin-bottom: 6px;
+        }
+
+        .card-back .info-block-title {
+            font-size: 7px;
+            font-weight: bold;
+            color: #8B5CF6;
+            margin-bottom: 3px;
+            text-transform: uppercase;
+        }
+
+        .card-back .info-block-content {
+            font-size: 6.5px;
+            color: #374151;
+            line-height: 1.4;
+        }
+
+        .card-back .validity-section {
+            background: white;
+            padding: 5px;
+            border-radius: 4px;
+            margin-bottom: 5px;
+            border: 1px solid #E5E7EB;
+        }
+
+        .card-back .validity-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 6.5px;
+            margin-bottom: 2px;
+        }
+
+        .card-back .validity-label {
+            font-weight: 600;
+            color: #6B7280;
+        }
+
+        .card-back .validity-value {
+            font-weight: bold;
+            color: #111827;
+        }
+
+        .card-back .emergency-box {
+            background: #FEF3C7;
+            border: 1px solid #F59E0B;
+            padding: 4px 6px;
+            border-radius: 4px;
+            margin-bottom: 5px;
+        }
+
+        .card-back .emergency-title {
+            font-size: 6.5px;
+            font-weight: bold;
+            color: #92400E;
+            margin-bottom: 2px;
+        }
+
+        .card-back .emergency-text {
+            font-size: 6px;
+            color: #78350F;
+            line-height: 1.3;
+        }
+
+        .card-back .signature-section {
+            display: flex;
+            justify-content: space-between;
+            gap: 5px;
+        }
+
+        .card-back .signature-box {
+            flex: 1;
+            text-align: center;
+        }
+
+        .card-back .signature-line {
+            width: 100%;
+            height: 15px;
+            border-bottom: 1px solid #9CA3AF;
+            margin-bottom: 2px;
+        }
+
+        .card-back .signature-label {
+            font-size: 6px;
+            color: #6B7280;
+        }
+
+        .card-back .card-footer {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: #8B5CF6;
+            padding: 3px 10px;
+            font-size: 6px;
+            color: white;
+            text-align: center;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 6.5px;
+            font-weight: bold;
+        }
+
+        .status-active {
+            background: #D1FAE5;
+            color: #065F46;
+        }
+
+        .status-unregistered {
+            background: #FEE2E2;
+            color: #991B1B;
+        }
+
+        /* Empty State */
+        .empty-state {
+            background: white;
+            padding: 60px;
+            text-align: center;
+            border-radius: 8px;
+        }
+
+        .empty-state svg {
+            width: 64px;
+            height: 64px;
+            margin: 0 auto;
+            color: #9CA3AF;
+        }
+
+        .empty-state h3 {
+            margin-top: 16px;
+            font-size: 18px;
+            color: #111827;
+        }
+
+        .empty-state p {
+            margin-top: 8px;
+            color: #6B7280;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Print Controls -->
+        <div class="print-controls no-print">
+            <div>
+                <h2 style="font-size: 20px; color: #1E40AF; margin-bottom: 8px;">Cetak Kartu Siswa Batch 2-Sided</h2>
+                <p style="font-size: 14px; color: #6B7280;">Total: <strong>{{ $students->count() }}</strong> kartu siswa</p>
+            </div>
+            <div style="display: flex; gap: 10px;">
+                <button onclick="window.print()" class="btn btn-primary">
+                    🖨️ Print Semua Kartu
+                </button>
+                <button onclick="window.close()" class="btn btn-secondary">
+                    ❌ Tutup
+                </button>
+            </div>
+        </div>
+
+        <!-- Info Banner -->
+        <div class="info-banner no-print">
+            <p style="font-size: 14px; color: #1E40AF; margin-bottom: 8px;">
+                <strong>💡 Panduan Pencetakan Kartu 2-Sisi (Batch):</strong>
+            </p>
+            <ul style="font-size: 13px; color: #1E40AF; margin-left: 20px; line-height: 1.8;">
+                <li>Setiap siswa memiliki 2 kartu: <strong style="color: #1E40AF;">Depan (Biru)</strong> dan <strong style="color: #8B5CF6;">Belakang (Ungu)</strong></li>
+                <li>Gunakan kertas PVC card atau karton tebal (ukuran standar 85.6mm x 53.98mm)</li>
+                <li>Print mode: <strong>Landscape</strong> (A4 landscape untuk batch printing)</li>
+                <li>Untuk duplex printing: Print halaman depan terlebih dahulu, lalu balik kertas dan print halaman belakang</li>
+                <li>Pastikan alignment kertas sama saat print bolak-balik</li>
+                <li>Gunakan setting print quality "High" atau "Best"</li>
+                <li>Laminasi semua kartu setelah print untuk hasil terbaik</li>
+            </ul>
+        </div>
+
+        <!-- Cards Grid -->
+        @if($students->count() > 0)
+        <div class="cards-grid">
+            @foreach($students as $student)
+            <div class="card-pair">
+                <!-- FRONT SIDE -->
+                <div class="card-container card-front">
+                    <!-- Header -->
+                    <div class="card-header">
+                        <div class="school-logo">🎓</div>
+                        <div class="school-name">KOPERASI LEMDIKLAT<br>TARUNA NUSANTARA INDONESIA</div>
+                        <div class="school-subtitle">{{ $student->jenjang ?? 'SMA/SMK Taruna Nusantara' }}</div>
+                    </div>
+
+                    <!-- Body -->
+                    <div class="card-body">
+                        <!-- Photo -->
+                        <div class="photo-section">
+                            <div class="photo">
+                                @if($student->user->photo)
+                                    <img src="{{ asset('storage/' . $student->user->photo) }}" alt="Foto Siswa">
+                                @else
+                                    <div>FOTO<br>SISWA<br>3x4</div>
+                                @endif
+                            </div>
+                        </div>
+
+                        <!-- Info -->
+                        <div class="info-section">
+                            <div class="student-name">{{ $student->user->name }}</div>
+
+                            <div class="info-row">
+                                <div class="info-label">NIS</div>
+                                <div class="info-value">: {{ $student->nis }}</div>
+                            </div>
+
+                            @if($student->nisn)
+                            <div class="info-row">
+                                <div class="info-label">NISN</div>
+                                <div class="info-value">: {{ $student->nisn }}</div>
+                            </div>
+                            @endif
+
+                            <div class="info-row">
+                                <div class="info-label">Kelas</div>
+                                <div class="info-value">: {{ $student->kelas }}</div>
+                            </div>
+
+                            <div class="info-row">
+                                <div class="info-label">Jenjang</div>
+                                <div class="info-value">: {{ $student->jenjang ?? '-' }}</div>
+                            </div>
+
+                            <!-- Barcode -->
+                            <div class="barcode-section">
+                                <div class="barcode-image"></div>
+                                <div class="barcode-text">{{ $student->nis }}</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Footer -->
+                    <div class="card-footer">
+                        KARTU IDENTITAS SISWA | TAHUN AJARAN {{ date('Y') }}/{{ date('Y') + 1 }}
+                    </div>
+                </div>
+
+                <!-- BACK SIDE -->
+                <div class="card-container card-back">
+                    <!-- RFID Header -->
+                    <div class="rfid-header">
+                        <div class="rfid-icon">📡</div>
+                        <div class="rfid-title">RFID CARD IDENTIFICATION</div>
+                        @if($student->rfid_uid)
+                            <div class="rfid-uid-display">{{ $student->rfid_uid }}</div>
+                        @else
+                            <div class="rfid-uid-display" style="background: rgba(239, 68, 68, 0.3);">
+                                NOT REGISTERED
+                            </div>
+                        @endif
+                    </div>
+
+                    <!-- Body -->
+                    <div class="card-body">
+                        <!-- School Info -->
+                        <div class="info-block">
+                            <div class="info-block-title">📍 Informasi Sekolah</div>
+                            <div class="info-block-content">
+                                {{ $school_config['name'] ?? 'Koperasi Lemdiklat TNI' }}<br>
+                                {{ $school_config['address'] ?? 'Jl. Taruna Nusantara, Indonesia' }}<br>
+                                Telp: {{ $school_config['phone'] ?? '(021) XXXX-XXXX' }}
+                            </div>
+                        </div>
+
+                        <!-- Validity Period -->
+                        <div class="validity-section">
+                            <div class="validity-row">
+                                <span class="validity-label">Berlaku dari:</span>
+                                <span class="validity-value">{{ date('d/m/Y') }}</span>
+                            </div>
+                            <div class="validity-row">
+                                <span class="validity-label">Berlaku hingga:</span>
+                                <span class="validity-value">{{ date('d/m/Y', strtotime('+1 year')) }}</span>
+                            </div>
+                            <div class="validity-row">
+                                <span class="validity-label">Status:</span>
+                                @if($student->rfid_uid)
+                                    <span class="status-badge status-active">● ACTIVE</span>
+                                @else
+                                    <span class="status-badge status-unregistered">● UNREGISTERED</span>
+                                @endif
+                            </div>
+                        </div>
+
+                        <!-- Emergency Instructions -->
+                        <div class="emergency-box">
+                            <div class="emergency-title">⚠️ JIKA KARTU HILANG</div>
+                            <div class="emergency-text">
+                                Segera laporkan ke bagian administrasi sekolah.<br>
+                                Kartu yang hilang akan dinonaktifkan demi keamanan saldo Anda.
+                            </div>
+                        </div>
+
+                        <!-- Signature Section -->
+                        <div class="signature-section">
+                            <div class="signature-box">
+                                <div class="signature-line"></div>
+                                <div class="signature-label">Pemegang Kartu</div>
+                            </div>
+                            <div class="signature-box">
+                                <div class="signature-line"></div>
+                                <div class="signature-label">Kepala Sekolah</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Footer -->
+                    <div class="card-footer">
+                        www.koperasi-lemdiklat.sch.id | Kartu ini tidak dapat dipindahtangankan
+                    </div>
+                </div>
+            </div>
+            @endforeach
+        </div>
+        @else
+        <div class="empty-state">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+            </svg>
+            <h3>Tidak ada siswa dipilih</h3>
+            <p>Silakan pilih siswa terlebih dahulu untuk mencetak kartu</p>
+        </div>
+        @endif
+    </div>
+
+    <script>
+        // Auto print on page load (optional)
+        // window.onload = function() { setTimeout(function(){ window.print(); }, 1000); }
+    </script>
+</body>
+</html>

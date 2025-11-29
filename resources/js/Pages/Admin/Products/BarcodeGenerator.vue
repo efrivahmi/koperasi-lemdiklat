@@ -63,37 +63,21 @@ const generateBarcodes = () => {
         return;
     }
 
-    const form = document.createElement('form');
-    form.method = 'POST';
-    form.action = route('products.print-barcodes');
-    form.target = '_blank';
+    // Build URL with query parameters instead of POST
+    const productIds = Array.from(selectedProducts.value);
+    const params = new URLSearchParams();
 
-    // CSRF Token
-    const csrfInput = document.createElement('input');
-    csrfInput.type = 'hidden';
-    csrfInput.name = '_token';
-    csrfInput.value = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
-    form.appendChild(csrfInput);
-
-    // Product IDs
-    selectedProducts.value.forEach(id => {
-        const input = document.createElement('input');
-        input.type = 'hidden';
-        input.name = 'product_ids[]';
-        input.value = id;
-        form.appendChild(input);
+    productIds.forEach(id => {
+        params.append('product_ids[]', id);
     });
+    params.append('quantity', labelQuantity.value);
 
-    // Quantity
-    const qtyInput = document.createElement('input');
-    qtyInput.type = 'hidden';
-    qtyInput.name = 'quantity';
-    qtyInput.value = labelQuantity.value;
-    form.appendChild(qtyInput);
-
-    document.body.appendChild(form);
-    form.submit();
-    document.body.removeChild(form);
+    // Open in new window with GET request
+    window.open(
+        route('products.print-barcodes') + '?' + params.toString(),
+        '_blank',
+        'width=1200,height=800'
+    );
 };
 </script>
 

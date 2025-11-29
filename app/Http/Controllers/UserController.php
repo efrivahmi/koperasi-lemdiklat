@@ -14,7 +14,7 @@ class UserController extends Controller
      */
     public function index(Request $request)
     {
-        // Only show admin and kasir users (not students)
+        // Only show admin and staff users (not students)
         $query = User::whereIn('role', ['admin', 'kasir']);
 
         if ($request->has('search')) {
@@ -25,7 +25,7 @@ class UserController extends Controller
             });
         }
 
-        $users = $query->latest()->paginate(10);
+        $users = $query->oldest()->paginate(10);
 
         return Inertia::render('Admin/Users/Index', [
             'users' => $users,
@@ -38,7 +38,37 @@ class UserController extends Controller
      */
     public function create()
     {
-        return Inertia::render('Admin/Users/Create');
+        // Define available permissions for staff (kasir role)
+        // Simplified: Permission per Module/Feature (includes all actions)
+        $availablePermissions = [
+            // Master Data Modules
+            'module_categories' => 'Kelola Kategori Produk (Lihat, Tambah, Edit, Hapus)',
+            'module_products' => 'Kelola Produk (Lihat, Tambah, Edit, Hapus, Generate Barcode, Cetak Barcode)',
+            'module_students' => 'Kelola Data Siswa (Lihat, Tambah, Edit, Hapus, Cetak Kartu, RFID)',
+
+            // Inventory & Finance Modules
+            'module_stock_ins' => 'Kelola Stok Masuk (Lihat, Tambah, Edit, Hapus)',
+            'module_vouchers' => 'Kelola Voucher (Lihat, Buat, Edit, Hapus, Redeem, Cetak)',
+            'module_expenses' => 'Kelola Pengeluaran (Lihat, Tambah, Edit, Hapus)',
+            'module_transactions' => 'Kelola Transaksi Siswa (Lihat, Top-up Saldo, Detail Transaksi)',
+
+            // POS Module
+            'module_pos' => 'Point of Sale / Kasir (Proses Penjualan, Void Transaksi, Cetak Struk)',
+
+            // Reports Modules
+            'module_reports_sales' => 'Laporan Penjualan (Lihat, Export Excel/PDF)',
+            'module_reports_inventory' => 'Laporan Inventori (Lihat, Export Excel/PDF)',
+            'module_reports_stock_adjustments' => 'Laporan Penyesuaian Stok (Lihat, Export Excel/PDF)',
+            'module_reports_financial' => 'Laporan Keuangan (Lihat, Export Excel/PDF)',
+            'module_reports_student_transactions' => 'Laporan Transaksi Siswa (Lihat, Export Excel/PDF)',
+
+            // User Management Module
+            'module_users' => 'Kelola Pengguna/Staf (Lihat, Tambah, Edit, Hapus, Kelola Hak Akses)',
+        ];
+
+        return Inertia::render('Admin/Users/Create', [
+            'availablePermissions' => $availablePermissions
+        ]);
     }
 
     /**
@@ -51,13 +81,23 @@ class UserController extends Controller
             'email' => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:8|confirmed',
             'role' => 'required|in:admin,kasir',
+            'permissions' => 'nullable|array',
         ]);
+
+        // Handle permissions
+        $permissions = [];
+        if ($validated['role'] === 'kasir' && !empty($validated['permissions'])) {
+            foreach ($validated['permissions'] as $permission) {
+                $permissions[$permission] = true;
+            }
+        }
 
         User::create([
             'name' => $validated['name'],
             'email' => $validated['email'],
             'password' => Hash::make($validated['password']),
             'role' => $validated['role'],
+            'permissions' => $permissions,
         ]);
 
         return redirect()->route('users.index')
@@ -89,8 +129,37 @@ class UserController extends Controller
             abort(404);
         }
 
+        // Define available permissions for staff (kasir role)
+        // Simplified: Permission per Module/Feature (includes all actions)
+        $availablePermissions = [
+            // Master Data Modules
+            'module_categories' => 'Kelola Kategori Produk (Lihat, Tambah, Edit, Hapus)',
+            'module_products' => 'Kelola Produk (Lihat, Tambah, Edit, Hapus, Generate Barcode, Cetak Barcode)',
+            'module_students' => 'Kelola Data Siswa (Lihat, Tambah, Edit, Hapus, Cetak Kartu, RFID)',
+
+            // Inventory & Finance Modules
+            'module_stock_ins' => 'Kelola Stok Masuk (Lihat, Tambah, Edit, Hapus)',
+            'module_vouchers' => 'Kelola Voucher (Lihat, Buat, Edit, Hapus, Redeem, Cetak)',
+            'module_expenses' => 'Kelola Pengeluaran (Lihat, Tambah, Edit, Hapus)',
+            'module_transactions' => 'Kelola Transaksi Siswa (Lihat, Top-up Saldo, Detail Transaksi)',
+
+            // POS Module
+            'module_pos' => 'Point of Sale / Kasir (Proses Penjualan, Void Transaksi, Cetak Struk)',
+
+            // Reports Modules
+            'module_reports_sales' => 'Laporan Penjualan (Lihat, Export Excel/PDF)',
+            'module_reports_inventory' => 'Laporan Inventori (Lihat, Export Excel/PDF)',
+            'module_reports_stock_adjustments' => 'Laporan Penyesuaian Stok (Lihat, Export Excel/PDF)',
+            'module_reports_financial' => 'Laporan Keuangan (Lihat, Export Excel/PDF)',
+            'module_reports_student_transactions' => 'Laporan Transaksi Siswa (Lihat, Export Excel/PDF)',
+
+            // User Management Module
+            'module_users' => 'Kelola Pengguna/Staf (Lihat, Tambah, Edit, Hapus, Kelola Hak Akses)',
+        ];
+
         return Inertia::render('Admin/Users/Edit', [
-            'user' => $user
+            'user' => $user,
+            'availablePermissions' => $availablePermissions
         ]);
     }
 
@@ -109,6 +178,7 @@ class UserController extends Controller
             'email' => 'required|string|email|max:255|unique:users,email,' . $user->id,
             'password' => 'nullable|string|min:8|confirmed',
             'role' => 'required|in:admin,kasir',
+            'permissions' => 'nullable|array',
         ]);
 
         $updateData = [
@@ -120,6 +190,15 @@ class UserController extends Controller
         if (!empty($validated['password'])) {
             $updateData['password'] = Hash::make($validated['password']);
         }
+
+        // Handle permissions
+        $permissions = [];
+        if ($validated['role'] === 'kasir' && !empty($validated['permissions'])) {
+            foreach ($validated['permissions'] as $permission) {
+                $permissions[$permission] = true;
+            }
+        }
+        $updateData['permissions'] = $permissions;
 
         $user->update($updateData);
 
@@ -134,7 +213,8 @@ class UserController extends Controller
     {
         // Prevent deleting student accounts
         if ($user->role === 'siswa') {
-            abort(404);
+            return redirect()->route('users.index')
+                ->with('error', 'Akun siswa tidak dapat dihapus melalui halaman ini. Silakan hapus melalui menu Manajemen Siswa.');
         }
 
         // Prevent deleting own account
@@ -143,9 +223,15 @@ class UserController extends Controller
                 ->with('error', 'Anda tidak dapat menghapus akun Anda sendiri.');
         }
 
-        $user->delete();
+        // Check if user has related data
+        try {
+            $user->delete();
 
-        return redirect()->route('users.index')
-            ->with('success', 'Pengguna berhasil dihapus.');
+            return redirect()->route('users.index')
+                ->with('success', 'Pengguna berhasil dihapus.');
+        } catch (\Exception $e) {
+            return redirect()->route('users.index')
+                ->with('error', 'Gagal menghapus pengguna. Error: ' . $e->getMessage());
+        }
     }
 }

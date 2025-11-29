@@ -29,7 +29,7 @@ class StudentPortalController extends Controller
         // Recent transactions (last 10)
         $recentTransactions = Transaction::with(['student.user'])
             ->where('student_id', $student->id)
-            ->latest()
+            ->oldest()
             ->limit(10)
             ->get();
 
@@ -91,7 +91,7 @@ class StudentPortalController extends Controller
             $query->where('type', $request->type);
         }
 
-        $transactions = $query->latest()->paginate(20);
+        $transactions = $query->oldest()->paginate(20);
 
         return Inertia::render('Student/Transactions', [
             'student' => $student->load('user'),
@@ -130,7 +130,7 @@ class StudentPortalController extends Controller
             $query->where('payment_method', $request->payment_method);
         }
 
-        $purchases = $query->latest()->paginate(20);
+        $purchases = $query->oldest()->paginate(20);
 
         return Inertia::render('Student/PurchaseHistory', [
             'student' => $student->load('user'),

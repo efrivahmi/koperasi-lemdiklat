@@ -151,9 +151,10 @@
     <div class="receipt">
         <!-- Header -->
         <div class="header">
-            <div class="store-name">KOPERASI LEMDIKLAT TNI</div>
-            <div class="store-info">
-                {{ config('school.name') }}<br>
+            <div class="store-name">KOPERASI LEMDIKLAT</div>
+            <div class="store-name" style="font-size: 10px; margin-top: 2px;">TARUNA NUSANTARA INDONESIA</div>
+            <div class="store-info" style="margin-top: 4px;">
+                {{ config('school.subtitle') }}<br>
                 {{ config('school.contact.address') }}<br>
                 {{ config('school.contact.phone') }}
             </div>
@@ -169,21 +170,50 @@
                 <span>Tanggal</span>
                 <span>{{ $sale->created_at->format('d/m/Y H:i') }}</span>
             </div>
-            <div class="receipt-info-row">
-                <span>Kasir</span>
+        </div>
+
+        <!-- Admin/Cashier Information - HIGHLIGHTED -->
+        <div style="background: #f0f0f0; padding: 6px; margin-bottom: 8px; border: 1px solid #999; border-radius: 3px;">
+            <div style="text-align: center; font-weight: bold; font-size: 11px; margin-bottom: 4px; text-transform: uppercase;">
+                👤 DILAYANI OLEH
+            </div>
+            <div class="receipt-info-row" style="font-weight: bold;">
+                <span>Kasir/Admin:</span>
                 <span>{{ $sale->user->name }}</span>
             </div>
-            @if($sale->student)
             <div class="receipt-info-row">
-                <span>Siswa</span>
+                <span>Role:</span>
+                <span style="text-transform: uppercase;">{{ $sale->user->role }}</span>
+            </div>
+        </div>
+
+        <!-- Student Information -->
+        @if($sale->student)
+        <div style="background: #e3f2fd; padding: 6px; margin-bottom: 8px; border: 1px solid #90caf9; border-radius: 3px;">
+            <div style="text-align: center; font-weight: bold; font-size: 11px; margin-bottom: 4px;">
+                👨‍🎓 INFO SISWA
+            </div>
+            <div class="receipt-info-row">
+                <span>Nama:</span>
                 <span>{{ $sale->student->user->name }}</span>
             </div>
             <div class="receipt-info-row">
-                <span>NIS</span>
+                <span>NIS:</span>
                 <span>{{ $sale->student->nis }}</span>
             </div>
-            @endif
+            <div class="receipt-info-row">
+                <span>Kelas:</span>
+                <span>{{ $sale->student->kelas }}</span>
+            </div>
         </div>
+        @else
+        <div class="receipt-info" style="margin-bottom: 8px;">
+            <div class="receipt-info-row">
+                <span>Pelanggan:</span>
+                <span>UMUM (Tunai)</span>
+            </div>
+        </div>
+        @endif
 
         <!-- Items -->
         <div class="items">

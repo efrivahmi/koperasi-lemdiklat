@@ -11,18 +11,42 @@ use Illuminate\Support\Facades\Storage;
 class ProductController extends Controller
 {
     /**
+     * Generate unique barcode for product
+     * Format: 2XXXXXXXXXXX (13 digits - EAN-13 compatible)
+     * Prefix "2" indicates internal/private label product
+     */
+    private function generateBarcode()
+    {
+        do {
+            // Generate 12 random digits, then calculate check digit
+            $baseCode = '2' . str_pad(mt_rand(0, 999999999999), 11, '0', STR_PAD_LEFT);
+
+            // Calculate EAN-13 check digit
+            $sum = 0;
+            for ($i = 0; $i < 12; $i++) {
+                $sum += (int)$baseCode[$i] * (($i % 2 === 0) ? 1 : 3);
+            }
+            $checkDigit = (10 - ($sum % 10)) % 10;
+            $barcode = $baseCode . $checkDigit;
+
+        } while (Product::where('barcode', $barcode)->exists());
+
+        return $barcode;
+    }
+
+    /**
      * Display a listing of the resource.
      */
     public function index(Request $request)
     {
-        $query = Product::with('category');
+        $query = Product::with(['category', 'creator', 'updater']);
 
         if ($request->has('search')) {
             $query->where('name', 'like', '%' . $request->search . '%')
                   ->orWhere('barcode', 'like', '%' . $request->search . '%');
         }
 
-        $products = $query->latest()->paginate(10);
+        $products = $query->oldest()->paginate(10);
 
         return Inertia::render('Admin/Products/Index', [
             'products' => $products,
@@ -55,10 +79,16 @@ class ProductController extends Controller
             'harga_beli' => 'required|numeric|min:0',
             'harga_jual' => 'required|numeric|min:0',
             'barcode' => 'nullable|string|unique:products,barcode',
+            'auto_generate_barcode' => 'nullable|boolean',
         ]);
 
         // Set stock to 0 by default - stock management is done via Stock In menu
         $validated['stock'] = 0;
+
+        // Auto-generate barcode if requested or if not provided
+        if ($request->input('auto_generate_barcode', false) || empty($validated['barcode'])) {
+            $validated['barcode'] = $this->generateBarcode();
+        }
 
         if ($request->hasFile('image')) {
             $validated['image_path'] = $request->file('image')->store('products', 'public');
@@ -67,7 +97,7 @@ class ProductController extends Controller
         Product::create($validated);
 
         return redirect()->route('products.index')
-            ->with('success', 'Produk berhasil ditambahkan. Kelola stok melalui menu "Barang Masuk".');
+            ->with('success', 'Produk berhasil ditambahkan dengan barcode: ' . $validated['barcode'] . '. Kelola stok melalui menu "Barang Masuk".');
     }
 
     /**
@@ -174,7 +204,7 @@ class ProductController extends Controller
                   ->orWhere('barcode', 'like', '%' . $request->search . '%');
         }
 
-        $products = $query->latest()->paginate(20);
+        $products = $query->oldest()->paginate(20);
 
         return Inertia::render('Admin/Products/BarcodeGenerator', [
             'products' => $products,
@@ -197,6 +227,19 @@ class ProductController extends Controller
         return view('barcode-labels', [
             'products' => $products,
             'quantity' => $quantity
+        ]);
+    }
+
+    /**
+     * Generate new barcode (API endpoint for frontend)
+     */
+    public function generateBarcodeApi()
+    {
+        $barcode = $this->generateBarcode();
+
+        return response()->json([
+            'barcode' => $barcode,
+            'message' => 'Barcode berhasil digenerate (EAN-13 format)'
         ]);
     }
 }

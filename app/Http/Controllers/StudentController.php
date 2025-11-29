@@ -16,7 +16,7 @@ class StudentController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Student::with('user');
+        $query = Student::with(['user', 'creator', 'updater']);
 
         if ($request->has('search')) {
             $search = $request->search;
@@ -28,7 +28,7 @@ class StudentController extends Controller
                   });
         }
 
-        $students = $query->latest()->paginate(10);
+        $students = $query->oldest()->paginate(10);
 
         return Inertia::render('Admin/Students/Index', [
             'students' => $students,
@@ -45,6 +45,20 @@ class StudentController extends Controller
     }
 
     /**
+     * Generate unique RFID UID in hexadecimal format (8 digits)
+     * Format: A1B2C3D4 (compatible with standard RFID readers)
+     */
+    private function generateRfidUid()
+    {
+        do {
+            // Generate 8-digit hexadecimal (4 bytes = 32 bits)
+            $rfidUid = strtoupper(bin2hex(random_bytes(4)));
+        } while (Student::where('rfid_uid', $rfidUid)->exists());
+
+        return $rfidUid;
+    }
+
+    /**
      * Store a newly created resource in storage.
      */
     public function store(Request $request)
@@ -55,9 +69,11 @@ class StudentController extends Controller
             'password' => 'required|string|min:8',
             'nis' => 'required|string|unique:students,nis',
             'kelas' => 'required|string|max:50',
+            'jenjang' => 'required|string|in:SMA Taruna Nusantara Indonesia,SMK Taruna Nusantara Jaya',
             'balance' => 'nullable|numeric|min:0',
             'rfid_uid' => 'nullable|string|unique:students,rfid_uid',
             'foto' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+            'auto_generate_rfid' => 'nullable|boolean',
         ]);
 
         // Create user account
@@ -74,19 +90,26 @@ class StudentController extends Controller
             $fotoPath = $request->file('foto')->store('students', 'public');
         }
 
+        // Auto-generate RFID UID if requested or if not provided
+        $rfidUid = $validated['rfid_uid'] ?? null;
+        if ($request->input('auto_generate_rfid', false) || empty($rfidUid)) {
+            $rfidUid = $this->generateRfidUid();
+        }
+
         // Create student profile
         Student::create([
             'user_id' => $user->id,
             'name' => $validated['name'],
             'nis' => $validated['nis'],
             'kelas' => $validated['kelas'],
+            'jenjang' => $validated['jenjang'],
             'balance' => $validated['balance'] ?? 0,
-            'rfid_uid' => $validated['rfid_uid'] ?? null,
+            'rfid_uid' => $rfidUid,
             'foto' => $fotoPath,
         ]);
 
         return redirect()->route('students.index')
-            ->with('success', 'Siswa berhasil ditambahkan.');
+            ->with('success', 'Siswa berhasil ditambahkan dengan RFID UID: ' . $rfidUid);
     }
 
     /**
@@ -120,6 +143,7 @@ class StudentController extends Controller
             'password' => 'nullable|string|min:8',
             'nis' => 'required|string|unique:students,nis,' . $student->id,
             'kelas' => 'required|string|max:50',
+            'jenjang' => 'required|string|in:SMA Taruna Nusantara Indonesia,SMK Taruna Nusantara Jaya',
             'balance' => 'nullable|numeric|min:0',
             'rfid_uid' => 'nullable|string|unique:students,rfid_uid,' . $student->id,
             'foto' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
@@ -152,6 +176,7 @@ class StudentController extends Controller
         $student->update([
             'nis' => $validated['nis'],
             'kelas' => $validated['kelas'],
+            'jenjang' => $validated['jenjang'],
             'balance' => $validated['balance'] ?? $student->balance,
             'rfid_uid' => $validated['rfid_uid'] ?? $student->rfid_uid,
             'foto' => $validated['foto'],
@@ -205,5 +230,18 @@ class StudentController extends Controller
 
         return redirect()->route('students.index')
             ->with('success', 'Kartu RFID berhasil didaftarkan.');
+    }
+
+    /**
+     * Generate new RFID UID (API endpoint for frontend)
+     */
+    public function generateRfidApi()
+    {
+        $rfidUid = $this->generateRfidUid();
+
+        return response()->json([
+            'rfid_uid' => $rfidUid,
+            'message' => 'RFID UID berhasil digenerate'
+        ]);
     }
 }

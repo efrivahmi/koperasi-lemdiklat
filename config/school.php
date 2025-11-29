@@ -14,7 +14,7 @@ return [
 
     'subtitle' => 'SMA Taruna Nusantara Indonesia | SMK Taruna Nusantara Jaya',
 
-    'short_name' => 'Koperasi Lemdiklat TNI',
+    'short_name' => 'Koperasi Lemdiklat Taruna Nusantara Indonesia',
 
     /*
     |--------------------------------------------------------------------------
@@ -27,9 +27,9 @@ return [
     */
 
     'logo' => [
-        'main' => env('LOGO_MAIN', '/storage/logos/logo.png'),
-        'icon' => env('LOGO_ICON', '/storage/logos/icon.png'),
-        'dark' => env('LOGO_DARK', '/storage/logos/logo-dark.png'),
+        'main' => env('LOGO_MAIN', '/storage/logos/logo.svg'),
+        'icon' => env('LOGO_ICON', '/storage/logos/icon.svg'),
+        'dark' => env('LOGO_DARK', '/storage/logos/logo-dark.svg'),
     ],
 
     /*
@@ -39,7 +39,7 @@ return [
     */
 
     'contact' => [
-        'address' => env('SCHOOL_ADDRESS', 'Jl. Pendidikan No. 123, Jakarta'),
+        'address' => env('SCHOOL_ADDRESS', 'Kab. Bandung Barat'),
         'phone' => env('SCHOOL_PHONE', '(021) 1234-5678'),
         'email' => env('SCHOOL_EMAIL', 'info@lemdiklat-tni.sch.id'),
         'website' => env('SCHOOL_WEBSITE', 'https://lemdiklat-tni.sch.id'),

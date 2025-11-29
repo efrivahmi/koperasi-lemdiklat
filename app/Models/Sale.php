@@ -13,9 +13,12 @@ class Sale extends Model
         'student_id',
         'user_id',
         'payment_method',
+        'transaction_method',
         'total',
         'cash_amount',
         'change_amount',
+        'status',
+        'created_by',
         'updated_by',
     ];
 

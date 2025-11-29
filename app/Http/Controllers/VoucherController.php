@@ -17,7 +17,7 @@ class VoucherController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Voucher::with(['student', 'usedBy']);
+        $query = Voucher::with(['student.user', 'usedBy', 'creator', 'updater']);
 
         if ($request->has('search')) {
             $search = $request->search;
@@ -28,7 +28,7 @@ class VoucherController extends Controller
             $query->where('status', $request->status);
         }
 
-        $vouchers = $query->latest()->paginate(10);
+        $vouchers = $query->oldest()->paginate(10);
 
         return Inertia::render('Admin/Vouchers/Index', [
             'vouchers' => $vouchers,
@@ -82,7 +82,7 @@ class VoucherController extends Controller
     public function show(Voucher $voucher)
     {
         return Inertia::render('Admin/Vouchers/Show', [
-            'voucher' => $voucher->load(['student', 'usedBy'])
+            'voucher' => $voucher->load(['student.user', 'usedBy'])
         ]);
     }
 
@@ -145,64 +145,95 @@ class VoucherController extends Controller
         $validated = $request->validate([
             'code' => 'required|string',
             'student_id' => 'required|exists:students,id',
+        ], [
+            'code.required' => 'Kode voucher harus diisi',
+            'student_id.required' => 'Silakan pilih siswa',
+            'student_id.exists' => 'Data siswa tidak ditemukan',
         ]);
 
         try {
-            DB::beginTransaction();
+            return DB::transaction(function () use ($validated) {
+                // Lock student to prevent concurrent updates
+                $student = Student::where('id', $validated['student_id'])
+                    ->lockForUpdate()
+                    ->first();
 
-            // Find voucher
-            $voucher = Voucher::where('code', $validated['code'])->first();
+                if (!$student) {
+                    throw new \Exception('Data siswa tidak ditemukan.');
+                }
 
-            if (!$voucher) {
-                throw new \Exception('Kode voucher tidak ditemukan.');
-            }
+                // Find and lock voucher
+                $voucher = Voucher::where('code', $validated['code'])
+                    ->lockForUpdate()
+                    ->first();
 
-            if ($voucher->status !== 'available') {
-                throw new \Exception('Voucher sudah digunakan atau expired.');
-            }
+                if (!$voucher) {
+                    throw new \Exception('Kode voucher tidak ditemukan.');
+                }
 
-            if ($voucher->expired_at && $voucher->expired_at < now()) {
-                $voucher->update(['status' => 'expired']);
-                throw new \Exception('Voucher sudah kadaluarsa.');
-            }
+                if ($voucher->status !== 'available') {
+                    throw new \Exception('Voucher sudah digunakan atau expired.');
+                }
 
-            // Get student
-            $student = Student::find($validated['student_id']);
+                if ($voucher->expired_at && $voucher->expired_at < now()) {
+                    $voucher->update(['status' => 'expired']);
+                    throw new \Exception('Voucher sudah kadaluarsa.');
+                }
 
-            // Add balance to student
-            $student->increment('balance', $voucher->nominal);
-            $student->refresh();
+                $balanceBefore = $student->balance;
 
-            // Mark voucher as used
-            $voucher->update([
-                'status' => 'used',
-                'student_id' => $student->id,
-                'used_by' => auth()->id(),
-                'used_at' => now(),
-            ]);
+                // Add balance to student
+                $student->increment('balance', $voucher->nominal);
+                $student->refresh();
 
-            // Create transaction record
-            Transaction::create([
-                'student_id' => $student->id,
-                'type' => 'top-up',
-                'amount' => $voucher->nominal,
-                'description' => 'Top-up via voucher: ' . $voucher->code,
-                'ending_balance' => $student->balance,
-                'reference_id' => $voucher->id,
-                'reference_type' => 'voucher',
-            ]);
+                // Mark voucher as used
+                $voucher->update([
+                    'status' => 'used',
+                    'student_id' => $student->id,
+                    'used_by' => auth()->id(),
+                    'used_at' => now(),
+                ]);
 
-            DB::commit();
+                // Create transaction record
+                Transaction::create([
+                    'student_id' => $student->id,
+                    'type' => 'redeem',
+                    'transaction_method' => 'voucher', // Voucher redeem (can be via barcode or manual)
+                    'amount' => $voucher->nominal,
+                    'description' => 'Top-up via voucher: ' . $voucher->code,
+                    'ending_balance' => $student->balance,
+                ]);
 
+                \Log::info('Voucher redeemed successfully', [
+                    'voucher_code' => $voucher->code,
+                    'student_id' => $student->id,
+                    'amount' => $voucher->nominal,
+                    'balance_before' => $balanceBefore,
+                    'balance_after' => $student->balance,
+                    'redeemed_by' => auth()->user()->name,
+                ]);
+
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Voucher berhasil di-redeem',
+                    'student' => $student->load('user'),
+                    'voucher' => $voucher,
+                    'balance_before' => $balanceBefore,
+                    'balance_after' => $student->balance,
+                ]);
+            });
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json([
-                'success' => true,
-                'message' => 'Voucher berhasil di-redeem',
-                'student' => $student->load('user'),
-                'voucher' => $voucher,
-            ]);
-
+                'success' => false,
+                'message' => 'Data tidak valid: ' . implode(', ', $e->validator->errors()->all())
+            ], 422);
         } catch (\Exception $e) {
-            DB::rollBack();
+            \Log::error('Voucher redeem failed: ' . $e->getMessage(), [
+                'code' => $validated['code'] ?? null,
+                'student_id' => $validated['student_id'] ?? null,
+                'trace' => $e->getTraceAsString(),
+            ]);
 
             return response()->json([
                 'success' => false,
@@ -229,5 +260,34 @@ class VoucherController extends Controller
         $students = $query->limit(10)->get();
 
         return response()->json(['students' => $students]);
+    }
+
+    /**
+     * Print single voucher
+     */
+    public function printVoucher(Voucher $voucher)
+    {
+        return view('voucher-print', [
+            'vouchers' => collect([$voucher])
+        ]);
+    }
+
+    /**
+     * Print batch vouchers
+     */
+    public function printBatch(Request $request)
+    {
+        $validated = $request->validate([
+            'voucher_ids' => 'required|array',
+            'voucher_ids.*' => 'exists:vouchers,id'
+        ]);
+
+        $vouchers = Voucher::whereIn('id', $validated['voucher_ids'])
+            ->where('status', 'available')
+            ->get();
+
+        return view('voucher-print', [
+            'vouchers' => $vouchers
+        ]);
     }
 }

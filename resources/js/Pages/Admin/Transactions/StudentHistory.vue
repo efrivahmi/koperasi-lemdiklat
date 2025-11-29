@@ -104,7 +104,7 @@ const summary = computed(() => {
                             <p class="text-xl font-bold">{{ student.user.name }}</p>
                         </div>
                         <div>
-                            <p class="text-indigo-100 text-sm mb-1">NIS</p>
+                            <p class="text-indigo-100 text-sm mb-1">NISN</p>
                             <p class="text-xl font-bold">{{ student.nis }}</p>
                         </div>
                         <div>
@@ -236,20 +236,28 @@ const summary = computed(() => {
                                 Menampilkan {{ transactions.from }} - {{ transactions.to }} dari {{ transactions.total }} transaksi
                             </div>
                             <div class="flex gap-2">
-                                <Link
-                                    v-for="link in transactions.links"
-                                    :key="link.label"
-                                    :href="link.url"
-                                    :class="[
-                                        'px-3 py-2 text-sm rounded-md',
-                                        link.active
-                                            ? 'bg-indigo-600 text-white'
-                                            : 'bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600',
-                                        !link.url ? 'opacity-50 cursor-not-allowed' : ''
-                                    ]"
-                                    v-html="link.label"
-                                    :preserve-scroll="true"
-                                />
+                                <template v-for="link in transactions.links" :key="link.label">
+                                    <Link
+                                        v-if="link.url"
+                                        :href="link.url"
+                                        :class="[
+                                            'px-3 py-2 text-sm rounded-md',
+                                            link.active
+                                                ? 'bg-indigo-600 text-white'
+                                                : 'bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600'
+                                        ]"
+                                        v-html="link.label"
+                                        :preserve-scroll="true"
+                                    />
+                                    <span
+                                        v-else
+                                        :class="[
+                                            'px-3 py-2 text-sm rounded-md',
+                                            'bg-white dark:bg-gray-700 text-gray-400 dark:text-gray-500 opacity-50 cursor-not-allowed'
+                                        ]"
+                                        v-html="link.label"
+                                    />
+                                </template>
                             </div>
                         </div>
                     </div>

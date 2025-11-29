@@ -12,7 +12,7 @@ Route::get('/', function () {
         'laravelVersion' => Application::VERSION,
         'phpVersion' => PHP_VERSION,
     ]);
-});
+})->name('welcome');
 
 Route::get('/dashboard', [\App\Http\Controllers\DashboardController::class, 'index'])
     ->middleware(['auth', 'verified'])
@@ -21,40 +21,59 @@ Route::get('/dashboard', [\App\Http\Controllers\DashboardController::class, 'ind
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::post('/profile/photo', [ProfileController::class, 'uploadPhoto'])->name('profile.photo.upload');
+    Route::delete('/profile/photo', [ProfileController::class, 'deletePhoto'])->name('profile.photo.delete');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-// Admin & Master Routes
+// Admin & Master Routes (User Management - CRUD Kasir, Admin, Siswa)
 Route::middleware(['auth', 'role:admin,master'])->prefix('admin')->group(function () {
-    // Master Data
+    Route::resource('users', \App\Http\Controllers\UserController::class);
+});
+
+// Admin, Master & Kasir Routes (Products, Categories, Stock Management)
+Route::middleware(['auth', 'role:admin,master,kasir'])->prefix('admin')->group(function () {
+    // Master Data - Accessible by Kasir
     Route::resource('categories', \App\Http\Controllers\CategoryController::class);
     Route::resource('products', \App\Http\Controllers\ProductController::class);
     Route::get('products-barcode/generator', [\App\Http\Controllers\ProductController::class, 'barcodeGenerator'])->name('products.barcode-generator');
-    Route::post('products-barcode/print', [\App\Http\Controllers\ProductController::class, 'printBarcodes'])->name('products.print-barcodes');
+    Route::get('products-barcode/print', [\App\Http\Controllers\ProductController::class, 'printBarcodes'])->name('products.print-barcodes');
+    Route::get('api/generate-barcode', [\App\Http\Controllers\ProductController::class, 'generateBarcodeApi'])->name('api.generate-barcode');
+    Route::post('products/{product}/adjust-stock', [\App\Http\Controllers\StockAdjustmentController::class, 'store'])->name('products.adjust-stock');
+    Route::get('products/{product}/adjustment-history', [\App\Http\Controllers\StockAdjustmentController::class, 'history'])->name('products.adjustment-history');
+
+    // Inventory & Finance - Accessible by Kasir
+    Route::resource('stock-ins', \App\Http\Controllers\StockInController::class);
+});
+
+// Admin & Master Only Routes
+Route::middleware(['auth', 'role:admin,master'])->prefix('admin')->group(function () {
+    // Students Management
     Route::resource('students', \App\Http\Controllers\StudentController::class);
     Route::get('students/{student}/rfid-register', [\App\Http\Controllers\StudentController::class, 'rfidRegister'])->name('students.rfid.register');
     Route::post('students/{student}/rfid-store', [\App\Http\Controllers\StudentController::class, 'rfidStore'])->name('students.rfid.store');
+    Route::get('api/generate-rfid', [\App\Http\Controllers\StudentController::class, 'generateRfidApi'])->name('api.generate-rfid');
     Route::get('students/{student}/generate-card', [\App\Http\Controllers\StudentCardController::class, 'generate'])->name('students.card.generate');
     Route::post('students/generate-cards-batch', [\App\Http\Controllers\StudentCardController::class, 'generateBatch'])->name('students.cards.batch');
     Route::get('students/{student}/export-rfid', [\App\Http\Controllers\StudentCardController::class, 'exportForRfid'])->name('students.rfid.export');
-    Route::resource('users', \App\Http\Controllers\UserController::class);
 
-    // Inventory & Finance
-    Route::resource('stock-ins', \App\Http\Controllers\StockInController::class);
-    Route::resource('vouchers', \App\Http\Controllers\VoucherController::class);
+    // Vouchers (specific routes MUST come before resource routes)
+    Route::get('vouchers/search-student', [\App\Http\Controllers\VoucherController::class, 'searchStudent'])->name('vouchers.search.student');
+    Route::get('vouchers/print/{voucher}', [\App\Http\Controllers\VoucherController::class, 'printVoucher'])->name('vouchers.print');
+    Route::post('vouchers/print-batch', [\App\Http\Controllers\VoucherController::class, 'printBatch'])->name('vouchers.print.batch');
     Route::get('vouchers-redeem', [\App\Http\Controllers\VoucherController::class, 'redeemForm'])->name('vouchers.redeem.form');
     Route::post('vouchers-redeem', [\App\Http\Controllers\VoucherController::class, 'redeem'])->name('vouchers.redeem');
-    Route::get('vouchers/search-student', [\App\Http\Controllers\VoucherController::class, 'searchStudent'])->name('vouchers.search.student');
+    Route::resource('vouchers', \App\Http\Controllers\VoucherController::class);
+
     Route::resource('expenses', \App\Http\Controllers\ExpenseController::class);
 
     // Transactions
     Route::get('transactions', [\App\Http\Controllers\TransactionController::class, 'index'])->name('transactions.index');
-    Route::get('transactions/topup', [\App\Http\Controllers\TransactionController::class, 'topupForm'])->name('transactions.topup.form');
-    Route::post('transactions/topup', [\App\Http\Controllers\TransactionController::class, 'topup'])->name('transactions.topup');
     Route::get('transactions/student/{student}', [\App\Http\Controllers\TransactionController::class, 'studentHistory'])->name('transactions.student');
-    Route::get('transactions/search-student', [\App\Http\Controllers\TransactionController::class, 'searchStudent'])->name('transactions.search.student');
+});
 
-    // Reports
+// Reports - Accessible by Admin, Master & Kasir
+Route::middleware(['auth', 'role:admin,master,kasir'])->prefix('admin')->group(function () {
     Route::get('reports/sales', [\App\Http\Controllers\ReportController::class, 'sales'])->name('reports.sales');
     Route::get('reports/sales/export', [\App\Http\Controllers\ReportController::class, 'salesExport'])->name('reports.sales.export');
     Route::get('reports/inventory', [\App\Http\Controllers\ReportController::class, 'inventory'])->name('reports.inventory');
@@ -63,22 +82,34 @@ Route::middleware(['auth', 'role:admin,master'])->prefix('admin')->group(functio
     Route::get('reports/financial/export', [\App\Http\Controllers\ReportController::class, 'financialExport'])->name('reports.financial.export');
     Route::get('reports/student-transactions', [\App\Http\Controllers\ReportController::class, 'studentTransactions'])->name('reports.student-transactions');
     Route::get('reports/student-transactions/export', [\App\Http\Controllers\ReportController::class, 'studentTransactionsExport'])->name('reports.student-transactions.export');
+    Route::get('reports/stock-adjustments', [\App\Http\Controllers\ReportController::class, 'stockAdjustments'])->name('reports.stock-adjustments');
+    Route::get('reports/stock-adjustments/export', [\App\Http\Controllers\ReportController::class, 'stockAdjustmentsExport'])->name('reports.stock-adjustments.export');
 });
 
 // Kasir Routes (Admin, Master & Kasir)
-Route::middleware(['auth', 'role:admin,master,kasir'])->prefix('kasir')->group(function () {
-    Route::get('/pos', [\App\Http\Controllers\PosController::class, 'index'])->name('pos.index');
+Route::middleware(['auth', 'role:admin,master,kasir'])->group(function () {
+    // POS
+    Route::prefix('kasir')->group(function () {
+        Route::get('/pos', [\App\Http\Controllers\PosController::class, 'index'])->name('pos.index');
 
-    // API Routes for POS
-    Route::get('/api/products', [\App\Http\Controllers\PosController::class, 'getProducts'])->name('pos.api.products');
-    Route::get('/api/products/barcode/{barcode}', [\App\Http\Controllers\PosController::class, 'getProductByBarcode'])->name('pos.api.barcode');
-    Route::get('/api/students/rfid/{rfid_uid}', [\App\Http\Controllers\PosController::class, 'getStudentByRfid'])->name('pos.api.rfid');
-    Route::get('/api/students/search', [\App\Http\Controllers\PosController::class, 'searchStudent'])->name('pos.api.search');
-    Route::post('/api/checkout', [\App\Http\Controllers\PosController::class, 'checkout'])->name('pos.api.checkout');
-    Route::get('/receipt/{sale}', [\App\Http\Controllers\PosController::class, 'printReceipt'])->name('pos.receipt');
+        // API Routes for POS
+        Route::get('/api/products', [\App\Http\Controllers\PosController::class, 'getProducts'])->name('pos.api.products');
+        Route::get('/api/products/barcode/{barcode}', [\App\Http\Controllers\PosController::class, 'getProductByBarcode'])->name('pos.api.barcode');
+        Route::get('/api/students/rfid/{rfid_uid}', [\App\Http\Controllers\PosController::class, 'getStudentByRfid'])->name('pos.api.rfid');
+        Route::get('/api/students/search', [\App\Http\Controllers\PosController::class, 'searchStudent'])->name('pos.api.search');
+        Route::post('/api/checkout', [\App\Http\Controllers\PosController::class, 'checkout'])->name('pos.api.checkout');
+        Route::get('/api/recent-sales', [\App\Http\Controllers\PosController::class, 'getRecentSales'])->name('pos.api.recent-sales');
+        Route::post('/api/void/{sale}', [\App\Http\Controllers\PosController::class, 'voidSale'])->name('pos.api.void');
+        Route::get('/receipt/{sale}', [\App\Http\Controllers\PosController::class, 'printReceipt'])->name('pos.receipt');
 
-    // Stock Monitor API
-    Route::get('/api/stock-monitor', [\App\Http\Controllers\ProductController::class, 'stockMonitor'])->name('api.stock-monitor');
+        // Stock Monitor API
+        Route::get('/api/stock-monitor', [\App\Http\Controllers\ProductController::class, 'stockMonitor'])->name('api.stock-monitor');
+    });
+
+    // Top-up Saldo (KASIR BISA AKSES)
+    Route::get('transactions/topup', [\App\Http\Controllers\TransactionController::class, 'topupForm'])->name('transactions.topup.form');
+    Route::post('transactions/topup', [\App\Http\Controllers\TransactionController::class, 'topup'])->name('transactions.topup');
+    Route::get('transactions/search-student', [\App\Http\Controllers\TransactionController::class, 'searchStudent'])->name('transactions.search.student');
 });
 
 // Student Portal Routes

@@ -6,6 +6,7 @@ use App\Models\Sale;
 use App\Models\Product;
 use App\Models\Expense;
 use App\Models\Transaction;
+use App\Models\StockAdjustment;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Carbon\Carbon;
@@ -15,6 +16,7 @@ use App\Exports\SalesReportExport;
 use App\Exports\InventoryReportExport;
 use App\Exports\FinancialReportExport;
 use App\Exports\StudentTransactionsExport;
+use App\Exports\StockAdjustmentsExport;
 
 class ReportController extends Controller
 {
@@ -23,50 +25,86 @@ class ReportController extends Controller
      */
     public function sales(Request $request)
     {
-        $query = Sale::with(['student.user', 'saleItems.product']);
+        try {
+            \Log::info('Sales report accessed', [
+                'user_id' => auth()->id(),
+                'filters' => $request->all()
+            ]);
 
-        // Default date range (this month)
-        $dateFrom = $request->date_from ?? Carbon::now()->startOfMonth()->format('Y-m-d');
-        $dateTo = $request->date_to ?? Carbon::now()->format('Y-m-d');
+            $query = Sale::with(['student.user', 'saleItems.product', 'creator', 'updater']);
 
-        $query->whereBetween('created_at', [$dateFrom . ' 00:00:00', $dateTo . ' 23:59:59']);
+            // Default date range (this month)
+            $dateFrom = $request->date_from ?? Carbon::now()->startOfMonth()->format('Y-m-d');
+            $dateTo = $request->date_to ?? Carbon::now()->format('Y-m-d');
 
-        // Filter by payment method
-        if ($request->has('payment_method') && $request->payment_method) {
-            $query->where('payment_method', $request->payment_method);
+            $query->whereBetween('created_at', [$dateFrom . ' 00:00:00', $dateTo . ' 23:59:59']);
+
+            // Filter by payment method
+            if ($request->has('payment_method') && $request->payment_method) {
+                $query->where('payment_method', $request->payment_method);
+            }
+
+            // Search by student
+            if ($request->has('search') && $request->search) {
+                $search = $request->search;
+                $query->whereHas('student.user', function($q) use ($search) {
+                    $q->where('name', 'like', '%' . $search . '%');
+                })->orWhereHas('student', function($q) use ($search) {
+                    $q->where('nis', 'like', '%' . $search . '%');
+                });
+            }
+
+            $sales = $query->oldest()->paginate(20);
+
+            // Calculate summary
+            $allSales = Sale::whereBetween('created_at', [$dateFrom . ' 00:00:00', $dateTo . ' 23:59:59'])->get();
+            $summary = [
+                'total_sales' => $allSales->count(),
+                'total_revenue' => $allSales->sum('total'),
+                'cash_sales' => $allSales->where('payment_method', 'cash')->sum('total'),
+                'balance_sales' => $allSales->where('payment_method', 'balance')->sum('total'),
+            ];
+
+            \Log::info('Sales report loaded successfully', [
+                'total_records' => $sales->total(),
+                'summary' => $summary
+            ]);
+
+            return Inertia::render('Admin/Reports/Sales', [
+                'sales' => $sales,
+                'summary' => $summary,
+                'filters' => [
+                    'date_from' => $dateFrom,
+                    'date_to' => $dateTo,
+                    'payment_method' => $request->payment_method ?? '',
+                    'search' => $request->search ?? '',
+                ],
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('Sales report error: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString(),
+                'user_id' => auth()->id()
+            ]);
+
+            // Return Inertia response dengan empty data dan error message
+            return Inertia::render('Admin/Reports/Sales', [
+                'sales' => new \Illuminate\Pagination\LengthAwarePaginator([], 0, 20),
+                'summary' => [
+                    'total_sales' => 0,
+                    'total_revenue' => 0,
+                    'cash_sales' => 0,
+                    'balance_sales' => 0,
+                ],
+                'filters' => [
+                    'date_from' => Carbon::now()->startOfMonth()->format('Y-m-d'),
+                    'date_to' => Carbon::now()->format('Y-m-d'),
+                    'payment_method' => '',
+                    'search' => '',
+                ],
+                'error' => 'Gagal memuat laporan: ' . $e->getMessage()
+            ]);
         }
-
-        // Search by student
-        if ($request->has('search') && $request->search) {
-            $search = $request->search;
-            $query->whereHas('student.user', function($q) use ($search) {
-                $q->where('name', 'like', '%' . $search . '%');
-            })->orWhereHas('student', function($q) use ($search) {
-                $q->where('nis', 'like', '%' . $search . '%');
-            });
-        }
-
-        $sales = $query->latest()->paginate(20);
-
-        // Calculate summary
-        $allSales = Sale::whereBetween('created_at', [$dateFrom . ' 00:00:00', $dateTo . ' 23:59:59'])->get();
-        $summary = [
-            'total_sales' => $allSales->count(),
-            'total_revenue' => $allSales->sum('total'),
-            'cash_sales' => $allSales->where('payment_method', 'cash')->sum('total'),
-            'balance_sales' => $allSales->where('payment_method', 'balance')->sum('total'),
-        ];
-
-        return Inertia::render('Admin/Reports/Sales', [
-            'sales' => $sales,
-            'summary' => $summary,
-            'filters' => [
-                'date_from' => $dateFrom,
-                'date_to' => $dateTo,
-                'payment_method' => $request->payment_method ?? '',
-                'search' => $request->search ?? '',
-            ],
-        ]);
     }
 
     public function salesExport(Request $request)
@@ -84,50 +122,81 @@ class ReportController extends Controller
      */
     public function inventory(Request $request)
     {
-        $query = Product::with('category');
+        try {
+            \Log::info('Inventory report accessed', [
+                'user_id' => auth()->id(),
+                'filters' => $request->all()
+            ]);
 
-        // Filter by category
-        if ($request->has('category_id') && $request->category_id) {
-            $query->where('category_id', $request->category_id);
-        }
+            $query = Product::with(['category', 'creator', 'updater']);
 
-        // Filter by stock status
-        if ($request->has('stock_status') && $request->stock_status) {
-            if ($request->stock_status === 'out') {
-                $query->where('stock', 0);
-            } elseif ($request->stock_status === 'low') {
-                $query->where('stock', '>', 0)->where('stock', '<=', 10);
-            } elseif ($request->stock_status === 'available') {
-                $query->where('stock', '>', 10);
+            // Filter by category
+            if ($request->has('category_id') && $request->category_id) {
+                $query->where('category_id', $request->category_id);
             }
+
+            // Filter by stock status
+            if ($request->has('stock_status') && $request->stock_status) {
+                if ($request->stock_status === 'out') {
+                    $query->where('stock', 0);
+                } elseif ($request->stock_status === 'low') {
+                    $query->where('stock', '>', 0)->where('stock', '<=', 10);
+                } elseif ($request->stock_status === 'available') {
+                    $query->where('stock', '>', 10);
+                }
+            }
+
+            // Search
+            if ($request->has('search') && $request->search) {
+                $search = $request->search;
+                $query->where('name', 'like', '%' . $search . '%');
+            }
+
+            $products = $query->orderBy('stock', 'asc')->paginate(20);
+
+            // Calculate summary
+            $allProducts = Product::all();
+            $summary = [
+                'total_products' => $allProducts->count(),
+                'total_stock_value' => $allProducts->sum(function($p) { return $p->stock * $p->harga_beli; }),
+                'total_potential_revenue' => $allProducts->sum(function($p) { return $p->stock * $p->harga_jual; }),
+                'out_of_stock' => $allProducts->where('stock', 0)->count(),
+                'low_stock' => $allProducts->where('stock', '>', 0)->where('stock', '<=', 10)->count(),
+            ];
+
+            $categories = \App\Models\Category::all();
+
+            \Log::info('Inventory report loaded successfully', [
+                'total_products' => $products->total()
+            ]);
+
+            return Inertia::render('Admin/Reports/Inventory', [
+                'products' => $products,
+                'summary' => $summary,
+                'categories' => $categories,
+                'filters' => $request->only(['category_id', 'stock_status', 'search']),
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('Inventory report error: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString(),
+                'user_id' => auth()->id()
+            ]);
+
+            return Inertia::render('Admin/Reports/Inventory', [
+                'products' => new \Illuminate\Pagination\LengthAwarePaginator([], 0, 20),
+                'summary' => [
+                    'total_products' => 0,
+                    'total_stock_value' => 0,
+                    'total_potential_revenue' => 0,
+                    'out_of_stock' => 0,
+                    'low_stock' => 0,
+                ],
+                'categories' => [],
+                'filters' => ['category_id' => '', 'stock_status' => '', 'search' => ''],
+                'error' => 'Gagal memuat laporan: ' . $e->getMessage()
+            ]);
         }
-
-        // Search
-        if ($request->has('search') && $request->search) {
-            $search = $request->search;
-            $query->where('name', 'like', '%' . $search . '%');
-        }
-
-        $products = $query->orderBy('stock', 'asc')->paginate(20);
-
-        // Calculate summary
-        $allProducts = Product::all();
-        $summary = [
-            'total_products' => $allProducts->count(),
-            'total_stock_value' => $allProducts->sum(function($p) { return $p->stock * $p->harga_beli; }),
-            'total_potential_revenue' => $allProducts->sum(function($p) { return $p->stock * $p->harga_jual; }),
-            'out_of_stock' => $allProducts->where('stock', 0)->count(),
-            'low_stock' => $allProducts->where('stock', '>', 0)->where('stock', '<=', 10)->count(),
-        ];
-
-        $categories = \App\Models\Category::all();
-
-        return Inertia::render('Admin/Reports/Inventory', [
-            'products' => $products,
-            'summary' => $summary,
-            'categories' => $categories,
-            'filters' => $request->only(['category_id', 'stock_status', 'search']),
-        ]);
     }
 
     public function inventoryExport(Request $request)
@@ -141,52 +210,89 @@ class ReportController extends Controller
      */
     public function financial(Request $request)
     {
-        $dateFrom = $request->date_from ?? Carbon::now()->startOfMonth()->format('Y-m-d');
-        $dateTo = $request->date_to ?? Carbon::now()->format('Y-m-d');
+        try {
+            \Log::info('Financial report accessed', [
+                'user_id' => auth()->id(),
+                'filters' => $request->all()
+            ]);
 
-        // Calculate Revenue
-        $sales = Sale::whereBetween('created_at', [$dateFrom . ' 00:00:00', $dateTo . ' 23:59:59'])->get();
-        $totalRevenue = $sales->sum('total');
+            $dateFrom = $request->date_from ?? Carbon::now()->startOfMonth()->format('Y-m-d');
+            $dateTo = $request->date_to ?? Carbon::now()->format('Y-m-d');
 
-        // Calculate COGS (Cost of Goods Sold)
-        $totalCOGS = DB::table('sale_items')
-            ->join('sales', 'sale_items.sale_id', '=', 'sales.id')
-            ->join('products', 'sale_items.product_id', '=', 'products.id')
-            ->whereBetween('sales.created_at', [$dateFrom . ' 00:00:00', $dateTo . ' 23:59:59'])
-            ->sum(DB::raw('sale_items.quantity * products.harga_beli'));
+            // Calculate Revenue
+            $sales = Sale::whereBetween('created_at', [$dateFrom . ' 00:00:00', $dateTo . ' 23:59:59'])->get();
+            $totalRevenue = $sales->sum('total');
 
-        // Calculate Expenses
-        $expenses = Expense::whereBetween('expense_date', [$dateFrom, $dateTo])->get();
-        $totalExpenses = $expenses->sum('amount');
+            // Calculate COGS (Cost of Goods Sold)
+            $totalCOGS = DB::table('sale_items')
+                ->join('sales', 'sale_items.sale_id', '=', 'sales.id')
+                ->join('products', 'sale_items.product_id', '=', 'products.id')
+                ->whereBetween('sales.created_at', [$dateFrom . ' 00:00:00', $dateTo . ' 23:59:59'])
+                ->sum(DB::raw('sale_items.quantity * products.harga_beli'));
 
-        // Expenses by category
-        $expensesByCategory = Expense::whereBetween('expense_date', [$dateFrom, $dateTo])
-            ->select('category', DB::raw('SUM(amount) as total'))
-            ->groupBy('category')
-            ->get();
+            // Calculate Expenses
+            $expenses = Expense::with(['creator', 'updater'])->whereBetween('expense_date', [$dateFrom, $dateTo])->get();
+            $totalExpenses = $expenses->sum('amount');
 
-        // Calculate Profit
-        $grossProfit = $totalRevenue - $totalCOGS;
-        $netProfit = $grossProfit - $totalExpenses;
-        $profitMargin = $totalRevenue > 0 ? ($netProfit / $totalRevenue) * 100 : 0;
+            // Expenses by category
+            $expensesByCategory = Expense::whereBetween('expense_date', [$dateFrom, $dateTo])
+                ->select('category', DB::raw('SUM(amount) as total'))
+                ->groupBy('category')
+                ->get();
 
-        return Inertia::render('Admin/Reports/Financial', [
-            'data' => [
+            // Calculate Profit
+            $grossProfit = $totalRevenue - $totalCOGS;
+            $netProfit = $grossProfit - $totalExpenses;
+            $profitMargin = $totalRevenue > 0 ? ($netProfit / $totalRevenue) * 100 : 0;
+
+            \Log::info('Financial report loaded successfully', [
                 'total_revenue' => $totalRevenue,
-                'total_cogs' => $totalCOGS,
-                'gross_profit' => $grossProfit,
-                'total_expenses' => $totalExpenses,
-                'net_profit' => $netProfit,
-                'profit_margin' => $profitMargin,
-                'total_transactions' => $sales->count(),
-            ],
-            'expenses' => $expenses,
-            'expensesByCategory' => $expensesByCategory,
-            'filters' => [
-                'date_from' => $dateFrom,
-                'date_to' => $dateTo,
-            ],
-        ]);
+                'net_profit' => $netProfit
+            ]);
+
+            return Inertia::render('Admin/Reports/Financial', [
+                'data' => [
+                    'total_revenue' => $totalRevenue,
+                    'total_cogs' => $totalCOGS,
+                    'gross_profit' => $grossProfit,
+                    'total_expenses' => $totalExpenses,
+                    'net_profit' => $netProfit,
+                    'profit_margin' => $profitMargin,
+                    'total_transactions' => $sales->count(),
+                ],
+                'expenses' => $expenses,
+                'expensesByCategory' => $expensesByCategory,
+                'filters' => [
+                    'date_from' => $dateFrom,
+                    'date_to' => $dateTo,
+                ],
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('Financial report error: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString(),
+                'user_id' => auth()->id()
+            ]);
+
+            return Inertia::render('Admin/Reports/Financial', [
+                'data' => [
+                    'total_revenue' => 0,
+                    'total_cogs' => 0,
+                    'gross_profit' => 0,
+                    'total_expenses' => 0,
+                    'net_profit' => 0,
+                    'profit_margin' => 0,
+                    'total_transactions' => 0,
+                ],
+                'expenses' => [],
+                'expensesByCategory' => [],
+                'filters' => [
+                    'date_from' => Carbon::now()->startOfMonth()->format('Y-m-d'),
+                    'date_to' => Carbon::now()->format('Y-m-d'),
+                ],
+                'error' => 'Gagal memuat laporan: ' . $e->getMessage()
+            ]);
+        }
     }
 
     public function financialExport(Request $request)
@@ -203,63 +309,97 @@ class ReportController extends Controller
      */
     public function studentTransactions(Request $request)
     {
-        $query = Sale::with(['student.user', 'saleItems.product']);
+        try {
+            \Log::info('Student transactions report accessed', [
+                'user_id' => auth()->id(),
+                'filters' => $request->all()
+            ]);
 
-        // Default date range
-        $dateFrom = $request->date_from ?? Carbon::now()->startOfMonth()->format('Y-m-d');
-        $dateTo = $request->date_to ?? Carbon::now()->format('Y-m-d');
+            $query = Sale::with(['student.user', 'saleItems.product', 'creator', 'updater']);
 
-        $query->whereBetween('created_at', [$dateFrom . ' 00:00:00', $dateTo . ' 23:59:59']);
+            // Default date range
+            $dateFrom = $request->date_from ?? Carbon::now()->startOfMonth()->format('Y-m-d');
+            $dateTo = $request->date_to ?? Carbon::now()->format('Y-m-d');
 
-        // Filter by class
-        if ($request->has('class') && $request->class) {
-            $query->whereHas('student', function($q) use ($request) {
-                $q->where('kelas', $request->class);
-            });
+            $query->whereBetween('created_at', [$dateFrom . ' 00:00:00', $dateTo . ' 23:59:59']);
+
+            // Filter by class
+            if ($request->has('class') && $request->class) {
+                $query->whereHas('student', function($q) use ($request) {
+                    $q->where('kelas', $request->class);
+                });
+            }
+
+            // Filter by student
+            if ($request->has('student_id') && $request->student_id) {
+                $query->where('student_id', $request->student_id);
+            }
+
+            // Search
+            if ($request->has('search') && $request->search) {
+                $search = $request->search;
+                $query->whereHas('student.user', function($q) use ($search) {
+                    $q->where('name', 'like', '%' . $search . '%');
+                })->orWhereHas('student', function($q) use ($search) {
+                    $q->where('nis', 'like', '%' . $search . '%');
+                });
+            }
+
+            $transactions = $query->oldest()->paginate(50);
+
+            // Get unique classes for filter
+            $classes = \App\Models\Student::select('kelas')->distinct()->orderBy('kelas')->pluck('kelas');
+
+            // Get students for filter
+            $students = \App\Models\Student::with('user')
+                ->whereHas('user')
+                ->get()
+                ->map(function($student) {
+                    return [
+                        'id' => $student->id,
+                        'name' => $student->user->name,
+                        'nis' => $student->nis,
+                        'class' => $student->kelas,
+                    ];
+                });
+
+            \Log::info('Student transactions report loaded successfully', [
+                'total_transactions' => $transactions->total()
+            ]);
+
+            return Inertia::render('Admin/Reports/StudentTransactions', [
+                'transactions' => $transactions,
+                'classes' => $classes,
+                'students' => $students,
+                'filters' => [
+                    'date_from' => $dateFrom,
+                    'date_to' => $dateTo,
+                    'class' => $request->class ?? '',
+                    'student_id' => $request->student_id ?? '',
+                    'search' => $request->search ?? '',
+                ],
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('Student transactions report error: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString(),
+                'user_id' => auth()->id()
+            ]);
+
+            return Inertia::render('Admin/Reports/StudentTransactions', [
+                'transactions' => new \Illuminate\Pagination\LengthAwarePaginator([], 0, 50),
+                'classes' => [],
+                'students' => [],
+                'filters' => [
+                    'date_from' => Carbon::now()->startOfMonth()->format('Y-m-d'),
+                    'date_to' => Carbon::now()->format('Y-m-d'),
+                    'class' => '',
+                    'student_id' => '',
+                    'search' => '',
+                ],
+                'error' => 'Gagal memuat laporan: ' . $e->getMessage()
+            ]);
         }
-
-        // Filter by student
-        if ($request->has('student_id') && $request->student_id) {
-            $query->where('student_id', $request->student_id);
-        }
-
-        // Search
-        if ($request->has('search') && $request->search) {
-            $search = $request->search;
-            $query->whereHas('student.user', function($q) use ($search) {
-                $q->where('name', 'like', '%' . $search . '%');
-            })->orWhereHas('student', function($q) use ($search) {
-                $q->where('nis', 'like', '%' . $search . '%');
-            });
-        }
-
-        $transactions = $query->latest()->paginate(50);
-
-        // Get unique classes for filter
-        $classes = \App\Models\Student::select('kelas')->distinct()->orderBy('kelas')->pluck('kelas');
-
-        // Get students for filter
-        $students = \App\Models\Student::with('user')->get()->map(function($student) {
-            return [
-                'id' => $student->id,
-                'name' => $student->user->name,
-                'nis' => $student->nis,
-                'class' => $student->kelas,
-            ];
-        });
-
-        return Inertia::render('Admin/Reports/StudentTransactions', [
-            'transactions' => $transactions,
-            'classes' => $classes,
-            'students' => $students,
-            'filters' => [
-                'date_from' => $dateFrom,
-                'date_to' => $dateTo,
-                'class' => $request->class ?? '',
-                'student_id' => $request->student_id ?? '',
-                'search' => $request->search ?? '',
-            ],
-        ]);
     }
 
     public function studentTransactionsExport(Request $request)
@@ -271,6 +411,133 @@ class ReportController extends Controller
 
         return Excel::download(
             new StudentTransactionsExport($dateFrom, $dateTo, $request->class, $request->student_id, $request->search),
+            $filename
+        );
+    }
+
+    /**
+     * Stock Adjustments Report
+     */
+    public function stockAdjustments(Request $request)
+    {
+        try {
+            \Log::info('Stock adjustments report accessed', [
+                'user_id' => auth()->id(),
+                'filters' => $request->all()
+            ]);
+
+            $query = StockAdjustment::with(['product', 'adjustedBy']);
+
+            // Default date range (this month)
+            $dateFrom = $request->date_from ?? Carbon::now()->startOfMonth()->format('Y-m-d');
+            $dateTo = $request->date_to ?? Carbon::now()->format('Y-m-d');
+
+            $query->whereBetween('created_at', [$dateFrom . ' 00:00:00', $dateTo . ' 23:59:59']);
+
+            // Filter by product
+            if ($request->has('product_id') && $request->product_id) {
+                $query->where('product_id', $request->product_id);
+            }
+
+            // Filter by adjustment type
+            if ($request->has('type') && $request->type) {
+                $query->where('type', $request->type);
+            }
+
+            // Filter by adjusted_by user
+            if ($request->has('adjusted_by') && $request->adjusted_by) {
+                $query->where('adjusted_by', $request->adjusted_by);
+            }
+
+            // Search by product name
+            if ($request->has('search') && $request->search) {
+                $search = $request->search;
+                $query->whereHas('product', function($q) use ($search) {
+                    $q->where('name', 'like', '%' . $search . '%')
+                      ->orWhere('barcode', 'like', '%' . $search . '%');
+                });
+            }
+
+            $adjustments = $query->oldest()->paginate(20);
+
+            // Calculate summary
+            $allAdjustments = StockAdjustment::whereBetween('created_at', [$dateFrom . ' 00:00:00', $dateTo . ' 23:59:59'])->get();
+            $summary = [
+                'total_adjustments' => $allAdjustments->count(),
+                'total_additions' => $allAdjustments->where('type', 'addition')->sum('quantity_adjusted'),
+                'total_deductions' => $allAdjustments->where('type', 'deduction')->sum('quantity_adjusted'),
+                'additions_count' => $allAdjustments->where('type', 'addition')->count(),
+                'deductions_count' => $allAdjustments->where('type', 'deduction')->count(),
+            ];
+
+            // Get products for filter
+            $products = Product::select('id', 'name', 'barcode')->orderBy('name')->get();
+
+            // Get users who have made adjustments for filter
+            $adjusters = \App\Models\User::whereIn('id', StockAdjustment::select('adjusted_by')->distinct()->pluck('adjusted_by'))
+                ->select('id', 'name')
+                ->orderBy('name')
+                ->get();
+
+            \Log::info('Stock adjustments report loaded successfully', [
+                'total_records' => $adjustments->total(),
+                'summary' => $summary
+            ]);
+
+            return Inertia::render('Admin/Reports/StockAdjustments', [
+                'adjustments' => $adjustments,
+                'summary' => $summary,
+                'products' => $products,
+                'adjusters' => $adjusters,
+                'filters' => [
+                    'date_from' => $dateFrom,
+                    'date_to' => $dateTo,
+                    'product_id' => $request->product_id ?? '',
+                    'type' => $request->type ?? '',
+                    'adjusted_by' => $request->adjusted_by ?? '',
+                    'search' => $request->search ?? '',
+                ],
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('Stock adjustments report error: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString(),
+                'user_id' => auth()->id()
+            ]);
+
+            return Inertia::render('Admin/Reports/StockAdjustments', [
+                'adjustments' => new \Illuminate\Pagination\LengthAwarePaginator([], 0, 20),
+                'summary' => [
+                    'total_adjustments' => 0,
+                    'total_additions' => 0,
+                    'total_deductions' => 0,
+                    'additions_count' => 0,
+                    'deductions_count' => 0,
+                ],
+                'products' => [],
+                'adjusters' => [],
+                'filters' => [
+                    'date_from' => Carbon::now()->startOfMonth()->format('Y-m-d'),
+                    'date_to' => Carbon::now()->format('Y-m-d'),
+                    'product_id' => '',
+                    'type' => '',
+                    'adjusted_by' => '',
+                    'search' => '',
+                ],
+                'error' => 'Gagal memuat laporan: ' . $e->getMessage()
+            ]);
+        }
+    }
+
+    public function stockAdjustmentsExport(Request $request)
+    {
+        $dateFrom = $request->date_from ?? Carbon::now()->startOfMonth()->format('Y-m-d');
+        $dateTo = $request->date_to ?? Carbon::now()->format('Y-m-d');
+
+        $filename = 'laporan-penyesuaian-stok-' . $dateFrom . '-to-' . $dateTo . '.xlsx';
+
+        return Excel::download(
+            new StockAdjustmentsExport($dateFrom, $dateTo, $request->product_id, $request->type, $request->adjusted_by, $request->search),
             $filename
         );
     }

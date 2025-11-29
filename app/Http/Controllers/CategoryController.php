@@ -13,7 +13,7 @@ class CategoryController extends Controller
      */
     public function index()
     {
-        $categories = Category::latest()->paginate(10);
+        $categories = Category::with(['creator', 'updater'])->oldest()->paginate(10);
 
         return Inertia::render('Admin/Categories/Index', [
             'categories' => $categories

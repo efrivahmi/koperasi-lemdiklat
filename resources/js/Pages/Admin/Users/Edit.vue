@@ -34,73 +34,31 @@ const form = useForm({
     permissions: getUserPermissions(),
 });
 
-// Group permissions into 2 main sections: Pages and Actions
+// Group permissions by category for simpler display
 const groupedPermissions = computed(() => {
-    const sections = {
-        pages: {},
-        actions: {}
+    const groups = {
+        'Master Data': [],
+        'Inventori & Keuangan': [],
+        'Point of Sale': [],
+        'Laporan': [],
+        'Manajemen User': []
     };
 
-    const permissions = props.availablePermissions;
-
-    Object.entries(permissions).forEach(([key, label]) => {
-        const isPage = key.startsWith('page_');
-        const isAction = key.startsWith('action_');
-
-        if (isPage) {
-            // Group pages by category
-            let category = 'Lainnya';
-
-            if (key.includes('categories') || key.includes('products') || key.includes('students')) {
-                category = '📁 Master Data';
-            } else if (key.includes('stock') || key.includes('vouchers') || key.includes('expenses') || key.includes('transactions')) {
-                category = '💼 Inventori & Keuangan';
-            } else if (key.includes('pos')) {
-                category = '🛒 Point of Sale';
-            } else if (key.includes('reports')) {
-                category = '📊 Laporan';
-            } else if (key.includes('users')) {
-                category = '👤 Manajemen User';
-            }
-
-            if (!sections.pages[category]) {
-                sections.pages[category] = [];
-            }
-            sections.pages[category].push({ key, label });
-        } else if (isAction) {
-            // Group actions by entity
-            let category = 'Lainnya';
-
-            if (key.includes('category')) {
-                category = '📁 Kategori';
-            } else if (key.includes('product') || key.includes('barcode')) {
-                category = '📦 Produk';
-            } else if (key.includes('student') || key.includes('rfid') || key.includes('card')) {
-                category = '👥 Siswa';
-            } else if (key.includes('stock_in')) {
-                category = '📥 Stok Masuk';
-            } else if (key.includes('voucher')) {
-                category = '🎟️ Voucher';
-            } else if (key.includes('expense')) {
-                category = '💸 Pengeluaran';
-            } else if (key.includes('topup') || key.includes('transaction') || key.includes('receipt')) {
-                category = '💳 Transaksi';
-            } else if (key.includes('sale') && !key.includes('report')) {
-                category = '🛒 POS';
-            } else if (key.includes('report') || key.includes('export') || key.includes('print_report')) {
-                category = '📊 Laporan';
-            } else if (key.includes('user') || key.includes('permissions')) {
-                category = '👤 Manajemen User';
-            }
-
-            if (!sections.actions[category]) {
-                sections.actions[category] = [];
-            }
-            sections.actions[category].push({ key, label });
+    Object.entries(props.availablePermissions).forEach(([key, label]) => {
+        if (key.includes('categories') || key.includes('products') || key.includes('students')) {
+            groups['Master Data'].push({ key, label });
+        } else if (key.includes('stock_ins') || key.includes('vouchers') || key.includes('expenses') || key.includes('transactions')) {
+            groups['Inventori & Keuangan'].push({ key, label });
+        } else if (key.includes('pos')) {
+            groups['Point of Sale'].push({ key, label });
+        } else if (key.includes('reports')) {
+            groups['Laporan'].push({ key, label });
+        } else if (key.includes('users')) {
+            groups['Manajemen User'].push({ key, label });
         }
     });
 
-    return sections;
+    return groups;
 });
 
 // Determine initial accessType based on current permissions
@@ -226,75 +184,37 @@ const submit = () => {
 
                                 <!-- Custom Permissions Checkboxes (Hanya tampil jika custom) -->
                                 <div v-if="accessType === 'custom'" class="mt-4 pt-4 border-t border-gray-200">
-                                    <p class="text-sm text-gray-600 mb-4">Pilih fitur-fitur yang dapat diakses:</p>
+                                    <p class="text-sm text-gray-600 mb-4">Pilih modul-modul fitur yang dapat diakses:</p>
 
-                                    <!-- Section 1: Akses Halaman -->
-                                    <div class="mb-6">
-                                        <div class="bg-blue-50 border-l-4 border-blue-500 p-3 mb-3">
-                                            <h3 class="font-bold text-blue-900 text-base flex items-center gap-2">
-                                                🌐 AKSES HALAMAN (VIEW/READ)
-                                            </h3>
-                                            <p class="text-xs text-blue-700 mt-1">Pilih halaman-halaman yang dapat diakses oleh staf koperasi</p>
-                                        </div>
-                                        <div class="space-y-3">
-                                            <div v-for="(permissions, category) in groupedPermissions.pages" :key="`page-${category}`" class="bg-white p-3 rounded-lg border border-blue-200">
-                                                <h4 class="font-semibold text-sm text-gray-700 mb-2">{{ category }}</h4>
-                                                <div class="space-y-2">
-                                                    <div
-                                                        v-for="permission in permissions"
-                                                        :key="permission.key"
-                                                        class="flex items-start"
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div v-for="(permissions, category) in groupedPermissions" :key="category" class="bg-white p-4 rounded-lg border-2 border-indigo-200 hover:border-indigo-400 transition-colors">
+                                            <h4 class="font-bold text-sm text-gray-800 mb-3 flex items-center gap-2">
+                                                <span v-if="category === 'Master Data'">📁</span>
+                                                <span v-else-if="category === 'Inventori & Keuangan'">💼</span>
+                                                <span v-else-if="category === 'Point of Sale'">🛒</span>
+                                                <span v-else-if="category === 'Laporan'">📊</span>
+                                                <span v-else-if="category === 'Manajemen User'">👤</span>
+                                                {{ category }}
+                                            </h4>
+                                            <div class="space-y-2">
+                                                <div
+                                                    v-for="permission in permissions"
+                                                    :key="permission.key"
+                                                    class="flex items-start"
+                                                >
+                                                    <input
+                                                        type="checkbox"
+                                                        :id="`permission-${permission.key}`"
+                                                        :value="permission.key"
+                                                        v-model="form.permissions"
+                                                        class="mt-1 rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500"
+                                                    />
+                                                    <label
+                                                        :for="`permission-${permission.key}`"
+                                                        class="ml-3 text-sm text-gray-700 cursor-pointer hover:text-gray-900 leading-relaxed"
                                                     >
-                                                        <input
-                                                            type="checkbox"
-                                                            :id="`permission-${permission.key}`"
-                                                            :value="permission.key"
-                                                            v-model="form.permissions"
-                                                            class="mt-1 rounded border-gray-300 text-blue-600 shadow-sm focus:ring-blue-500"
-                                                        />
-                                                        <label
-                                                            :for="`permission-${permission.key}`"
-                                                            class="ml-3 text-sm text-gray-600 cursor-pointer hover:text-gray-900"
-                                                        >
-                                                            {{ permission.label.replace('[Halaman] ', '') }}
-                                                        </label>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <!-- Section 2: Aksi/Tindakan -->
-                                    <div>
-                                        <div class="bg-green-50 border-l-4 border-green-500 p-3 mb-3">
-                                            <h3 class="font-bold text-green-900 text-base flex items-center gap-2">
-                                                ⚡ AKSI/TINDAKAN (ACTIONS)
-                                            </h3>
-                                            <p class="text-xs text-green-700 mt-1">Pilih aksi-aksi yang dapat dilakukan oleh staf koperasi</p>
-                                        </div>
-                                        <div class="space-y-3">
-                                            <div v-for="(permissions, category) in groupedPermissions.actions" :key="`action-${category}`" class="bg-white p-3 rounded-lg border border-green-200">
-                                                <h4 class="font-semibold text-sm text-gray-700 mb-2">{{ category }}</h4>
-                                                <div class="space-y-2">
-                                                    <div
-                                                        v-for="permission in permissions"
-                                                        :key="permission.key"
-                                                        class="flex items-start"
-                                                    >
-                                                        <input
-                                                            type="checkbox"
-                                                            :id="`permission-${permission.key}`"
-                                                            :value="permission.key"
-                                                            v-model="form.permissions"
-                                                            class="mt-1 rounded border-gray-300 text-green-600 shadow-sm focus:ring-green-500"
-                                                        />
-                                                        <label
-                                                            :for="`permission-${permission.key}`"
-                                                            class="ml-3 text-sm text-gray-600 cursor-pointer hover:text-gray-900"
-                                                        >
-                                                            {{ permission.label.replace('[Aksi] ', '') }}
-                                                        </label>
-                                                    </div>
+                                                        {{ permission.label }}
+                                                    </label>
                                                 </div>
                                             </div>
                                         </div>
@@ -304,46 +224,26 @@ const submit = () => {
                                 <!-- Show all selected permissions when full access -->
                                 <div v-if="accessType === 'full'" class="mt-4 pt-4 border-t border-gray-200">
                                     <p class="text-sm font-semibold text-green-700 mb-4 flex items-center gap-2">
-                                        ✅ Semua fitur dapat diakses ({{ Object.keys(availablePermissions).length }} permissions):
+                                        ✅ Semua modul dapat diakses ({{ Object.keys(availablePermissions).length }} modul):
                                     </p>
 
-                                    <!-- Halaman Section -->
-                                    <div class="mb-4">
-                                        <div class="bg-blue-50 border-l-4 border-blue-500 p-2 mb-2">
-                                            <h4 class="font-semibold text-sm text-blue-900">🌐 Akses Halaman</h4>
-                                        </div>
-                                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                                            <div v-for="(permissions, category) in groupedPermissions.pages" :key="`full-page-${category}`" class="bg-blue-50/50 p-2 rounded border border-blue-200">
-                                                <p class="font-medium text-xs text-blue-800 mb-1">{{ category }}</p>
-                                                <div class="space-y-0.5">
-                                                    <div
-                                                        v-for="permission in permissions"
-                                                        :key="permission.key"
-                                                        class="text-xs text-blue-700 pl-2"
-                                                    >
-                                                        ✓ {{ permission.label.replace('[Halaman] ', '') }}
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <!-- Actions Section -->
-                                    <div>
-                                        <div class="bg-green-50 border-l-4 border-green-500 p-2 mb-2">
-                                            <h4 class="font-semibold text-sm text-green-900">⚡ Aksi/Tindakan</h4>
-                                        </div>
-                                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                                            <div v-for="(permissions, category) in groupedPermissions.actions" :key="`full-action-${category}`" class="bg-green-50/50 p-2 rounded border border-green-200">
-                                                <p class="font-medium text-xs text-green-800 mb-1">{{ category }}</p>
-                                                <div class="space-y-0.5">
-                                                    <div
-                                                        v-for="permission in permissions"
-                                                        :key="permission.key"
-                                                        class="text-xs text-green-700 pl-2"
-                                                    >
-                                                        ✓ {{ permission.label.replace('[Aksi] ', '') }}
-                                                    </div>
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                        <div v-for="(permissions, category) in groupedPermissions" :key="`full-${category}`" class="bg-green-50 p-3 rounded-lg border border-green-200">
+                                            <p class="font-semibold text-sm text-green-800 mb-2 flex items-center gap-2">
+                                                <span v-if="category === 'Master Data'">📁</span>
+                                                <span v-else-if="category === 'Inventori & Keuangan'">💼</span>
+                                                <span v-else-if="category === 'Point of Sale'">🛒</span>
+                                                <span v-else-if="category === 'Laporan'">📊</span>
+                                                <span v-else-if="category === 'Manajemen User'">👤</span>
+                                                {{ category }}
+                                            </p>
+                                            <div class="space-y-1">
+                                                <div
+                                                    v-for="permission in permissions"
+                                                    :key="permission.key"
+                                                    class="text-xs text-green-700 pl-2"
+                                                >
+                                                    ✓ {{ permission.label }}
                                                 </div>
                                             </div>
                                         </div>

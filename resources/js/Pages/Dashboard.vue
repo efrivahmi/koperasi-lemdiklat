@@ -1,6 +1,6 @@
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
-import { Head, Link } from '@inertiajs/vue3';
+import { Head, Link, usePage } from '@inertiajs/vue3';
 import { computed } from 'vue';
 import { Bar, Doughnut } from 'vue-chartjs';
 import {
@@ -17,6 +17,8 @@ import {
 // Register Chart.js components
 ChartJS.register(Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale, ArcElement);
 
+const page = usePage();
+
 const props = defineProps({
     stats: Object,
     recentTransactions: Array,
@@ -24,6 +26,16 @@ const props = defineProps({
     lowStockList: Array,
     salesChart: Array,
 });
+
+const user = computed(() => page.props.auth?.user);
+const userRole = computed(() => user.value?.role || 'admin');
+const userPermissions = computed(() => user.value?.permissions || {});
+
+// Check if user has permission for a module
+const hasPermission = (module) => {
+    if (userRole.value === 'admin' || userRole.value === 'master') return true;
+    return userPermissions.value[module] || false;
+};
 
 const formatCurrency = (value) => {
     return new Intl.NumberFormat('id-ID', {
@@ -254,7 +266,7 @@ const topProductsChartOptions = {
                                 <span class="font-bold text-red-600">{{ stats.outOfStockProducts }}</span>
                             </div>
                         </div>
-                        <Link :href="route('products.index')" class="mt-4 block text-center text-sm text-indigo-600 hover:text-indigo-800">
+                        <Link v-if="hasPermission('module_products')" :href="route('products.index')" class="mt-4 block text-center text-sm text-indigo-600 hover:text-indigo-800">
                             Lihat Semua Produk →
                         </Link>
                     </div>
@@ -279,7 +291,7 @@ const topProductsChartOptions = {
                                 </div>
                             </div>
                         </div>
-                        <Link :href="route('transactions.topup.form')" class="mt-4 block text-center text-sm text-indigo-600 hover:text-indigo-800">
+                        <Link v-if="hasPermission('module_transactions')" :href="route('transactions.topup.form')" class="mt-4 block text-center text-sm text-indigo-600 hover:text-indigo-800">
                             Top-up Saldo →
                         </Link>
                     </div>
@@ -300,7 +312,7 @@ const topProductsChartOptions = {
                                 <span class="font-bold text-gray-600">{{ stats.usedVouchers }}</span>
                             </div>
                         </div>
-                        <div class="mt-4 space-y-2">
+                        <div v-if="hasPermission('module_vouchers')" class="mt-4 space-y-2">
                             <Link :href="route('vouchers.create')" class="block text-center text-sm text-indigo-600 hover:text-indigo-800">
                                 Generate Voucher →
                             </Link>
@@ -353,7 +365,7 @@ const topProductsChartOptions = {
                             <span class="text-2xl animate-float animation-delay-300">🏆</span>
                             <span>Top 5 Produk Terlaris Bulan Ini</span>
                         </h3>
-                        <Link :href="route('reports.sales')" class="text-sm text-indigo-600 hover:text-indigo-800">
+                        <Link v-if="hasPermission('module_reports_sales')" :href="route('reports.sales')" class="text-sm text-indigo-600 hover:text-indigo-800">
                             Lihat Laporan Lengkap →
                         </Link>
                     </div>
@@ -374,7 +386,7 @@ const topProductsChartOptions = {
                                 <span class="text-red-500 animate-pulse">⚠️</span>
                                 <span>Stok Menipis (Perlu Restock)</span>
                             </h3>
-                            <Link :href="route('stock-ins.create')" class="text-sm text-indigo-600 hover:text-indigo-800">
+                            <Link v-if="hasPermission('module_stock_ins')" :href="route('stock-ins.create')" class="text-sm text-indigo-600 hover:text-indigo-800">
                                 + Tambah Stok
                             </Link>
                         </div>
@@ -408,7 +420,7 @@ const topProductsChartOptions = {
                                 <span class="text-2xl animate-float animation-delay-100">📝</span>
                                 <span>Transaksi Terbaru</span>
                             </h3>
-                            <Link :href="route('transactions.index')" class="text-sm text-indigo-600 hover:text-indigo-800">
+                            <Link v-if="hasPermission('module_transactions')" :href="route('transactions.index')" class="text-sm text-indigo-600 hover:text-indigo-800">
                                 Lihat Semua →
                             </Link>
                         </div>
@@ -458,19 +470,19 @@ const topProductsChartOptions = {
                         <span>Quick Actions</span>
                     </h3>
                     <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                        <Link :href="route('pos.index')" class="bg-white/20 hover:bg-white/30 backdrop-blur-sm rounded-lg p-4 text-center transition-all duration-300 transform hover:scale-110 hover:shadow-lg group">
+                        <Link v-if="hasPermission('module_pos')" :href="route('pos.index')" class="bg-white/20 hover:bg-white/30 backdrop-blur-sm rounded-lg p-4 text-center transition-all duration-300 transform hover:scale-110 hover:shadow-lg group">
                             <div class="text-3xl mb-2 group-hover:scale-125 transition-transform duration-300">🛒</div>
                             <div class="font-semibold">POS / Kasir</div>
                         </Link>
-                        <Link :href="route('transactions.topup.form')" class="bg-white/20 hover:bg-white/30 backdrop-blur-sm rounded-lg p-4 text-center transition-all duration-300 transform hover:scale-110 hover:shadow-lg group">
+                        <Link v-if="hasPermission('module_transactions')" :href="route('transactions.topup.form')" class="bg-white/20 hover:bg-white/30 backdrop-blur-sm rounded-lg p-4 text-center transition-all duration-300 transform hover:scale-110 hover:shadow-lg group">
                             <div class="text-3xl mb-2 group-hover:scale-125 transition-transform duration-300">💰</div>
                             <div class="font-semibold">Top-up Saldo</div>
                         </Link>
-                        <Link :href="route('stock-ins.create')" class="bg-white/20 hover:bg-white/30 backdrop-blur-sm rounded-lg p-4 text-center transition-all duration-300 transform hover:scale-110 hover:shadow-lg group">
+                        <Link v-if="hasPermission('module_stock_ins')" :href="route('stock-ins.create')" class="bg-white/20 hover:bg-white/30 backdrop-blur-sm rounded-lg p-4 text-center transition-all duration-300 transform hover:scale-110 hover:shadow-lg group">
                             <div class="text-3xl mb-2 group-hover:scale-125 transition-transform duration-300">📦</div>
                             <div class="font-semibold">Tambah Stok</div>
                         </Link>
-                        <Link :href="route('expenses.create')" class="bg-white/20 hover:bg-white/30 backdrop-blur-sm rounded-lg p-4 text-center transition-all duration-300 transform hover:scale-110 hover:shadow-lg group">
+                        <Link v-if="hasPermission('module_expenses')" :href="route('expenses.create')" class="bg-white/20 hover:bg-white/30 backdrop-blur-sm rounded-lg p-4 text-center transition-all duration-300 transform hover:scale-110 hover:shadow-lg group">
                             <div class="text-3xl mb-2 group-hover:scale-125 transition-transform duration-300">💸</div>
                             <div class="font-semibold">Catat Pengeluaran</div>
                         </Link>

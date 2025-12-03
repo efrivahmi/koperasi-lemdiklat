@@ -27,9 +27,9 @@ return [
     */
 
     'logo' => [
-        'main' => env('LOGO_MAIN', '/storage/logos/logo.svg'),
-        'icon' => env('LOGO_ICON', '/storage/logos/icon.svg'),
-        'dark' => env('LOGO_DARK', '/storage/logos/logo-dark.svg'),
+        'main' => env('LOGO_MAIN', '/storage/logos/logo.png'),
+        'icon' => env('LOGO_ICON', '/storage/logos/icon.png'),
+        'dark' => env('LOGO_DARK', '/storage/logos/logo.png'),
     ],
 
     /*

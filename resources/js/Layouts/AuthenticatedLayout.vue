@@ -252,10 +252,11 @@ page.props.isLoading = isLoading;
             <!-- Logo & Toggle -->
             <div class="flex items-center justify-between mb-6 px-2">
                 <Link :href="route('dashboard')" v-if="sidebarOpen || isMobile" class="flex items-center space-x-3 group">
-                    <span class="text-3xl group-hover:scale-110 transition-transform duration-300">🏢</span>
-                    <span class="text-xl font-bold text-gray-800">
-                        Koperasi
-                    </span>
+                    <img src="/storage/logos/icon.png" alt="Logo Koperasi" class="w-10 h-10 object-contain group-hover:scale-110 transition-transform duration-300" />
+                    <div class="flex flex-col">
+                        <span class="text-sm font-bold text-gray-800 leading-tight">Koperasi Lemdiklat</span>
+                        <span class="text-xs font-medium text-gray-600 leading-tight">Taruna Nusantara</span>
+                    </div>
                 </Link>
                 <button
                     @click="toggleSidebar"

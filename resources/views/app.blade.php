@@ -7,7 +7,7 @@
         <title inertia>{{ config('school.full_name') }} - {{ config('school.subtitle') }}</title>
 
         <!-- Favicon -->
-        <link rel="icon" type="image/svg+xml" href="{{ config('school.logo.icon') }}">
+        <link rel="icon" type="image/png" href="{{ config('school.logo.icon') }}">
 
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net">

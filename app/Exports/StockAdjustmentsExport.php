@@ -70,9 +70,14 @@ class StockAdjustmentsExport implements FromCollection, WithHeadings, WithMappin
             'Nama Produk',
             'Barcode',
             'Tipe Penyesuaian',
+            'Tujuan Penyesuaian',
             'Stok Sebelum',
             'Jumlah Disesuaikan',
             'Stok Sesudah',
+            'Harga Beli',
+            'Nilai Stok (COGS)',
+            'Pendapatan',
+            'Laba/Rugi',
             'Disesuaikan Oleh',
             'Catatan',
         ];
@@ -80,15 +85,61 @@ class StockAdjustmentsExport implements FromCollection, WithHeadings, WithMappin
 
     public function map($adjustment): array
     {
+        $hargaBeli = $adjustment->product->harga_beli ?? 0;
+        $hargaJual = $adjustment->product->harga_jual ?? 0;
+        $quantity = $adjustment->quantity_adjusted;
+        $costImpact = $quantity * $hargaBeli;
+
+        // Translate purpose to Indonesian
+        $purposeLabels = [
+            'sale' => 'Penjualan (Transaksi)',
+            'internal_use' => 'Keperluan Internal/Kantor',
+            'personal_use' => 'Keperluan Pribadi',
+            'damage' => 'Kerusakan Barang',
+            'expired' => 'Barang Kadaluarsa',
+            'return_to_supplier' => 'Retur ke Supplier',
+            'other' => 'Lainnya'
+        ];
+        $purposeLabel = $purposeLabels[$adjustment->purpose] ?? 'Tidak Diketahui';
+
+        // Calculate revenue and profit/loss based on purpose
+        $revenue = 0;
+        $profitLossImpact = 0;
+
+        if ($adjustment->purpose === 'sale') {
+            // Sales: Revenue - COGS = Gross Profit
+            $revenue = $quantity * $hargaJual;
+            $profitLossImpact = $revenue - $costImpact;
+        } else if (in_array($adjustment->purpose, ['internal_use', 'personal_use', 'damage', 'expired'])) {
+            // Non-revenue: Pure loss
+            $revenue = 0;
+            $profitLossImpact = -$costImpact;
+        } else if ($adjustment->purpose === 'return_to_supplier') {
+            // Return: Refund at purchase price (break-even)
+            $revenue = $costImpact;
+            $profitLossImpact = 0;
+        } else {
+            // Other: Potential margin
+            $profitMarginPerUnit = $hargaJual - $hargaBeli;
+            $profitLossImpact = $quantity * $profitMarginPerUnit;
+        }
+
+        $sign = $adjustment->type === 'addition' ? '+' : '-';
+
         return [
             Carbon::parse($adjustment->created_at)->format('d/m/Y'),
             Carbon::parse($adjustment->created_at)->format('H:i:s'),
             $adjustment->product->name ?? '-',
             $adjustment->product->barcode ?? '-',
             $adjustment->type === 'addition' ? 'Penambahan' : 'Pengurangan',
+            $purposeLabel,
             $adjustment->quantity_before,
             $adjustment->quantity_adjusted,
             $adjustment->quantity_after,
+            number_format($hargaBeli, 0, ',', '.'),
+            $sign . number_format($costImpact, 0, ',', '.'),
+            number_format($revenue, 0, ',', '.'),
+            ($profitLossImpact >= 0 ? '+' : '') . number_format($profitLossImpact, 0, ',', '.'),
             $adjustment->adjustedBy->name ?? '-',
             $adjustment->notes ?? '-',
         ];
@@ -123,11 +174,16 @@ class StockAdjustmentsExport implements FromCollection, WithHeadings, WithMappin
             'C' => 30,  // Nama Produk
             'D' => 15,  // Barcode
             'E' => 18,  // Tipe Penyesuaian
-            'F' => 15,  // Stok Sebelum
-            'G' => 20,  // Jumlah Disesuaikan
-            'H' => 15,  // Stok Sesudah
-            'I' => 20,  // Disesuaikan Oleh
-            'J' => 35,  // Catatan
+            'F' => 28,  // Tujuan Penyesuaian
+            'G' => 12,  // Stok Sebelum
+            'H' => 12,  // Jumlah Disesuaikan
+            'I' => 12,  // Stok Sesudah
+            'J' => 12,  // Harga Beli
+            'K' => 18,  // Nilai Stok (COGS)
+            'L' => 15,  // Pendapatan
+            'M' => 15,  // Laba/Rugi
+            'N' => 20,  // Disesuaikan Oleh
+            'O' => 35,  // Catatan
         ];
     }
 }

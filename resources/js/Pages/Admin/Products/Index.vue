@@ -17,6 +17,7 @@ const selectedProduct = ref(null);
 const adjustmentForm = useForm({
     quantity: '',
     type: 'deduction',
+    purpose: 'other',
     notes: '',
 });
 
@@ -212,7 +213,7 @@ const formatCurrency = (value) => {
         </div>
 
         <!-- Stock Adjustment Modal -->
-        <div v-if="showAdjustmentModal" class="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+        <div v-if="showAdjustmentModal" class="fixed inset-0 z-[9999] overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
             <div class="flex items-end justify-center min-h-screen pt-4 px-3 sm:px-4 pb-20 text-center sm:block sm:p-0">
                 <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity backdrop-blur-sm" @click.self="closeAdjustmentModal"></div>
 
@@ -237,6 +238,23 @@ const formatCurrency = (value) => {
                                         <option value="deduction">Pengurangan</option>
                                         <option value="addition">Penambahan</option>
                                     </select>
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Tujuan Penyesuaian</label>
+                                    <select v-model="adjustmentForm.purpose" required class="w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">
+                                        <option value="sale">Penjualan (Transaksi)</option>
+                                        <option value="internal_use">Keperluan Internal/Kantor</option>
+                                        <option value="personal_use">Keperluan Pribadi</option>
+                                        <option value="damage">Kerusakan Barang</option>
+                                        <option value="expired">Barang Kadaluarsa</option>
+                                        <option value="return_to_supplier">Retur ke Supplier</option>
+                                        <option value="other">Lainnya</option>
+                                    </select>
+                                    <p class="mt-1 text-xs text-gray-500">Pilih tujuan penyesuaian untuk perhitungan keuangan yang tepat</p>
+                                    <div v-if="adjustmentForm.errors.purpose" class="mt-1 text-sm text-red-600">
+                                        {{ adjustmentForm.errors.purpose }}
+                                    </div>
                                 </div>
 
                                 <div>

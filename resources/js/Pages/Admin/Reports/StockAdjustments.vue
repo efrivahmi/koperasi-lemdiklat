@@ -84,6 +84,32 @@ const getTypeIcon = (type) => {
     }
     return '➖';
 };
+
+const getPurposeLabel = (purpose) => {
+    const labels = {
+        'sale': 'Penjualan (Transaksi)',
+        'internal_use': 'Keperluan Internal/Kantor',
+        'personal_use': 'Keperluan Pribadi',
+        'damage': 'Kerusakan Barang',
+        'expired': 'Barang Kadaluarsa',
+        'return_to_supplier': 'Retur ke Supplier',
+        'other': 'Lainnya'
+    };
+    return labels[purpose] || 'Tidak Diketahui';
+};
+
+const getPurposeBadge = (purpose) => {
+    const badges = {
+        'sale': 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400',
+        'internal_use': 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400',
+        'personal_use': 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400',
+        'damage': 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400',
+        'expired': 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400',
+        'return_to_supplier': 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400',
+        'other': 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400'
+    };
+    return badges[purpose] || 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400';
+};
 </script>
 
 <template>
@@ -143,6 +169,118 @@ const getTypeIcon = (type) => {
                                 <p class="text-red-100 text-xs mt-1">{{ summary.deductions_count }} transaksi</p>
                             </div>
                             <div class="text-3xl sm:text-5xl opacity-50">➖</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recapitulation Cards (Financial Impact) -->
+                <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg mb-4 sm:mb-6">
+                    <div class="p-4 sm:p-6">
+                        <h3 class="font-semibold text-base sm:text-lg mb-4 text-gray-900 dark:text-gray-100">📊 Rekapitulasi Dampak Keuangan</h3>
+
+                        <!-- Purpose-Based Financial Breakdown -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                            <!-- Sales Revenue & Profit -->
+                            <div class="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 rounded-lg p-4 border border-green-200 dark:border-green-700">
+                                <div class="flex items-center justify-between mb-2">
+                                    <span class="text-xs font-medium text-green-700 dark:text-green-300">Transaksi Penjualan</span>
+                                    <span class="text-lg">💰</span>
+                                </div>
+                                <p class="text-sm font-semibold text-green-600 dark:text-green-400">
+                                    Pendapatan: {{ formatCurrency(summary.sales_revenue || 0) }}
+                                </p>
+                                <p class="text-sm font-semibold text-green-700 dark:text-green-500">
+                                    Laba Kotor: {{ formatCurrency(summary.sales_profit || 0) }}
+                                </p>
+                                <p class="text-xs text-green-600 dark:text-green-400 mt-1">
+                                    Revenue - COGS
+                                </p>
+                            </div>
+
+                            <!-- Total Revenue -->
+                            <div class="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 rounded-lg p-4 border border-blue-200 dark:border-blue-700">
+                                <div class="flex items-center justify-between mb-2">
+                                    <span class="text-xs font-medium text-blue-700 dark:text-blue-300">Total Pendapatan</span>
+                                    <span class="text-lg">📈</span>
+                                </div>
+                                <p class="text-xl font-bold text-blue-600 dark:text-blue-400">
+                                    {{ formatCurrency(summary.total_revenue || 0) }}
+                                </p>
+                                <p class="text-xs text-blue-600 dark:text-blue-400 mt-1">
+                                    Dari penjualan & retur
+                                </p>
+                            </div>
+
+                            <!-- Non-Revenue Loss -->
+                            <div class="bg-gradient-to-br from-red-50 to-red-100 dark:from-red-900/20 dark:to-red-800/20 rounded-lg p-4 border border-red-200 dark:border-red-700">
+                                <div class="flex items-center justify-between mb-2">
+                                    <span class="text-xs font-medium text-red-700 dark:text-red-300">Kerugian Non-Pendapatan</span>
+                                    <span class="text-lg">💸</span>
+                                </div>
+                                <p class="text-xl font-bold text-red-600 dark:text-red-400">
+                                    {{ formatCurrency(summary.non_revenue_loss || 0) }}
+                                </p>
+                                <p class="text-xs text-red-600 dark:text-red-400 mt-1">
+                                    Internal, pribadi, rusak, kadaluarsa
+                                </p>
+                            </div>
+
+                            <!-- Return Refund -->
+                            <div class="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20 rounded-lg p-4 border border-purple-200 dark:border-purple-700">
+                                <div class="flex items-center justify-between mb-2">
+                                    <span class="text-xs font-medium text-purple-700 dark:text-purple-300">Retur ke Supplier</span>
+                                    <span class="text-lg">🔄</span>
+                                </div>
+                                <p class="text-xl font-bold text-purple-600 dark:text-purple-400">
+                                    {{ formatCurrency(summary.return_refund || 0) }}
+                                </p>
+                                <p class="text-xs text-purple-600 dark:text-purple-400 mt-1">
+                                    Refund diterima
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- Overall Financial Summary -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                            <!-- Net Cost Impact -->
+                            <div class="bg-gradient-to-br from-cyan-50 to-cyan-100 dark:from-cyan-900/20 dark:to-cyan-800/20 rounded-lg p-4 border border-cyan-200 dark:border-cyan-700">
+                                <div class="flex items-center justify-between mb-2">
+                                    <span class="text-xs font-medium text-cyan-700 dark:text-cyan-300">Dampak Nilai Stok (COGS)</span>
+                                    <span class="text-lg">📦</span>
+                                </div>
+                                <p class="text-xl font-bold" :class="summary.total_cost_impact >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'">
+                                    {{ formatCurrency(summary.total_cost_impact) }}
+                                </p>
+                                <p class="text-xs text-cyan-600 dark:text-cyan-400 mt-1">
+                                    {{ summary.total_cost_impact >= 0 ? 'Pertambahan nilai inventori' : 'Pengurangan nilai inventori' }}
+                                </p>
+                            </div>
+
+                            <!-- Net Profit/Loss Impact -->
+                            <div class="bg-gradient-to-br from-indigo-50 to-indigo-100 dark:from-indigo-900/20 dark:to-indigo-800/20 rounded-lg p-4 border border-indigo-200 dark:border-indigo-700">
+                                <div class="flex items-center justify-between mb-2">
+                                    <span class="text-xs font-medium text-indigo-700 dark:text-indigo-300">Dampak Laba/Rugi Bersih</span>
+                                    <span class="text-lg">💹</span>
+                                </div>
+                                <p class="text-xl font-bold" :class="summary.total_profit_loss_impact >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'">
+                                    {{ formatCurrency(summary.total_profit_loss_impact) }}
+                                </p>
+                                <p class="text-xs text-indigo-600 dark:text-indigo-400 mt-1">
+                                    {{ summary.total_profit_loss_impact >= 0 ? 'Keuntungan bersih' : 'Kerugian bersih' }}
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- Explanation -->
+                        <div class="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-700">
+                            <p class="text-xs text-blue-700 dark:text-blue-300 leading-relaxed">
+                                <strong>Catatan Perhitungan (Standar Internasional):</strong><br>
+                                • <strong>Penjualan:</strong> Pendapatan - COGS = Laba Kotor<br>
+                                • <strong>Non-Pendapatan</strong> (internal, pribadi, rusak, kadaluarsa): Kerugian murni tanpa pendapatan<br>
+                                • <strong>Retur ke Supplier:</strong> Refund di harga beli (break-even)<br>
+                                • <strong>Dampak Nilai Stok:</strong> Perubahan nilai inventori berdasarkan harga beli<br>
+                                • <strong>Dampak Laba/Rugi:</strong> Total keuntungan/kerugian dari semua penyesuaian stok
+                            </p>
                         </div>
                     </div>
                 </div>
@@ -281,35 +419,53 @@ const getTypeIcon = (type) => {
                             <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                                 <thead class="bg-gray-50 dark:bg-gray-900">
                                     <tr>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                                            Tanggal & Waktu
+                                        <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                            Tanggal
                                         </th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                        <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                                             Produk
                                         </th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                        <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                                             Tipe
                                         </th>
-                                        <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                                            Stok Sebelum
+                                        <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                            Tujuan
                                         </th>
-                                        <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                                            Disesuaikan
+                                        <th class="px-3 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                            Qty
                                         </th>
-                                        <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                                            Stok Sesudah
+                                        <th class="px-3 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                            Stok Awal
                                         </th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                                            Disesuaikan Oleh
+                                        <th class="px-3 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                            Stok Akhir
                                         </th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                        <th class="px-3 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                            Harga Beli
+                                        </th>
+                                        <th class="px-3 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                            Nilai Stok
+                                        </th>
+                                        <th class="px-3 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                            Harga Jual
+                                        </th>
+                                        <th class="px-3 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                            Pendapatan
+                                        </th>
+                                        <th class="px-3 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                            Laba/Rugi
+                                        </th>
+                                        <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                            Oleh
+                                        </th>
+                                        <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                                             Catatan
                                         </th>
                                     </tr>
                                 </thead>
                                 <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                                     <tr v-if="adjustments.data.length === 0">
-                                        <td colspan="8" class="px-6 py-12 text-center text-gray-500 dark:text-gray-400">
+                                        <td colspan="14" class="px-6 py-12 text-center text-gray-500 dark:text-gray-400">
                                             <div class="flex flex-col items-center justify-center">
                                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 text-gray-400 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -320,39 +476,78 @@ const getTypeIcon = (type) => {
                                         </td>
                                     </tr>
                                     <tr v-for="adjustment in adjustments.data" :key="adjustment.id" class="hover:bg-gray-50 dark:hover:bg-gray-700">
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
+                                        <!-- Tanggal -->
+                                        <td class="px-3 py-3 whitespace-nowrap text-xs text-gray-900 dark:text-gray-100">
                                             {{ formatDate(adjustment.created_at) }}
                                         </td>
-                                        <td class="px-6 py-4 whitespace-nowrap">
-                                            <div class="text-sm font-medium text-gray-900 dark:text-gray-100">
+                                        <!-- Produk -->
+                                        <td class="px-3 py-3">
+                                            <div class="text-sm font-medium text-gray-900 dark:text-gray-100 max-w-[180px] truncate" :title="adjustment.product?.name || '-'">
                                                 {{ adjustment.product?.name || '-' }}
                                             </div>
-                                            <div class="text-xs text-gray-500 dark:text-gray-400">
-                                                {{ adjustment.product?.barcode || '-' }}
-                                            </div>
                                         </td>
-                                        <td class="px-6 py-4 whitespace-nowrap">
-                                            <span :class="getTypeBadge(adjustment.type)" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium">
+                                        <!-- Tipe -->
+                                        <td class="px-3 py-3 whitespace-nowrap">
+                                            <span :class="getTypeBadge(adjustment.type)" class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium">
                                                 <span class="mr-1">{{ getTypeIcon(adjustment.type) }}</span>
                                                 {{ getTypeText(adjustment.type) }}
                                             </span>
                                         </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-900 dark:text-gray-100">
-                                            <span class="font-semibold">{{ adjustment.quantity_before }}</span>
+                                        <!-- Tujuan -->
+                                        <td class="px-3 py-3 whitespace-nowrap">
+                                            <span :class="getPurposeBadge(adjustment.purpose)" class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium max-w-[160px] truncate" :title="getPurposeLabel(adjustment.purpose)">
+                                                {{ getPurposeLabel(adjustment.purpose) }}
+                                            </span>
                                         </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-center">
+                                        <!-- Qty -->
+                                        <td class="px-3 py-3 whitespace-nowrap text-center">
                                             <span :class="adjustment.type === 'addition' ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'" class="text-sm font-bold">
                                                 {{ adjustment.type === 'addition' ? '+' : '-' }}{{ adjustment.quantity_adjusted }}
                                             </span>
                                         </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-900 dark:text-gray-100">
-                                            <span class="font-semibold">{{ adjustment.quantity_after }}</span>
+                                        <!-- Stok Awal -->
+                                        <td class="px-3 py-3 whitespace-nowrap text-center text-sm text-gray-900 dark:text-gray-100">
+                                            {{ adjustment.quantity_before }}
                                         </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm">
-                                            <AuditInfo :user="adjustment.adjusted_by" :timestamp="adjustment.created_at" label="Disesuaikan" />
+                                        <!-- Stok Akhir -->
+                                        <td class="px-3 py-3 whitespace-nowrap text-center text-sm font-semibold text-gray-900 dark:text-gray-100">
+                                            {{ adjustment.quantity_after }}
                                         </td>
-                                        <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
-                                            {{ adjustment.notes || '-' }}
+                                        <!-- Harga Beli -->
+                                        <td class="px-3 py-3 whitespace-nowrap text-right text-sm text-gray-900 dark:text-gray-100">
+                                            {{ formatCurrency(adjustment.product?.harga_beli || 0) }}
+                                        </td>
+                                        <!-- Nilai Stok (COGS) -->
+                                        <td class="px-3 py-3 whitespace-nowrap text-right">
+                                            <div class="text-sm font-semibold" :class="adjustment.type === 'addition' ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'">
+                                                {{ adjustment.type === 'addition' ? '+' : '-' }}{{ formatCurrency(adjustment.cost_impact || 0) }}
+                                            </div>
+                                        </td>
+                                        <!-- Harga Jual -->
+                                        <td class="px-3 py-3 whitespace-nowrap text-right text-sm text-gray-900 dark:text-gray-100">
+                                            {{ formatCurrency(adjustment.product?.harga_jual || 0) }}
+                                        </td>
+                                        <!-- Pendapatan -->
+                                        <td class="px-3 py-3 whitespace-nowrap text-right">
+                                            <div class="text-sm font-semibold text-blue-600 dark:text-blue-400">
+                                                {{ formatCurrency(adjustment.revenue || 0) }}
+                                            </div>
+                                        </td>
+                                        <!-- Laba/Rugi -->
+                                        <td class="px-3 py-3 whitespace-nowrap text-right">
+                                            <div class="text-sm font-semibold" :class="(adjustment.profit_loss_impact || 0) >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'">
+                                                {{ (adjustment.profit_loss_impact || 0) >= 0 ? '+' : '' }}{{ formatCurrency(adjustment.profit_loss_impact || 0) }}
+                                            </div>
+                                        </td>
+                                        <!-- Oleh -->
+                                        <td class="px-3 py-3 whitespace-nowrap text-xs">
+                                            <div class="text-gray-900 dark:text-gray-100 font-medium">{{ adjustment.adjusted_by?.name || '-' }}</div>
+                                        </td>
+                                        <!-- Catatan -->
+                                        <td class="px-3 py-3 text-xs text-gray-500 dark:text-gray-400 max-w-[120px]">
+                                            <div class="line-clamp-2" :title="adjustment.notes || '-'">
+                                                {{ adjustment.notes || '-' }}
+                                            </div>
                                         </td>
                                     </tr>
                                 </tbody>

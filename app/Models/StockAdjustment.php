@@ -12,6 +12,7 @@ class StockAdjustment extends Model
         'quantity_adjusted',
         'quantity_after',
         'type',
+        'purpose',
         'notes',
         'adjusted_by',
     ];

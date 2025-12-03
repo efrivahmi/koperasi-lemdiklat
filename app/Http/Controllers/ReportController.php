@@ -460,14 +460,131 @@ class ReportController extends Controller
 
             $adjustments = $query->oldest()->paginate(20);
 
-            // Calculate summary
-            $allAdjustments = StockAdjustment::whereBetween('created_at', [$dateFrom . ' 00:00:00', $dateTo . ' 23:59:59'])->get();
+            // Add financial calculations to each adjustment based on purpose
+            $adjustments->getCollection()->transform(function ($adjustment) {
+                if ($adjustment->product) {
+                    $hargaBeli = $adjustment->product->harga_beli;
+                    $hargaJual = $adjustment->product->harga_jual;
+                    $quantity = $adjustment->quantity_adjusted;
+
+                    $adjustment->cost_impact = $quantity * $hargaBeli;
+                    $adjustment->profit_margin_per_unit = $hargaJual - $hargaBeli;
+
+                    // Calculate profit/loss based on purpose using international accounting standards
+                    if ($adjustment->purpose === 'sale') {
+                        // For sales: Revenue - COGS = Gross Profit
+                        $revenue = $quantity * $hargaJual;
+                        $cogs = $quantity * $hargaBeli;
+                        $adjustment->revenue = $revenue;
+                        $adjustment->profit_loss_impact = $revenue - $cogs; // Gross profit
+                    } else if (in_array($adjustment->purpose, ['internal_use', 'personal_use', 'damage', 'expired'])) {
+                        // For non-revenue purposes: Pure loss (COGS with no revenue)
+                        $adjustment->revenue = 0;
+                        $adjustment->profit_loss_impact = -($quantity * $hargaBeli); // Negative = Loss
+                    } else if ($adjustment->purpose === 'return_to_supplier') {
+                        // For returns: Typically get refund at purchase price
+                        $adjustment->revenue = $quantity * $hargaBeli; // Refund
+                        $adjustment->profit_loss_impact = 0; // Break-even
+                    } else {
+                        // For 'other' or unspecified: Calculate margin potential
+                        $adjustment->revenue = 0;
+                        $adjustment->profit_loss_impact = $quantity * $adjustment->profit_margin_per_unit;
+                    }
+                } else {
+                    $adjustment->cost_impact = 0;
+                    $adjustment->profit_margin_per_unit = 0;
+                    $adjustment->profit_loss_impact = 0;
+                    $adjustment->revenue = 0;
+                }
+                return $adjustment;
+            });
+
+            // Calculate summary with profit/loss impact
+            $allAdjustments = StockAdjustment::with('product')
+                ->whereBetween('created_at', [$dateFrom . ' 00:00:00', $dateTo . ' 23:59:59'])
+                ->get();
+
+            // Calculate cost and profit/loss impact based on purpose
+            $totalCostImpact = 0;
+            $totalProfitLossImpact = 0;
+            $totalRevenue = 0;
+            $additionsCostImpact = 0;
+            $deductionsCostImpact = 0;
+            $additionsProfitImpact = 0;
+            $deductionsLossImpact = 0;
+
+            // Group by purpose for detailed analysis
+            $salesRevenue = 0;
+            $salesProfit = 0;
+            $nonRevenueLoss = 0;
+            $returnRefund = 0;
+
+            foreach ($allAdjustments as $adjustment) {
+                if ($adjustment->product) {
+                    $hargaBeli = $adjustment->product->harga_beli;
+                    $hargaJual = $adjustment->product->harga_jual;
+                    $quantity = $adjustment->quantity_adjusted;
+                    $costImpact = $quantity * $hargaBeli;
+
+                    // Calculate impact based on purpose
+                    $profitLossImpact = 0;
+                    $revenue = 0;
+
+                    if ($adjustment->purpose === 'sale') {
+                        // Sales transaction: Revenue - COGS
+                        $revenue = $quantity * $hargaJual;
+                        $profitLossImpact = $revenue - $costImpact;
+                        $salesRevenue += $revenue;
+                        $salesProfit += $profitLossImpact;
+                    } else if (in_array($adjustment->purpose, ['internal_use', 'personal_use', 'damage', 'expired'])) {
+                        // Non-revenue purposes: Pure loss
+                        $profitLossImpact = -$costImpact;
+                        $nonRevenueLoss += $costImpact;
+                    } else if ($adjustment->purpose === 'return_to_supplier') {
+                        // Returns: Refund at purchase price (break-even)
+                        $revenue = $costImpact;
+                        $profitLossImpact = 0;
+                        $returnRefund += $revenue;
+                    } else {
+                        // Other: Potential margin calculation
+                        $profitMargin = $hargaJual - $hargaBeli;
+                        $profitLossImpact = $quantity * $profitMargin;
+                    }
+
+                    if ($adjustment->type === 'addition') {
+                        $additionsCostImpact += $costImpact;
+                        $additionsProfitImpact += max(0, $profitLossImpact);
+                        $totalCostImpact += $costImpact;
+                    } else {
+                        $deductionsCostImpact += $costImpact;
+                        $deductionsLossImpact += $profitLossImpact;
+                        $totalCostImpact -= $costImpact;
+                    }
+
+                    $totalProfitLossImpact += ($adjustment->type === 'addition' ? $profitLossImpact : -abs($profitLossImpact));
+                    $totalRevenue += $revenue;
+                }
+            }
+
             $summary = [
                 'total_adjustments' => $allAdjustments->count(),
                 'total_additions' => $allAdjustments->where('type', 'addition')->sum('quantity_adjusted'),
                 'total_deductions' => $allAdjustments->where('type', 'deduction')->sum('quantity_adjusted'),
                 'additions_count' => $allAdjustments->where('type', 'addition')->count(),
                 'deductions_count' => $allAdjustments->where('type', 'deduction')->count(),
+                // Financial impact
+                'total_cost_impact' => $totalCostImpact,
+                'total_profit_loss_impact' => $totalProfitLossImpact,
+                'total_revenue' => $totalRevenue,
+                'additions_cost_impact' => $additionsCostImpact,
+                'deductions_cost_impact' => $deductionsCostImpact,
+                'additions_profit_impact' => $additionsProfitImpact,
+                'deductions_loss_impact' => $deductionsLossImpact,
+                // Purpose-based breakdown
+                'sales_revenue' => $salesRevenue,
+                'sales_profit' => $salesProfit,
+                'non_revenue_loss' => $nonRevenueLoss,
+                'return_refund' => $returnRefund,
             ];
 
             // Get products for filter
@@ -513,6 +630,17 @@ class ReportController extends Controller
                     'total_deductions' => 0,
                     'additions_count' => 0,
                     'deductions_count' => 0,
+                    'total_cost_impact' => 0,
+                    'total_profit_loss_impact' => 0,
+                    'total_revenue' => 0,
+                    'additions_cost_impact' => 0,
+                    'deductions_cost_impact' => 0,
+                    'additions_profit_impact' => 0,
+                    'deductions_loss_impact' => 0,
+                    'sales_revenue' => 0,
+                    'sales_profit' => 0,
+                    'non_revenue_loss' => 0,
+                    'return_refund' => 0,
                 ],
                 'products' => [],
                 'adjusters' => [],

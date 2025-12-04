@@ -221,7 +221,26 @@ page.props.isLoading = isLoading;
 </script>
 
 <template>
-<div class="relative min-h-screen overflow-hidden bg-gray-50">
+<div class="relative min-h-screen overflow-hidden bg-gradient-to-br from-purple-900 via-indigo-900 to-blue-900">
+    <!-- Decorative Background -->
+    <div class="absolute inset-0 overflow-hidden pointer-events-none">
+        <!-- Animated gradient blobs -->
+        <div class="absolute top-0 -left-4 w-96 h-96 bg-purple-500/20 rounded-full mix-blend-multiply filter blur-3xl opacity-70 animate-blob"></div>
+        <div class="absolute top-0 -right-4 w-96 h-96 bg-pink-500/20 rounded-full mix-blend-multiply filter blur-3xl opacity-70 animate-blob animation-delay-2000"></div>
+        <div class="absolute -bottom-8 left-20 w-96 h-96 bg-indigo-500/20 rounded-full mix-blend-multiply filter blur-3xl opacity-70 animate-blob animation-delay-4000"></div>
+
+        <!-- Stars -->
+        <div class="absolute inset-0">
+            <div class="absolute top-20 left-[10%] w-1 h-1 bg-white rounded-full animate-pulse"></div>
+            <div class="absolute top-40 left-[20%] w-1 h-1 bg-purple-200 rounded-full animate-pulse animation-delay-1000"></div>
+            <div class="absolute top-60 left-[15%] w-1 h-1 bg-pink-200 rounded-full animate-pulse animation-delay-2000"></div>
+            <div class="absolute top-32 right-[15%] w-1 h-1 bg-white rounded-full animate-pulse animation-delay-3000"></div>
+            <div class="absolute top-52 right-[25%] w-1 h-1 bg-purple-200 rounded-full animate-pulse"></div>
+            <div class="absolute bottom-40 left-[30%] w-1 h-1 bg-pink-200 rounded-full animate-pulse animation-delay-1000"></div>
+            <div class="absolute bottom-60 right-[20%] w-1 h-1 bg-white rounded-full animate-pulse animation-delay-2000"></div>
+        </div>
+    </div>
+
     <!-- Loading Overlay -->
     <Transition name="fade">
         <div v-if="isLoading" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
@@ -239,7 +258,7 @@ page.props.isLoading = isLoading;
 
     <!-- Sidebar -->
     <aside :class="[
-        'fixed top-0 z-50 h-screen transition-all duration-300 ease-in-out bg-white border-r border-gray-200 shadow-lg',
+        'fixed top-0 z-50 h-screen transition-all duration-300 ease-in-out bg-gradient-to-b from-gray-900 via-purple-900 to-indigo-900 border-r border-purple-500/30 shadow-2xl shadow-purple-500/20',
         isMobile ? [
             mobileMenuOpen ? 'left-0' : '-left-full',
             'w-64'
@@ -252,15 +271,15 @@ page.props.isLoading = isLoading;
             <!-- Logo & Toggle -->
             <div class="flex items-center justify-between mb-6 px-2">
                 <Link :href="route('dashboard')" v-if="sidebarOpen || isMobile" class="flex items-center space-x-3 group">
-                    <img src="/storage/logos/icon.png" alt="Logo Koperasi" class="w-10 h-10 object-contain group-hover:scale-110 transition-transform duration-300" />
+                    <img src="/storage/logos/icon.png" alt="Logo Koperasi" class="w-10 h-10 object-contain group-hover:scale-110 transition-transform duration-300 drop-shadow-lg" />
                     <div class="flex flex-col">
-                        <span class="text-sm font-bold text-gray-800 leading-tight">Koperasi Lemdiklat</span>
-                        <span class="text-xs font-medium text-gray-600 leading-tight">Taruna Nusantara</span>
+                        <span class="text-sm font-bold text-white leading-tight drop-shadow-md">Koperasi Lemdiklat</span>
+                        <span class="text-xs font-medium text-purple-200 leading-tight drop-shadow-md">Taruna Nusantara</span>
                     </div>
                 </Link>
                 <button
                     @click="toggleSidebar"
-                    class="p-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white transition-all duration-300 hover:scale-110 shadow-md"
+                    class="p-2 rounded-lg bg-gradient-to-br from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white transition-all duration-300 hover:scale-110 shadow-lg shadow-purple-500/50"
                     :title="isMobile ? 'Close menu' : (sidebarOpen ? 'Collapse sidebar' : 'Expand sidebar')"
                 >
                     <svg v-if="!isMobile" class="w-5 h-5 transition-transform duration-300" :class="{ 'rotate-180': !sidebarOpen }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -273,36 +292,36 @@ page.props.isLoading = isLoading;
             </div>
 
             <!-- User Info -->
-            <div v-if="user" :class="['mb-6 p-4 rounded-xl bg-gradient-to-r from-indigo-50 to-purple-50 border border-indigo-200 transition-all duration-300', (sidebarOpen || isMobile) ? '' : 'px-2']">
+            <div v-if="user" :class="['mb-6 p-4 rounded-xl bg-gradient-to-br from-purple-800/50 to-pink-800/50 border border-purple-400/30 backdrop-blur-sm shadow-lg shadow-purple-500/20 transition-all duration-300', (sidebarOpen || isMobile) ? '' : 'px-2']">
                 <div v-if="sidebarOpen || isMobile" class="space-y-2">
                     <div class="flex items-center space-x-2">
                         <div class="relative">
-                            <div v-if="user.photo" class="w-10 h-10 rounded-full overflow-hidden shadow-md border-2 border-indigo-400">
+                            <div v-if="user.photo" class="w-10 h-10 rounded-full overflow-hidden shadow-md border-2 border-purple-400">
                                 <img :src="`/storage/${user.photo}`" :alt="user.name" class="w-full h-full object-cover">
                             </div>
-                            <div v-else class="w-10 h-10 rounded-full bg-indigo-500 flex items-center justify-center text-white font-bold shadow-md">
+                            <div v-else class="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white font-bold shadow-md">
                                 {{ user.name?.charAt(0).toUpperCase() }}
                             </div>
-                            <span class="absolute bottom-0 right-0 w-3 h-3 bg-green-400 rounded-full border-2 border-white"></span>
+                            <span class="absolute bottom-0 right-0 w-3 h-3 bg-green-400 rounded-full border-2 border-gray-800"></span>
                         </div>
                         <div class="flex-1 min-w-0">
-                            <p class="text-sm font-semibold text-gray-800 truncate">{{ user.name }}</p>
-                            <p class="text-xs text-gray-600 truncate">{{ user.email }}</p>
+                            <p class="text-sm font-semibold text-white truncate drop-shadow-md">{{ user.name }}</p>
+                            <p class="text-xs text-purple-200 truncate drop-shadow-md">{{ user.email }}</p>
                         </div>
                     </div>
-                    <span class="inline-block px-3 py-1 text-xs font-semibold rounded-full bg-indigo-600 text-white shadow-sm">
+                    <span class="inline-block px-3 py-1 text-xs font-semibold rounded-full bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg shadow-purple-500/50">
                         {{ userRoleLabel }}
                     </span>
                 </div>
                 <div v-else class="flex justify-center">
                     <div class="relative">
-                        <div v-if="user.photo" class="w-10 h-10 rounded-full overflow-hidden shadow-md border-2 border-indigo-400">
+                        <div v-if="user.photo" class="w-10 h-10 rounded-full overflow-hidden shadow-md border-2 border-purple-400">
                             <img :src="`/storage/${user.photo}`" :alt="user.name" class="w-full h-full object-cover">
                         </div>
-                        <div v-else class="w-10 h-10 rounded-full bg-indigo-500 flex items-center justify-center text-white font-bold shadow-md">
+                        <div v-else class="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white font-bold shadow-md">
                             {{ user.name?.charAt(0).toUpperCase() }}
                         </div>
-                        <span class="absolute bottom-0 right-0 w-3 h-3 bg-green-400 rounded-full border-2 border-white"></span>
+                        <span class="absolute bottom-0 right-0 w-3 h-3 bg-green-400 rounded-full border-2 border-gray-800"></span>
                     </div>
                 </div>
             </div>
@@ -312,7 +331,7 @@ page.props.isLoading = isLoading;
                 <div v-for="(section, sectionIndex) in menuItems" :key="sectionIndex">
                     <!-- Section Title -->
                     <div v-if="section.title && (sidebarOpen || isMobile)" class="px-3 mb-2">
-                        <h3 class="text-xs font-bold uppercase tracking-wider text-gray-500">
+                        <h3 class="text-xs font-bold uppercase tracking-wider text-purple-300 drop-shadow-md">
                             {{ section.title }}
                         </h3>
                     </div>
@@ -328,8 +347,8 @@ page.props.isLoading = isLoading;
                                 'group flex items-center rounded-lg transition-all duration-200',
                                 (sidebarOpen || isMobile) ? 'px-4 py-3' : 'px-3 py-3 justify-center',
                                 isActiveRoute(item.route)
-                                    ? 'bg-indigo-600 text-white shadow-md'
-                                    : 'text-gray-700 hover:bg-gray-100'
+                                    ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg shadow-purple-500/50'
+                                    : 'text-purple-200 hover:bg-purple-800/50 hover:text-white'
                             ]">
                             <span :class="['text-2xl transition-transform duration-300 group-hover:scale-110', (sidebarOpen || isMobile) ? '' : 'mx-auto']">
                                 {{ item.icon }}
@@ -341,12 +360,12 @@ page.props.isLoading = isLoading;
             </nav>
 
             <!-- Profile & Logout Section -->
-            <div class="mt-8 pt-6 border-t border-gray-200 space-y-2">
+            <div class="mt-8 pt-6 border-t border-purple-500/30 space-y-2">
                 <Link
                     :href="route('profile.edit')"
                     @click="closeMobileMenu"
                     :class="[
-                        'group flex items-center w-full rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 transition-all duration-200',
+                        'group flex items-center w-full rounded-lg bg-purple-800/50 hover:bg-purple-700/70 text-purple-100 hover:text-white transition-all duration-200 shadow-md',
                         (sidebarOpen || isMobile) ? 'px-4 py-3' : 'px-3 py-3 justify-center'
                     ]">
                     <span :class="['text-2xl transition-transform duration-300 group-hover:scale-110', (sidebarOpen || isMobile) ? '' : 'mx-auto']">⚙️</span>
@@ -359,7 +378,7 @@ page.props.isLoading = isLoading;
                     as="button"
                     @click="closeMobileMenu"
                     :class="[
-                        'group flex items-center w-full rounded-lg bg-red-500 hover:bg-red-600 text-white transition-all duration-200',
+                        'group flex items-center w-full rounded-lg bg-gradient-to-r from-red-600 to-pink-600 hover:from-red-700 hover:to-pink-700 text-white transition-all duration-200 shadow-lg shadow-red-500/50',
                         (sidebarOpen || isMobile) ? 'px-4 py-3' : 'px-3 py-3 justify-center'
                     ]">
                     <span :class="['text-2xl transition-transform duration-300 group-hover:scale-110', (sidebarOpen || isMobile) ? '' : 'mx-auto']">🚪</span>
@@ -375,15 +394,15 @@ page.props.isLoading = isLoading;
         !isMobile && (sidebarOpen ? 'lg:ml-64' : 'lg:ml-20')
     ]">
         <!-- Mobile Header -->
-        <div v-if="isMobile" class="sticky top-0 z-30 bg-white border-b border-gray-200 shadow-sm lg:hidden">
+        <div v-if="isMobile" class="sticky top-0 z-30 bg-gradient-to-r from-purple-900 via-indigo-900 to-blue-900 border-b border-purple-500/30 shadow-lg shadow-purple-500/20 lg:hidden backdrop-blur-sm">
             <div class="flex items-center justify-between px-4 py-3">
                 <Link :href="route('dashboard')" class="flex items-center space-x-2">
-                    <span class="text-2xl">🏢</span>
-                    <span class="text-lg font-bold text-gray-800">Koperasi</span>
+                    <img src="/storage/logos/icon.png" alt="Logo" class="w-8 h-8 object-contain drop-shadow-lg" />
+                    <span class="text-base font-bold text-white drop-shadow-md">Koperasi Lemdiklat</span>
                 </Link>
                 <button
                     @click="toggleSidebar"
-                    class="p-2 rounded-lg bg-indigo-600 text-white shadow-md"
+                    class="p-2 rounded-lg bg-gradient-to-br from-purple-600 to-pink-600 text-white shadow-lg shadow-purple-500/50"
                     title="Open menu"
                 >
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -394,8 +413,8 @@ page.props.isLoading = isLoading;
         </div>
 
         <!-- Header -->
-        <header v-if="$slots.header" class="sticky top-0 z-20 bg-white border-b border-gray-200 shadow-sm hidden lg:block">
-            <div class="px-4 lg:px-8 py-6">
+        <header v-if="$slots.header" class="sticky top-0 z-20 bg-gradient-to-r from-purple-900/95 via-indigo-900/95 to-blue-900/95 border-b border-purple-500/30 shadow-lg shadow-purple-500/10 backdrop-blur-md hidden lg:block">
+            <div class="px-4 lg:px-8 py-6 text-white">
                 <slot name="header" />
             </div>
         </header>
@@ -415,5 +434,40 @@ page.props.isLoading = isLoading;
 
 .fade-enter-from, .fade-leave-to {
     opacity: 0;
+}
+
+@keyframes blob {
+    0% {
+        transform: translate(0px, 0px) scale(1);
+    }
+    33% {
+        transform: translate(30px, -50px) scale(1.1);
+    }
+    66% {
+        transform: translate(-20px, 20px) scale(0.9);
+    }
+    100% {
+        transform: translate(0px, 0px) scale(1);
+    }
+}
+
+.animate-blob {
+    animation: blob 7s infinite;
+}
+
+.animation-delay-2000 {
+    animation-delay: 2s;
+}
+
+.animation-delay-4000 {
+    animation-delay: 4s;
+}
+
+.animation-delay-1000 {
+    animation-delay: 1s;
+}
+
+.animation-delay-3000 {
+    animation-delay: 3s;
 }
 </style>

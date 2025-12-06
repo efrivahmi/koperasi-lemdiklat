@@ -46,20 +46,9 @@ Route::middleware(['auth', 'role:admin,master,kasir'])->prefix('admin')->group(f
 
     Route::resource('products', \App\Http\Controllers\ProductController::class);
 
-    // Inventory & Finance - Accessible by Kasir
+    // Inventory & Finance - Accessible by Kasir (with permission)
     Route::resource('stock-ins', \App\Http\Controllers\StockInController::class);
-});
-
-// Admin & Master Only Routes
-Route::middleware(['auth', 'role:admin,master'])->prefix('admin')->group(function () {
-    // Students Management
-    Route::resource('students', \App\Http\Controllers\StudentController::class);
-    Route::get('students/{student}/rfid-register', [\App\Http\Controllers\StudentController::class, 'rfidRegister'])->name('students.rfid.register');
-    Route::post('students/{student}/rfid-store', [\App\Http\Controllers\StudentController::class, 'rfidStore'])->name('students.rfid.store');
-    Route::get('api/generate-rfid', [\App\Http\Controllers\StudentController::class, 'generateRfidApi'])->name('api.generate-rfid');
-    Route::get('students/{student}/generate-card', [\App\Http\Controllers\StudentCardController::class, 'generate'])->name('students.card.generate');
-    Route::post('students/generate-cards-batch', [\App\Http\Controllers\StudentCardController::class, 'generateBatch'])->name('students.cards.batch');
-    Route::get('students/{student}/export-rfid', [\App\Http\Controllers\StudentCardController::class, 'exportForRfid'])->name('students.rfid.export');
+    Route::resource('expenses', \App\Http\Controllers\ExpenseController::class);
 
     // Vouchers (specific routes MUST come before resource routes)
     Route::get('vouchers/search-student', [\App\Http\Controllers\VoucherController::class, 'searchStudent'])->name('vouchers.search.student');
@@ -69,11 +58,21 @@ Route::middleware(['auth', 'role:admin,master'])->prefix('admin')->group(functio
     Route::post('vouchers-redeem', [\App\Http\Controllers\VoucherController::class, 'redeem'])->name('vouchers.redeem');
     Route::resource('vouchers', \App\Http\Controllers\VoucherController::class);
 
-    Route::resource('expenses', \App\Http\Controllers\ExpenseController::class);
-
-    // Transactions
+    // Transactions - View only for Kasir
     Route::get('transactions', [\App\Http\Controllers\TransactionController::class, 'index'])->name('transactions.index');
     Route::get('transactions/student/{student}', [\App\Http\Controllers\TransactionController::class, 'studentHistory'])->name('transactions.student');
+});
+
+// Admin & Master Only Routes
+Route::middleware(['auth', 'role:admin,master'])->prefix('admin')->group(function () {
+    // Students Management - Only for Admin & Master
+    Route::resource('students', \App\Http\Controllers\StudentController::class);
+    Route::get('students/{student}/rfid-register', [\App\Http\Controllers\StudentController::class, 'rfidRegister'])->name('students.rfid.register');
+    Route::post('students/{student}/rfid-store', [\App\Http\Controllers\StudentController::class, 'rfidStore'])->name('students.rfid.store');
+    Route::get('api/generate-rfid', [\App\Http\Controllers\StudentController::class, 'generateRfidApi'])->name('api.generate-rfid');
+    Route::get('students/{student}/generate-card', [\App\Http\Controllers\StudentCardController::class, 'generate'])->name('students.card.generate');
+    Route::post('students/generate-cards-batch', [\App\Http\Controllers\StudentCardController::class, 'generateBatch'])->name('students.cards.batch');
+    Route::get('students/{student}/export-rfid', [\App\Http\Controllers\StudentCardController::class, 'exportForRfid'])->name('students.rfid.export');
 });
 
 // Reports - Accessible by Admin, Master & Kasir

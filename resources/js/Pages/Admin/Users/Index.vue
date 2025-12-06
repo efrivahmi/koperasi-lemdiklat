@@ -58,16 +58,40 @@ const getRoleLabel = (role) => {
 
     <AuthenticatedLayout>
         <template #header>
-            <div class="flex justify-between items-center">
-                <h2 class="font-semibold text-xl text-gray-800 leading-tight">Manajemen Pengguna (Staf)</h2>
-                <Link :href="route('users.create')" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg shadow-sm transition">
-                    Tambah Pengguna
-                </Link>
-            </div>
+            <h2 class="font-semibold text-xl text-gray-800 leading-tight">Manajemen Pengguna (Staf)</h2>
         </template>
 
-        <div class="py-12">
-            <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+        <div class="py-6 sm:py-12">
+            <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
+                <!-- Toolbar Section -->
+                <div class="mb-6 bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-gray-800 dark:to-gray-800 border border-purple-200 dark:border-purple-500/30 rounded-lg shadow-sm p-4">
+                    <div class="flex flex-col lg:flex-row gap-4 items-stretch lg:items-center">
+                        <!-- Search Bar -->
+                        <div class="flex-1">
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                    </svg>
+                                </div>
+                                <input
+                                    v-model="search"
+                                    type="text"
+                                    placeholder="Cari pengguna (nama, email)..."
+                                    class="block w-full pl-10 pr-3 py-2.5 border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-lg shadow-sm text-sm"
+                                />
+                            </div>
+                        </div>
+                        <!-- Action Button -->
+                        <Link :href="route('users.create')" class="inline-flex items-center justify-center px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg shadow-sm transition">
+                            <svg class="w-5 h-5 sm:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                            </svg>
+                            <span class="hidden sm:inline">Tambah Pengguna</span>
+                            <span class="sm:hidden">Pengguna</span>
+                        </Link>
+                    </div>
+                </div>
                 <!-- Success Message -->
                 <div v-if="flashSuccess" class="mb-4 bg-green-100 dark:bg-green-900/30 border border-green-400 dark:border-green-600 text-green-700 dark:text-green-300 px-4 py-3 rounded relative" role="alert">
                     <span class="block sm:inline">{{ flashSuccess }}</span>
@@ -91,16 +115,6 @@ const getRoleLabel = (role) => {
                 <!-- Table with Data or Search Results -->
                 <div v-else class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
                     <div class="p-6 text-gray-900 dark:text-gray-100">
-                        <!-- Search Bar -->
-                        <div class="mb-4">
-                            <input
-                                v-model="search"
-                                type="text"
-                                placeholder="Cari pengguna (nama, email)..."
-                                class="w-full md:w-1/2 border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm"
-                            />
-                        </div>
-
                         <div class="overflow-x-auto">
                             <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                                 <thead class="bg-gray-50 dark:bg-gray-800">

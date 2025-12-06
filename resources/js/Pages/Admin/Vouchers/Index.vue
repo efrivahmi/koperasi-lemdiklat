@@ -111,31 +111,61 @@ const availableVouchersCount = computed(() => {
 
     <AuthenticatedLayout>
         <template #header>
-            <div class="flex justify-between items-center">
-                <h2 class="font-semibold text-xl text-gray-800 leading-tight">Manajemen Voucher</h2>
-                <div class="flex gap-2">
-                    <button
-                        v-if="selectedVouchers.length > 0"
-                        @click="printSelectedVouchers"
-                        class="bg-purple-500 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded flex items-center gap-2"
-                    >
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
-                        </svg>
-                        Cetak {{ selectedVouchers.length }} Voucher
-                    </button>
-                    <Link :href="route('vouchers.redeem.form')" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">
-                        Redeem Voucher
-                    </Link>
-                    <Link :href="route('vouchers.create')" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg shadow-sm transition">
-                        Generate Voucher
-                    </Link>
-                </div>
-            </div>
+            <h2 class="font-semibold text-xl text-gray-800 leading-tight">Manajemen Voucher</h2>
         </template>
 
-        <div class="py-12">
-            <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+        <div class="py-6 sm:py-12">
+            <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
+                <!-- Toolbar Section -->
+                <div class="mb-6 bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-gray-800 dark:to-gray-800 border border-purple-200 dark:border-purple-500/30 rounded-lg shadow-sm p-4">
+                    <div class="flex flex-col lg:flex-row gap-4 items-stretch lg:items-center">
+                        <!-- Filter Section -->
+                        <div class="flex-1">
+                            <div class="flex items-center gap-2">
+                                <label for="status-filter" class="text-sm font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">Filter Status:</label>
+                                <select
+                                    id="status-filter"
+                                    v-model="statusFilter"
+                                    @change="filterByStatus"
+                                    class="flex-1 border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-lg shadow-sm text-sm"
+                                    aria-label="Filter status voucher"
+                                >
+                                    <option value="">Semua Status</option>
+                                    <option value="available">Available</option>
+                                    <option value="used">Used</option>
+                                    <option value="expired">Expired</option>
+                                </select>
+                            </div>
+                        </div>
+                        <!-- Action Buttons -->
+                        <div class="flex flex-wrap gap-2">
+                            <button
+                                v-if="selectedVouchers.length > 0"
+                                @click="printSelectedVouchers"
+                                class="flex-1 sm:flex-initial inline-flex items-center justify-center px-4 py-2.5 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-lg shadow-sm transition"
+                            >
+                                <svg class="w-5 h-5 sm:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                                </svg>
+                                <span>Cetak {{ selectedVouchers.length }}</span>
+                            </button>
+                            <Link :href="route('vouchers.redeem.form')" class="flex-1 sm:flex-initial inline-flex items-center justify-center px-4 py-2.5 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg shadow-sm transition">
+                                <svg class="w-5 h-5 sm:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                <span class="hidden sm:inline">Redeem Voucher</span>
+                                <span class="sm:hidden">Redeem</span>
+                            </Link>
+                            <Link :href="route('vouchers.create')" class="flex-1 sm:flex-initial inline-flex items-center justify-center px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg shadow-sm transition">
+                                <svg class="w-5 h-5 sm:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                                </svg>
+                                <span class="hidden sm:inline">Generate Voucher</span>
+                                <span class="sm:hidden">Generate</span>
+                            </Link>
+                        </div>
+                    </div>
+                </div>
                 <!-- Empty State -->
                 <EmptyState
                     v-if="vouchers.data.length === 0 && !statusFilter"
@@ -149,24 +179,8 @@ const availableVouchersCount = computed(() => {
                 <!-- Table with Data or Filter Results -->
                 <div v-else class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
                     <div class="p-6 text-gray-900 dark:text-gray-100">
-                        <div class="mb-4 flex justify-between items-center">
-                            <div>
-                                <label for="status-filter" class="sr-only">Filter Status Voucher</label>
-                                <select
-                                    id="status-filter"
-                                    v-model="statusFilter"
-                                    @change="filterByStatus"
-                                    class="border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm"
-                                    aria-label="Filter status voucher"
-                                >
-                                    <option value="">Semua Status</option>
-                                    <option value="available">Available</option>
-                                    <option value="used">Used</option>
-                                    <option value="expired">Expired</option>
-                                </select>
-                            </div>
-
-                            <div v-if="availableVouchersCount > 0" class="text-sm text-gray-600 dark:text-gray-400">
+                        <div v-if="availableVouchersCount > 0" class="mb-4 flex justify-end items-center">
+                            <div class="text-sm text-gray-600 dark:text-gray-400">
                                 <button
                                     @click="toggleSelectAll"
                                     class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 font-medium"

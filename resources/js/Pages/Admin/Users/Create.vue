@@ -68,13 +68,27 @@ const submit = () => {
 
     <AuthenticatedLayout>
         <template #header>
-            <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">Tambah Pengguna</h2>
+            <h2 class="font-semibold text-xl text-gray-800 leading-tight">Tambah Pengguna</h2>
         </template>
 
         <div class="py-6 sm:py-12">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
-                    <div class="p-4 sm:p-6 text-gray-900 dark:text-gray-100">
+            <div class="max-w-4xl mx-auto px-3 sm:px-6 lg:px-8">
+                <!-- Header Card -->
+                <div class="mb-6 bg-gradient-to-r from-purple-600 via-indigo-600 to-blue-600 rounded-lg shadow-lg p-6 text-white">
+                    <div class="flex items-center gap-3">
+                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+                        </svg>
+                        <div>
+                            <h3 class="text-2xl font-bold">Tambah Pengguna Baru</h3>
+                            <p class="text-purple-100 text-sm">Buat akun pengguna baru untuk mengelola sistem koperasi</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Form Card -->
+                <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-xl rounded-lg border-2 border-purple-200 dark:border-purple-500/30">
+                    <div class="p-6 sm:p-8">
                         <form @submit.prevent="submit" class="space-y-6">
                             <div>
                                 <label for="name" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Nama Lengkap</label>

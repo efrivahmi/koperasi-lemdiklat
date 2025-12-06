@@ -70,26 +70,50 @@ const formatCurrency = (value) => {
 
     <AuthenticatedLayout>
         <template #header>
-            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-                <h2 class="font-semibold text-lg sm:text-xl text-gray-800 leading-tight">Produk</h2>
-                <div class="flex flex-wrap gap-2 w-full sm:w-auto">
-                    <Link :href="route('products.barcode-generator')" class="bg-purple-500 hover:bg-purple-700 text-white font-bold py-2 px-3 sm:px-4 rounded flex items-center gap-2 text-sm sm:text-base flex-1 sm:flex-initial justify-center">
-                        <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
-                        </svg>
-                        <span class="hidden sm:inline">Cetak Barcode</span>
-                        <span class="sm:hidden">Barcode</span>
-                    </Link>
-                    <Link :href="route('products.create')" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-3 sm:px-4 rounded-lg shadow-sm transition text-sm sm:text-base flex-1 sm:flex-initial text-center">
-                        <span class="hidden sm:inline">Tambah Produk</span>
-                        <span class="sm:hidden">+ Produk</span>
-                    </Link>
-                </div>
-            </div>
+            <h2 class="font-semibold text-xl text-gray-800 leading-tight">Produk</h2>
         </template>
 
         <div class="py-6 sm:py-12">
             <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
+                <!-- Toolbar Section -->
+                <div class="mb-6 bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-gray-800 dark:to-gray-800 border border-purple-200 dark:border-purple-500/30 rounded-lg shadow-sm p-4">
+                    <div class="flex flex-col lg:flex-row gap-4 items-stretch lg:items-center">
+                        <!-- Search Bar -->
+                        <div class="flex-1">
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                    </svg>
+                                </div>
+                                <input
+                                    id="product-search"
+                                    v-model="search"
+                                    type="text"
+                                    placeholder="Cari produk (nama atau barcode)..."
+                                    class="block w-full pl-10 pr-3 py-2.5 border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-lg shadow-sm text-sm"
+                                    aria-label="Cari produk berdasarkan nama atau barcode"
+                                />
+                            </div>
+                        </div>
+                        <!-- Action Buttons -->
+                        <div class="flex flex-wrap gap-2">
+                            <Link :href="route('products.barcode-generator')" class="flex-1 sm:flex-initial inline-flex items-center justify-center px-4 py-2.5 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-lg shadow-sm transition">
+                                <svg class="w-5 h-5 sm:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
+                                </svg>
+                                <span class="hidden sm:inline">Cetak Barcode</span>
+                            </Link>
+                            <Link :href="route('products.create')" class="flex-1 sm:flex-initial inline-flex items-center justify-center px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg shadow-sm transition">
+                                <svg class="w-5 h-5 sm:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                                </svg>
+                                <span class="hidden sm:inline">Tambah Produk</span>
+                                <span class="sm:hidden">Produk</span>
+                            </Link>
+                        </div>
+                    </div>
+                </div>
                 <EmptyState
                     v-if="products.data.length === 0 && !search"
                     icon="box"
@@ -101,18 +125,6 @@ const formatCurrency = (value) => {
 
                 <div v-else class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
                     <div class="p-3 sm:p-6 text-gray-900 dark:text-gray-100">
-                        <div class="mb-4">
-                            <label for="product-search" class="sr-only">Cari Produk</label>
-                            <input
-                                id="product-search"
-                                v-model="search"
-                                type="text"
-                                placeholder="Cari produk (nama atau barcode)..."
-                                class="w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm text-sm sm:text-base"
-                                aria-label="Cari produk berdasarkan nama atau barcode"
-                            />
-                        </div>
-
                         <div class="overflow-x-auto -mx-3 sm:mx-0 scrollbar-thin">
                             <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700 text-xs sm:text-sm">
                                 <thead class="bg-gray-50 dark:bg-gray-800 sticky top-0">

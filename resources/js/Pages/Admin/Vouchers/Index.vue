@@ -35,9 +35,9 @@ const formatCurrency = (value) => {
 };
 
 const getStatusBadge = (status) => {
-    if (status === 'available') return 'bg-green-100 text-green-800';
-    if (status === 'used') return 'bg-blue-100 text-blue-800';
-    return 'bg-red-100 text-red-800';
+    if (status === 'available') return 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300';
+    if (status === 'used') return 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300';
+    return 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300';
 };
 
 const printVoucher = (voucherId) => {
@@ -127,7 +127,7 @@ const availableVouchersCount = computed(() => {
                     <Link :href="route('vouchers.redeem.form')" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">
                         Redeem Voucher
                     </Link>
-                    <Link :href="route('vouchers.create')" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                    <Link :href="route('vouchers.create')" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg shadow-sm transition">
                         Generate Voucher
                     </Link>
                 </div>
@@ -147,8 +147,8 @@ const availableVouchersCount = computed(() => {
                 />
 
                 <!-- Table with Data or Filter Results -->
-                <div v-else class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                    <div class="p-6 text-gray-900">
+                <div v-else class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
+                    <div class="p-6 text-gray-900 dark:text-gray-100">
                         <div class="mb-4 flex justify-between items-center">
                             <div>
                                 <label for="status-filter" class="sr-only">Filter Status Voucher</label>
@@ -156,7 +156,7 @@ const availableVouchersCount = computed(() => {
                                     id="status-filter"
                                     v-model="statusFilter"
                                     @change="filterByStatus"
-                                    class="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm"
+                                    class="border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm"
                                     aria-label="Filter status voucher"
                                 >
                                     <option value="">Semua Status</option>
@@ -166,10 +166,10 @@ const availableVouchersCount = computed(() => {
                                 </select>
                             </div>
 
-                            <div v-if="availableVouchersCount > 0" class="text-sm text-gray-600">
+                            <div v-if="availableVouchersCount > 0" class="text-sm text-gray-600 dark:text-gray-400">
                                 <button
                                     @click="toggleSelectAll"
-                                    class="text-indigo-600 hover:text-indigo-800 font-medium"
+                                    class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 font-medium"
                                 >
                                     {{ selectedVouchers.length === availableVouchersCount ? 'Batalkan Semua' : 'Pilih Semua Available' }}
                                 </button>
@@ -180,10 +180,10 @@ const availableVouchersCount = computed(() => {
                         </div>
 
                         <div class="overflow-x-auto">
-                            <table class="min-w-full divide-y divide-gray-200">
-                                <thead class="bg-gray-50">
+                            <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                                <thead class="bg-gray-50 dark:bg-gray-800">
                                     <tr>
-                                        <th class="px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase">
+                                        <th class="px-3 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
                                             <input
                                                 v-if="availableVouchersCount > 0"
                                                 type="checkbox"
@@ -192,18 +192,18 @@ const availableVouchersCount = computed(() => {
                                                 class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
                                             />
                                         </th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Kode</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nominal</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Digunakan Oleh</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase hidden xl:table-cell">Dibuat</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase hidden xl:table-cell">Diubah</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Aksi</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Kode</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Nominal</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Status</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Digunakan Oleh</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-900 dark:text-gray-100 uppercase hidden xl:table-cell">Dibuat</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-900 dark:text-gray-100 uppercase hidden xl:table-cell">Diubah</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Aksi</th>
                                     </tr>
                                 </thead>
-                                <tbody class="bg-white divide-y divide-gray-200">
+                                <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                                     <tr v-for="voucher in vouchers.data" :key="voucher.id"
-                                        :class="selectedVouchers.includes(voucher.id) ? 'bg-indigo-50' : ''">
+                                        :class="selectedVouchers.includes(voucher.id) ? 'bg-indigo-50 dark:bg-indigo-900/20' : 'hover:bg-gray-50 dark:hover:bg-gray-700'">
                                         <td class="px-3 py-4 text-center">
                                             <input
                                                 v-if="voucher.status === 'available'"
@@ -213,14 +213,14 @@ const availableVouchersCount = computed(() => {
                                                 class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
                                             />
                                         </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-mono">{{ voucher.code }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold">{{ formatCurrency(voucher.nominal) }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-mono text-gray-900 dark:text-gray-100">{{ voucher.code }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900 dark:text-gray-100">{{ formatCurrency(voucher.nominal) }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap">
                                             <span :class="getStatusBadge(voucher.status)" class="px-2 py-1 text-xs font-semibold rounded-full">
                                                 {{ voucher.status }}
                                             </span>
                                         </td>
-                                        <td class="px-6 py-4 text-sm">
+                                        <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
                                             {{ voucher.student?.user?.name || '-' }}
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-xs text-gray-500 hidden xl:table-cell">
@@ -234,7 +234,7 @@ const availableVouchersCount = computed(() => {
                                                 <button
                                                     v-if="voucher.status === 'available'"
                                                     @click="printVoucher(voucher.id)"
-                                                    class="text-purple-600 hover:text-purple-900 flex items-center gap-1"
+                                                    class="text-purple-600 dark:text-purple-400 hover:text-purple-900 dark:hover:text-purple-300 flex items-center gap-1"
                                                     title="Cetak Voucher"
                                                 >
                                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -245,7 +245,7 @@ const availableVouchersCount = computed(() => {
                                                 <button
                                                     v-if="voucher.status === 'available'"
                                                     @click="deleteVoucher(voucher.id)"
-                                                    class="text-red-600 hover:text-red-900"
+                                                    class="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300"
                                                 >
                                                     Hapus
                                                 </button>
@@ -255,11 +255,11 @@ const availableVouchersCount = computed(() => {
                                     <tr v-if="vouchers.data.length === 0 && statusFilter">
                                         <td colspan="8" class="px-6 py-12 text-center">
                                             <div class="text-gray-400">
-                                                <svg class="mx-auto h-12 w-12 text-gray-300 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <svg class="mx-auto h-12 w-12 text-gray-300 dark:text-gray-600 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                                                 </svg>
-                                                <h3 class="text-sm font-medium text-gray-900 mb-1">Tidak ada hasil</h3>
-                                                <p class="text-sm text-gray-500">Tidak ditemukan voucher dengan filter yang dipilih</p>
+                                                <h3 class="text-sm font-medium text-gray-900 dark:text-gray-100 mb-1">Tidak ada hasil</h3>
+                                                <p class="text-sm text-gray-500 dark:text-gray-400">Tidak ditemukan voucher dengan filter yang dipilih</p>
                                             </div>
                                         </td>
                                     </tr>
@@ -275,13 +275,13 @@ const availableVouchersCount = computed(() => {
                                     v-html="link.label"
                                     :class="[
                                         'px-3 py-2 rounded',
-                                        link.active ? 'bg-blue-500 text-white' : 'bg-gray-200 hover:bg-gray-300'
+                                        link.active ? 'bg-indigo-600 text-white font-semibold' : 'bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300'
                                     ]"
                                 />
                                 <span
                                     v-else
                                     v-html="link.label"
-                                    :class="'px-3 py-2 rounded bg-gray-200 text-gray-400 opacity-50 cursor-not-allowed'"
+                                    :class="'px-3 py-2 rounded bg-gray-200 dark:bg-gray-700 text-gray-400 opacity-50 cursor-not-allowed'"
                                 />
                             </template>
                         </div>

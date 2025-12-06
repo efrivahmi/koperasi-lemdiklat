@@ -11,6 +11,12 @@ const props = defineProps({
     filters: Object,
 });
 
+const expandedProduct = ref(null);
+
+const toggleExpand = (productId) => {
+    expandedProduct.value = expandedProduct.value === productId ? null : productId;
+};
+
 const searchForm = ref({
     category_id: props.filters?.category_id || '',
     stock_status: props.filters?.stock_status || '',
@@ -41,6 +47,29 @@ const getStockText = (stock) => {
     if (stock <= 5) return 'KRITIS';
     if (stock <= 10) return 'RENDAH';
     return 'TERSEDIA';
+};
+
+const formatDate = (dateString) => {
+    return new Date(dateString).toLocaleDateString('id-ID', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+    });
+};
+
+const getPurposeLabel = (purpose) => {
+    const labels = {
+        'sale': 'Penjualan (Transaksi)',
+        'internal_use': 'Keperluan Internal/Kantor',
+        'personal_use': 'Keperluan Pribadi',
+        'damage': 'Kerusakan Barang',
+        'expired': 'Barang Kadaluarsa',
+        'return_to_supplier': 'Retur ke Supplier',
+        'other': 'Lainnya'
+    };
+    return labels[purpose] || 'Tidak Diketahui';
 };
 </script>
 
@@ -131,8 +160,8 @@ const getStockText = (stock) => {
                                     <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Nilai Stok</th>
                                     <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Pot. Revenue</th>
                                     <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Status</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Dibuat</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Diubah</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-900 dark:text-gray-100 uppercase">Dibuat</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-900 dark:text-gray-100 uppercase">Diubah</th>
                                 </tr>
                             </thead>
                             <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
@@ -141,37 +170,130 @@ const getStockText = (stock) => {
                                         Tidak ada data produk
                                     </td>
                                 </tr>
-                                <tr v-for="product in products.data" :key="product.id" class="hover:bg-gray-50 dark:hover:bg-gray-700">
-                                    <td class="px-6 py-4 text-sm">
-                                        <div class="font-semibold text-gray-900 dark:text-gray-100">{{ product.name }}</div>
-                                        <div class="text-xs text-gray-500 dark:text-gray-400">{{ product.barcode || '-' }}</div>
-                                    </td>
-                                    <td class="px-6 py-4 text-sm text-gray-900 dark:text-gray-100">{{ product.category.name }}</td>
-                                    <td class="px-6 py-4 text-center">
-                                        <span class="text-lg font-bold" :class="product.stock === 0 ? 'text-red-600' : product.stock <= 10 ? 'text-yellow-600' : 'text-green-600'">
-                                            {{ product.stock }}
-                                        </span>
-                                    </td>
-                                    <td class="px-6 py-4 text-sm text-right text-gray-900 dark:text-gray-100">{{ formatCurrency(product.harga_beli) }}</td>
-                                    <td class="px-6 py-4 text-sm text-right text-gray-900 dark:text-gray-100">{{ formatCurrency(product.harga_jual) }}</td>
-                                    <td class="px-6 py-4 text-sm text-right font-semibold text-blue-600 dark:text-blue-400">
-                                        {{ formatCurrency(product.stock * product.harga_beli) }}
-                                    </td>
-                                    <td class="px-6 py-4 text-sm text-right font-semibold text-green-600 dark:text-green-400">
-                                        {{ formatCurrency(product.stock * product.harga_jual) }}
-                                    </td>
-                                    <td class="px-6 py-4 text-center">
-                                        <span :class="getStockBadge(product.stock)" class="px-3 py-1 rounded-full text-xs font-bold">
-                                            {{ getStockText(product.stock) }}
-                                        </span>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm">
-                                        <AuditInfo :user="product.creator" :timestamp="product.created_at" label="Dibuat" />
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm">
-                                        <AuditInfo :user="product.updater" :timestamp="product.updated_at" label="Diubah" />
-                                    </td>
-                                </tr>
+                                <template v-for="product in products.data" :key="product.id">
+                                    <tr class="hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer" @click="toggleExpand(product.id)">
+                                        <td class="px-6 py-4 text-sm">
+                                            <div class="flex items-center gap-2">
+                                                <svg class="w-4 h-4 transition-transform" :class="expandedProduct === product.id ? 'rotate-90' : ''" fill="currentColor" viewBox="0 0 20 20">
+                                                    <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+                                                </svg>
+                                                <div>
+                                                    <div class="font-semibold text-gray-900 dark:text-gray-100">{{ product.name }}</div>
+                                                    <div class="text-xs text-gray-500 dark:text-gray-400">{{ product.barcode || '-' }}</div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="px-6 py-4 text-sm text-gray-900 dark:text-gray-100">{{ product.category.name }}</td>
+                                        <td class="px-6 py-4 text-center">
+                                            <span class="text-lg font-bold" :class="product.stock === 0 ? 'text-red-600' : product.stock <= 10 ? 'text-yellow-600' : 'text-green-600'">
+                                                {{ product.stock }}
+                                            </span>
+                                        </td>
+                                        <td class="px-6 py-4 text-sm text-right text-gray-900 dark:text-gray-100">{{ formatCurrency(product.harga_beli) }}</td>
+                                        <td class="px-6 py-4 text-sm text-right text-gray-900 dark:text-gray-100">{{ formatCurrency(product.harga_jual) }}</td>
+                                        <td class="px-6 py-4 text-sm text-right font-semibold text-blue-600 dark:text-blue-400">
+                                            {{ formatCurrency(product.stock * product.harga_beli) }}
+                                        </td>
+                                        <td class="px-6 py-4 text-sm text-right font-semibold text-green-600 dark:text-green-400">
+                                            {{ formatCurrency(product.stock * product.harga_jual) }}
+                                        </td>
+                                        <td class="px-6 py-4 text-center">
+                                            <span :class="getStockBadge(product.stock)" class="px-3 py-1 rounded-full text-xs font-bold">
+                                                {{ getStockText(product.stock) }}
+                                            </span>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm">
+                                            <AuditInfo :user="product.creator" :timestamp="product.created_at" label="Dibuat" />
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm">
+                                            <AuditInfo :user="product.updater" :timestamp="product.updated_at" label="Diubah" />
+                                        </td>
+                                    </tr>
+                                    <!-- Stock Movement History Row -->
+                                    <tr v-if="expandedProduct === product.id" class="bg-gray-50 dark:bg-gray-900">
+                                        <td colspan="10" class="px-6 py-4">
+                                            <div class="space-y-4">
+                                                <h4 class="font-semibold text-sm text-gray-900 dark:text-gray-100 mb-3">📊 History Pergerakan Stok</h4>
+
+                                                <!-- Stock Adjustments -->
+                                                <div v-if="product.stock_movements && product.stock_movements.adjustments && product.stock_movements.adjustments.length > 0">
+                                                    <h5 class="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-2">🔧 Penyesuaian Manual</h5>
+                                                    <div class="overflow-x-auto">
+                                                        <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700 text-xs">
+                                                            <thead class="bg-gray-100 dark:bg-gray-800">
+                                                                <tr>
+                                                                    <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400">Tanggal</th>
+                                                                    <th class="px-3 py-2 text-center text-xs font-medium text-gray-500 dark:text-gray-400">Tipe</th>
+                                                                    <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400">Tujuan</th>
+                                                                    <th class="px-3 py-2 text-center text-xs font-medium text-gray-500 dark:text-gray-400">Qty</th>
+                                                                    <th class="px-3 py-2 text-center text-xs font-medium text-gray-500 dark:text-gray-400">Stok Sebelum</th>
+                                                                    <th class="px-3 py-2 text-center text-xs font-medium text-gray-500 dark:text-gray-400">Stok Sesudah</th>
+                                                                    <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400">Oleh</th>
+                                                                    <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400">Catatan</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                                                                <tr v-for="adj in product.stock_movements.adjustments" :key="adj.id" class="hover:bg-gray-50 dark:hover:bg-gray-700">
+                                                                    <td class="px-3 py-2 text-gray-900 dark:text-gray-100">{{ formatDate(adj.created_at) }}</td>
+                                                                    <td class="px-3 py-2 text-center">
+                                                                        <span :class="adj.type === 'addition' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300' : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300'" class="px-2 py-1 rounded text-xs font-medium">
+                                                                            {{ adj.type === 'addition' ? '➕ Tambah' : '➖ Kurang' }}
+                                                                        </span>
+                                                                    </td>
+                                                                    <td class="px-3 py-2 text-gray-900 dark:text-gray-100">{{ getPurposeLabel(adj.purpose) }}</td>
+                                                                    <td class="px-3 py-2 text-center font-semibold" :class="adj.type === 'addition' ? 'text-green-600' : 'text-red-600'">
+                                                                        {{ adj.type === 'addition' ? '+' : '-' }}{{ adj.quantity_adjusted }}
+                                                                    </td>
+                                                                    <td class="px-3 py-2 text-center text-gray-900 dark:text-gray-100">{{ adj.quantity_before }}</td>
+                                                                    <td class="px-3 py-2 text-center font-semibold text-gray-900 dark:text-gray-100">{{ adj.quantity_after }}</td>
+                                                                    <td class="px-3 py-2 text-gray-900 dark:text-gray-100">{{ adj.adjusted_by?.name || '-' }}</td>
+                                                                    <td class="px-3 py-2 text-gray-500 dark:text-gray-400">{{ adj.notes || '-' }}</td>
+                                                                </tr>
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
+                                                </div>
+
+                                                <!-- Sales Transactions -->
+                                                <div v-if="product.stock_movements && product.stock_movements.sales && product.stock_movements.sales.length > 0" class="mt-4">
+                                                    <h5 class="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-2">💰 Transaksi Penjualan</h5>
+                                                    <div class="overflow-x-auto">
+                                                        <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700 text-xs">
+                                                            <thead class="bg-gray-100 dark:bg-gray-800">
+                                                                <tr>
+                                                                    <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400">Tanggal</th>
+                                                                    <th class="px-3 py-2 text-center text-xs font-medium text-gray-500 dark:text-gray-400">Qty Terjual</th>
+                                                                    <th class="px-3 py-2 text-right text-xs font-medium text-gray-500 dark:text-gray-400">Harga Jual</th>
+                                                                    <th class="px-3 py-2 text-center text-xs font-medium text-gray-500 dark:text-gray-400">Metode</th>
+                                                                    <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400">Siswa</th>
+                                                                    <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400">Kasir</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                                                                <tr v-for="(sale, idx) in product.stock_movements.sales" :key="idx" class="hover:bg-gray-50 dark:hover:bg-gray-700">
+                                                                    <td class="px-3 py-2 text-gray-900 dark:text-gray-100">{{ formatDate(sale.created_at) }}</td>
+                                                                    <td class="px-3 py-2 text-center font-semibold text-red-600">-{{ sale.quantity }}</td>
+                                                                    <td class="px-3 py-2 text-right text-gray-900 dark:text-gray-100">{{ formatCurrency(sale.price) }}</td>
+                                                                    <td class="px-3 py-2 text-center">
+                                                                        <span :class="sale.payment_method === 'cash' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300' : 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300'" class="px-2 py-1 rounded text-xs font-medium">
+                                                                            {{ sale.payment_method === 'cash' ? 'Tunai' : 'Saldo' }}
+                                                                        </span>
+                                                                    </td>
+                                                                    <td class="px-3 py-2 text-gray-900 dark:text-gray-100">{{ sale.student_name || '-' }}</td>
+                                                                    <td class="px-3 py-2 text-gray-900 dark:text-gray-100">{{ sale.cashier_name || '-' }}</td>
+                                                                </tr>
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
+                                                </div>
+
+                                                <div v-if="(!product.stock_movements || (!product.stock_movements.adjustments || product.stock_movements.adjustments.length === 0) && (!product.stock_movements.sales || product.stock_movements.sales.length === 0))" class="text-center py-4 text-gray-500 dark:text-gray-400 text-xs">
+                                                    Belum ada riwayat pergerakan stok
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </template>
                             </tbody>
                         </table>
                     </div>

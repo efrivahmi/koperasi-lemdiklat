@@ -50,6 +50,17 @@ class User extends Authenticatable
         ];
     }
 
+    /**
+     * Get the user's photo URL attribute.
+     */
+    public function getPhotoUrlAttribute()
+    {
+        if ($this->photo) {
+            return asset('storage/' . $this->photo);
+        }
+        return null;
+    }
+
     public function student()
     {
         return $this->hasOne(Student::class);

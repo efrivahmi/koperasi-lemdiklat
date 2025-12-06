@@ -24,11 +24,15 @@ const formatDate = (date) => {
     });
 };
 
+const printBarcode = () => {
+    window.open(route('products.print-barcode', props.product.id), '_blank');
+};
+
 // Statistik
-const totalSold = props.product.sale_items?.reduce((sum, item) => sum + item.quantity, 0) || 0;
-const totalRevenue = props.product.sale_items?.reduce((sum, item) => sum + (item.quantity * item.price), 0) || 0;
+const totalSold = props.product.saleItems?.reduce((sum, item) => sum + item.quantity, 0) || 0;
+const totalRevenue = props.product.saleItems?.reduce((sum, item) => sum + (item.quantity * item.price), 0) || 0;
 const stockValue = props.product.stock * props.product.harga_jual;
-const totalStockIn = props.product.stock_ins?.reduce((sum, item) => sum + item.quantity, 0) || 0;
+const totalStockIn = props.product.stockIns?.reduce((sum, item) => sum + item.quantity, 0) || 0;
 </script>
 
 <template>
@@ -41,7 +45,7 @@ const totalStockIn = props.product.stock_ins?.reduce((sum, item) => sum + item.q
                     Detail Produk
                 </h2>
                 <div class="flex gap-2">
-                    <button @click="window.print()" class="bg-purple-500 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded">
+                    <button @click="printBarcode" class="bg-purple-500 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded">
                         Cetak Barcode
                     </button>
                     <Link :href="route('products.edit', product.id)" class="bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-2 px-4 rounded">
@@ -165,7 +169,7 @@ const totalStockIn = props.product.stock_ins?.reduce((sum, item) => sum + item.q
                     <div class="p-6">
                         <h3 class="text-lg font-semibold text-gray-900 mb-4">Riwayat Stock In</h3>
 
-                        <div v-if="product.stock_ins && product.stock_ins.length > 0" class="overflow-x-auto">
+                        <div v-if="product.stockIns && product.stockIns.length > 0" class="overflow-x-auto">
                             <table class="min-w-full divide-y divide-gray-200">
                                 <thead class="bg-gray-50">
                                     <tr>
@@ -178,7 +182,7 @@ const totalStockIn = props.product.stock_ins?.reduce((sum, item) => sum + item.q
                                     </tr>
                                 </thead>
                                 <tbody class="bg-white divide-y divide-gray-200">
-                                    <tr v-for="stockIn in product.stock_ins" :key="stockIn.id" class="hover:bg-gray-50">
+                                    <tr v-for="stockIn in product.stockIns" :key="stockIn.id" class="hover:bg-gray-50">
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                             {{ formatDate(stockIn.tanggal) }}
                                         </td>
@@ -220,7 +224,7 @@ const totalStockIn = props.product.stock_ins?.reduce((sum, item) => sum + item.q
                     <div class="p-6">
                         <h3 class="text-lg font-semibold text-gray-900 mb-4">Riwayat Penjualan</h3>
 
-                        <div v-if="product.sale_items && product.sale_items.length > 0" class="overflow-x-auto">
+                        <div v-if="product.saleItems && product.saleItems.length > 0" class="overflow-x-auto">
                             <table class="min-w-full divide-y divide-gray-200">
                                 <thead class="bg-gray-50">
                                     <tr>
@@ -232,14 +236,14 @@ const totalStockIn = props.product.stock_ins?.reduce((sum, item) => sum + item.q
                                     </tr>
                                 </thead>
                                 <tbody class="bg-white divide-y divide-gray-200">
-                                    <tr v-for="item in product.sale_items" :key="item.id" class="hover:bg-gray-50">
+                                    <tr v-for="item in product.saleItems" :key="item.id" class="hover:bg-gray-50">
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                             {{ formatDate(item.created_at) }}
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap">
-                                            <Link :href="route('sales.show', item.sale_id)" class="text-blue-600 hover:text-blue-900 font-mono text-sm">
+                                            <span class="text-gray-700 font-mono text-sm font-semibold">
                                                 #{{ item.sale_id }}
-                                            </Link>
+                                            </span>
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap">
                                             <span class="text-lg font-semibold text-gray-900">{{ item.quantity }}</span>

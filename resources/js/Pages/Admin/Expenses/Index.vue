@@ -16,7 +16,7 @@ const formatDate = (date) => new Date(date).toLocaleDateString('id-ID');
         <template #header>
             <div class="flex justify-between items-center">
                 <h2 class="font-semibold text-xl text-gray-800 leading-tight">Biaya Operasional</h2>
-                <Link :href="route('expenses.create')" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Tambah Pengeluaran</Link>
+                <Link :href="route('expenses.create')" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg shadow-sm transition">Tambah Pengeluaran</Link>
             </div>
         </template>
         <div class="py-12">
@@ -32,33 +32,33 @@ const formatDate = (date) => new Date(date).toLocaleDateString('id-ID');
                 />
 
                 <!-- Table with Data -->
-                <div v-else class="bg-white shadow-sm sm:rounded-lg p-6">
-                    <table class="min-w-full divide-y divide-gray-200">
-                        <thead class="bg-gray-50">
+                <div v-else class="bg-white dark:bg-gray-800 shadow-sm sm:rounded-lg p-6 text-gray-900 dark:text-gray-100">
+                    <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                        <thead class="bg-gray-50 dark:bg-gray-800">
                             <tr>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tanggal</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Deskripsi</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Kategori</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Jumlah</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase hidden xl:table-cell">Dibuat</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase hidden xl:table-cell">Diubah</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Aksi</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Tanggal</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Deskripsi</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Kategori</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Jumlah</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-900 dark:text-gray-100 uppercase hidden xl:table-cell">Dibuat</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-900 dark:text-gray-100 uppercase hidden xl:table-cell">Diubah</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Aksi</th>
                             </tr>
                         </thead>
-                        <tbody class="bg-white divide-y divide-gray-200">
-                            <tr v-for="expense in expenses.data" :key="expense.id">
-                                <td class="px-6 py-4 text-sm">{{ formatDate(expense.expense_date) }}</td>
-                                <td class="px-6 py-4 text-sm">{{ expense.description }}</td>
-                                <td class="px-6 py-4 text-sm">{{ expense.category }}</td>
-                                <td class="px-6 py-4 text-sm font-semibold">{{ formatCurrency(expense.amount) }}</td>
+                        <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                            <tr v-for="expense in expenses.data" :key="expense.id" class="hover:bg-gray-50 dark:hover:bg-gray-700">
+                                <td class="px-6 py-4 text-sm text-gray-900 dark:text-gray-100">{{ formatDate(expense.expense_date) }}</td>
+                                <td class="px-6 py-4 text-sm text-gray-900 dark:text-gray-100">{{ expense.description }}</td>
+                                <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">{{ expense.category }}</td>
+                                <td class="px-6 py-4 text-sm font-semibold text-gray-900 dark:text-gray-100">{{ formatCurrency(expense.amount) }}</td>
                                 <td class="px-6 py-4 whitespace-nowrap text-xs text-gray-500 hidden xl:table-cell">
                                     <AuditInfo :user="expense.creator" :timestamp="expense.created_at" label="Dibuat" />
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-xs text-gray-500 hidden xl:table-cell">
                                     <AuditInfo :user="expense.updater" :timestamp="expense.updated_at" label="Diubah" />
                                 </td>
-                                <td class="px-6 py-4 text-sm">
-                                    <button @click="router.delete(route('expenses.destroy', expense.id))" class="text-red-600 hover:text-red-900">Hapus</button>
+                                <td class="px-6 py-4 text-sm font-medium">
+                                    <button @click="router.delete(route('expenses.destroy', expense.id))" class="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300">Hapus</button>
                                 </td>
                             </tr>
                         </tbody>

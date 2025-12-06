@@ -1,10 +1,7 @@
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
-import InputLabel from '@/Components/InputLabel.vue';
-import TextInput from '@/Components/TextInput.vue';
 import InputError from '@/Components/InputError.vue';
-import PrimaryButton from '@/Components/PrimaryButton.vue';
 
 const props = defineProps({
     expense: Object,
@@ -57,10 +54,10 @@ const categories = [
             </div>
         </template>
 
-        <div class="py-12">
-            <div class="max-w-4xl mx-auto sm:px-6 lg:px-8">
+        <div class="py-6 sm:py-12">
+            <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
-                    <div class="p-6 text-gray-900 dark:text-gray-100">
+                    <div class="p-4 sm:p-6 text-gray-900 dark:text-gray-100">
                         <!-- Expense Info Card -->
                         <div class="mb-6 p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg border border-gray-200 dark:border-gray-600">
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -88,12 +85,12 @@ const categories = [
                         <form @submit.prevent="submit" class="space-y-6">
                             <!-- Description -->
                             <div>
-                                <InputLabel for="description" value="Deskripsi Pengeluaran" />
-                                <TextInput
+                                <label for="description" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Deskripsi Pengeluaran</label>
+                                <input
                                     id="description"
                                     type="text"
                                     v-model="form.description"
-                                    class="mt-1 block w-full"
+                                    class="w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm text-sm sm:text-base py-2"
                                     placeholder="Contoh: Pembelian alat tulis, Bayar listrik bulan Januari"
                                     required
                                     autofocus
@@ -104,11 +101,11 @@ const categories = [
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <!-- Category -->
                                 <div>
-                                    <InputLabel for="category" value="Kategori" />
+                                    <label for="category" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Kategori</label>
                                     <select
                                         id="category"
                                         v-model="form.category"
-                                        class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm"
+                                        class="w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm text-sm sm:text-base py-2"
                                         required
                                     >
                                         <option value="">Pilih Kategori</option>
@@ -121,12 +118,12 @@ const categories = [
 
                                 <!-- Amount -->
                                 <div>
-                                    <InputLabel for="amount" value="Jumlah / Nominal" />
-                                    <TextInput
+                                    <label for="amount" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Jumlah / Nominal</label>
+                                    <input
                                         id="amount"
                                         type="number"
                                         v-model="form.amount"
-                                        class="mt-1 block w-full"
+                                        class="w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm text-sm sm:text-base py-2"
                                         min="0"
                                         step="0.01"
                                         placeholder="0"
@@ -141,12 +138,12 @@ const categories = [
 
                             <!-- Expense Date -->
                             <div>
-                                <InputLabel for="expense_date" value="Tanggal Pengeluaran" />
-                                <TextInput
+                                <label for="expense_date" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Tanggal Pengeluaran</label>
+                                <input
                                     id="expense_date"
                                     type="date"
                                     v-model="form.expense_date"
-                                    class="mt-1 block w-full"
+                                    class="w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm text-sm sm:text-base py-2"
                                     required
                                 />
                                 <InputError :message="form.errors.expense_date" class="mt-2" />
@@ -157,11 +154,11 @@ const categories = [
 
                             <!-- Notes -->
                             <div>
-                                <InputLabel for="notes" value="Catatan Tambahan" />
+                                <label for="notes" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Catatan Tambahan</label>
                                 <textarea
                                     id="notes"
                                     v-model="form.notes"
-                                    class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm"
+                                    class="w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm text-sm sm:text-base py-2"
                                     rows="4"
                                     placeholder="Tambahkan catatan detail, nomor invoice, atau informasi penting lainnya..."
                                 ></textarea>
@@ -196,15 +193,15 @@ const categories = [
                             </div>
 
                             <!-- Submit Buttons -->
-                            <div class="flex items-center justify-between pt-4 border-t border-gray-200 dark:border-gray-700">
-                                <div class="flex items-center gap-4">
-                                    <PrimaryButton :disabled="form.processing">
+                            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+                                <div class="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4 w-full sm:w-auto">
+                                    <button type="submit" :disabled="form.processing" class="inline-flex items-center justify-center px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white rounded-lg font-semibold text-sm transition shadow-sm disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto">
                                         <span v-if="form.processing">Menyimpan...</span>
                                         <span v-else>Simpan Perubahan</span>
-                                    </PrimaryButton>
+                                    </button>
                                     <Link
                                         :href="route('expenses.index')"
-                                        class="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100"
+                                        class="inline-flex items-center justify-center px-6 py-2.5 bg-gray-500 hover:bg-gray-600 text-white rounded-lg font-semibold text-sm transition shadow-sm w-full sm:w-auto"
                                     >
                                         Batal
                                     </Link>

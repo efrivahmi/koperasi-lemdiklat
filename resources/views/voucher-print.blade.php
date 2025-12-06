@@ -4,12 +4,72 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cetak Voucher - Koperasi Lemdiklat Taruna Nusantara Indonesia</title>
-    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
+    <script src="{{ asset('js/jsbarcode.min.js') }}"></script>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+
+            .container {
+                max-width: 100%;
+                padding: 5mm;
+            }
+
+            .print-controls {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .print-controls h2 {
+                font-size: 16px;
+            }
+
+            .print-controls .info {
+                font-size: 12px;
+            }
+
+            .btn {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .vouchers-grid {
+                grid-template-columns: 1fr;
+                gap: 5mm;
+            }
+
+            .voucher-card {
+                padding: 12px;
+            }
+
+            .voucher-title {
+                font-size: 16px;
+            }
+
+            .voucher-amount {
+                font-size: 24px;
+            }
+
+            .voucher-code {
+                font-size: 12px;
+                padding: 6px 10px;
+            }
+
+            .voucher-info {
+                font-size: 9px;
+            }
+
+            .voucher-footer {
+                font-size: 8px;
+            }
         }
 
         @media print {
@@ -26,6 +86,13 @@
             }
             .voucher-card {
                 break-inside: avoid;
+            }
+
+            /* Ensure proper sizing on print */
+            .vouchers-grid {
+                display: grid;
+                grid-template-columns: repeat(2, 1fr);
+                gap: 5mm;
             }
         }
 
@@ -365,27 +432,97 @@
     </div>
 
     <script>
-        // Generate all barcodes after page load
-        document.addEventListener('DOMContentLoaded', function() {
-            const barcodes = document.querySelectorAll('.barcode');
+        // Barcode generation with multiple attempts and fallback
+        let attemptCount = 0;
+        const maxAttempts = 5;
 
+        function initBarcodes() {
+            attemptCount++;
+            console.log('Barcode initialization attempt #' + attemptCount);
+
+            if (typeof JsBarcode === 'undefined') {
+                console.warn('JsBarcode library not loaded yet, attempt ' + attemptCount);
+
+                if (attemptCount < maxAttempts) {
+                    // Try again after a delay
+                    setTimeout(initBarcodes, 200 * attemptCount);
+                } else {
+                    console.error('Failed to load JsBarcode after ' + maxAttempts + ' attempts');
+                    showBarcodeFallback();
+                }
+                return;
+            }
+
+            const barcodes = document.querySelectorAll('.barcode');
+            console.log('Found ' + barcodes.length + ' barcodes to generate');
+
+            let successCount = 0;
+            let errorCount = 0;
+
+            barcodes.forEach(function(svg, index) {
+                const code = svg.getAttribute('data-code');
+
+                if (!code) {
+                    console.error('No code found for barcode #' + index);
+                    svg.parentElement.innerHTML = '<div style="color: #666; font-size: 10px; text-align: center; padding: 10px;">Kode: -</div>';
+                    errorCount++;
+                    return;
+                }
+
+                try {
+                    JsBarcode(svg, code, {
+                        format: "CODE128",
+                        height: 40,
+                        width: 1.5,
+                        displayValue: false,
+                        margin: 0,
+                        valid: function(valid) {
+                            if (!valid) {
+                                throw new Error('Invalid barcode format');
+                            }
+                        }
+                    });
+                    console.log('Barcode #' + index + ' (' + code + ') generated successfully');
+                    successCount++;
+                } catch (e) {
+                    console.error('Error generating barcode #' + index + ':', e);
+                    // Fallback: show code as text
+                    svg.parentElement.innerHTML = '<div style="text-align: center; padding: 10px;">' +
+                        '<div style="font-size: 10px; color: #999; margin-bottom: 5px;">Scan atau ketik kode:</div>' +
+                        '<div style="font-family: monospace; font-size: 12px; font-weight: bold; background: #f0f0f0; padding: 5px; border-radius: 4px;">' + code + '</div>' +
+                        '</div>';
+                    errorCount++;
+                }
+            });
+
+            console.log('Barcode generation completed: ' + successCount + ' success, ' + errorCount + ' errors');
+        }
+
+        function showBarcodeFallback() {
+            const barcodes = document.querySelectorAll('.barcode');
             barcodes.forEach(function(svg) {
                 const code = svg.getAttribute('data-code');
                 if (code) {
-                    try {
-                        JsBarcode(svg, code, {
-                            format: "CODE128",
-                            height: 40,
-                            width: 1.5,
-                            displayValue: false,
-                            margin: 0
-                        });
-                    } catch (e) {
-                        console.error('Error generating barcode:', e);
-                        svg.parentElement.innerHTML = '<div style="color: red; font-size: 10px;">Barcode Error</div>';
-                    }
+                    svg.parentElement.innerHTML = '<div style="text-align: center; padding: 10px;">' +
+                        '<div style="font-size: 10px; color: #999; margin-bottom: 5px;">Ketik kode voucher:</div>' +
+                        '<div style="font-family: monospace; font-size: 12px; font-weight: bold; background: #f0f0f0; padding: 5px; border-radius: 4px;">' + code + '</div>' +
+                        '</div>';
                 }
             });
+        }
+
+        // Start barcode generation
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initBarcodes);
+        } else {
+            initBarcodes();
+        }
+
+        // Fallback: try again after window fully loaded
+        window.addEventListener('load', function() {
+            if (attemptCount === 0) {
+                initBarcodes();
+            }
         });
     </script>
 </body>

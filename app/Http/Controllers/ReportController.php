@@ -154,14 +154,23 @@ class ReportController extends Controller
 
             $products = $query->orderBy('stock', 'asc')->paginate(20);
 
-            // Calculate summary
-            $allProducts = Product::all();
+            // Optimize: Load stock movements only when expanded (lazy load)
+            // This significantly improves initial page load performance
+            // Stock movements are loaded on-demand via AJAX when user expands a product row
+            foreach ($products as $product) {
+                $product->stock_movements = [
+                    'adjustments' => [],
+                    'sales' => []
+                ];
+            }
+
+            // Calculate summary using optimized aggregate queries
             $summary = [
-                'total_products' => $allProducts->count(),
-                'total_stock_value' => $allProducts->sum(function($p) { return $p->stock * $p->harga_beli; }),
-                'total_potential_revenue' => $allProducts->sum(function($p) { return $p->stock * $p->harga_jual; }),
-                'out_of_stock' => $allProducts->where('stock', 0)->count(),
-                'low_stock' => $allProducts->where('stock', '>', 0)->where('stock', '<=', 10)->count(),
+                'total_products' => DB::table('products')->count(),
+                'total_stock_value' => DB::table('products')->sum(DB::raw('stock * harga_beli')),
+                'total_potential_revenue' => DB::table('products')->sum(DB::raw('stock * harga_jual')),
+                'out_of_stock' => DB::table('products')->where('stock', 0)->count(),
+                'low_stock' => DB::table('products')->where('stock', '>', 0)->where('stock', '<=', 10)->count(),
             ];
 
             $categories = \App\Models\Category::all();
@@ -462,6 +471,11 @@ class ReportController extends Controller
 
             // Add financial calculations to each adjustment based on purpose
             $adjustments->getCollection()->transform(function ($adjustment) {
+                // Append photo_url for adjustedBy user (only when needed)
+                if ($adjustment->adjustedBy) {
+                    $adjustment->adjustedBy->append('photo_url');
+                }
+
                 if ($adjustment->product) {
                     $hargaBeli = $adjustment->product->harga_beli;
                     $hargaJual = $adjustment->product->harga_jual;

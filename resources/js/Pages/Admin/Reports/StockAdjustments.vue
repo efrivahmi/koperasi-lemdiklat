@@ -2,7 +2,6 @@
 import { ref, computed } from 'vue';
 import { Head, Link, router } from '@inertiajs/vue3';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
-import AuditInfo from '@/Components/AuditInfo.vue';
 
 const props = defineProps({
     adjustments: Object,
@@ -173,117 +172,6 @@ const getPurposeBadge = (purpose) => {
                     </div>
                 </div>
 
-                <!-- Recapitulation Cards (Financial Impact) -->
-                <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg mb-4 sm:mb-6">
-                    <div class="p-4 sm:p-6">
-                        <h3 class="font-semibold text-base sm:text-lg mb-4 text-gray-900 dark:text-gray-100">📊 Rekapitulasi Dampak Keuangan</h3>
-
-                        <!-- Purpose-Based Financial Breakdown -->
-                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-                            <!-- Sales Revenue & Profit -->
-                            <div class="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 rounded-lg p-4 border border-green-200 dark:border-green-700">
-                                <div class="flex items-center justify-between mb-2">
-                                    <span class="text-xs font-medium text-green-700 dark:text-green-300">Transaksi Penjualan</span>
-                                    <span class="text-lg">💰</span>
-                                </div>
-                                <p class="text-sm font-semibold text-green-600 dark:text-green-400">
-                                    Pendapatan: {{ formatCurrency(summary.sales_revenue || 0) }}
-                                </p>
-                                <p class="text-sm font-semibold text-green-700 dark:text-green-500">
-                                    Laba Kotor: {{ formatCurrency(summary.sales_profit || 0) }}
-                                </p>
-                                <p class="text-xs text-green-600 dark:text-green-400 mt-1">
-                                    Revenue - COGS
-                                </p>
-                            </div>
-
-                            <!-- Total Revenue -->
-                            <div class="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 rounded-lg p-4 border border-blue-200 dark:border-blue-700">
-                                <div class="flex items-center justify-between mb-2">
-                                    <span class="text-xs font-medium text-blue-700 dark:text-blue-300">Total Pendapatan</span>
-                                    <span class="text-lg">📈</span>
-                                </div>
-                                <p class="text-xl font-bold text-blue-600 dark:text-blue-400">
-                                    {{ formatCurrency(summary.total_revenue || 0) }}
-                                </p>
-                                <p class="text-xs text-blue-600 dark:text-blue-400 mt-1">
-                                    Dari penjualan & retur
-                                </p>
-                            </div>
-
-                            <!-- Non-Revenue Loss -->
-                            <div class="bg-gradient-to-br from-red-50 to-red-100 dark:from-red-900/20 dark:to-red-800/20 rounded-lg p-4 border border-red-200 dark:border-red-700">
-                                <div class="flex items-center justify-between mb-2">
-                                    <span class="text-xs font-medium text-red-700 dark:text-red-300">Kerugian Non-Pendapatan</span>
-                                    <span class="text-lg">💸</span>
-                                </div>
-                                <p class="text-xl font-bold text-red-600 dark:text-red-400">
-                                    {{ formatCurrency(summary.non_revenue_loss || 0) }}
-                                </p>
-                                <p class="text-xs text-red-600 dark:text-red-400 mt-1">
-                                    Internal, pribadi, rusak, kadaluarsa
-                                </p>
-                            </div>
-
-                            <!-- Return Refund -->
-                            <div class="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20 rounded-lg p-4 border border-purple-200 dark:border-purple-700">
-                                <div class="flex items-center justify-between mb-2">
-                                    <span class="text-xs font-medium text-purple-700 dark:text-purple-300">Retur ke Supplier</span>
-                                    <span class="text-lg">🔄</span>
-                                </div>
-                                <p class="text-xl font-bold text-purple-600 dark:text-purple-400">
-                                    {{ formatCurrency(summary.return_refund || 0) }}
-                                </p>
-                                <p class="text-xs text-purple-600 dark:text-purple-400 mt-1">
-                                    Refund diterima
-                                </p>
-                            </div>
-                        </div>
-
-                        <!-- Overall Financial Summary -->
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                            <!-- Net Cost Impact -->
-                            <div class="bg-gradient-to-br from-cyan-50 to-cyan-100 dark:from-cyan-900/20 dark:to-cyan-800/20 rounded-lg p-4 border border-cyan-200 dark:border-cyan-700">
-                                <div class="flex items-center justify-between mb-2">
-                                    <span class="text-xs font-medium text-cyan-700 dark:text-cyan-300">Dampak Nilai Stok (COGS)</span>
-                                    <span class="text-lg">📦</span>
-                                </div>
-                                <p class="text-xl font-bold" :class="summary.total_cost_impact >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'">
-                                    {{ formatCurrency(summary.total_cost_impact) }}
-                                </p>
-                                <p class="text-xs text-cyan-600 dark:text-cyan-400 mt-1">
-                                    {{ summary.total_cost_impact >= 0 ? 'Pertambahan nilai inventori' : 'Pengurangan nilai inventori' }}
-                                </p>
-                            </div>
-
-                            <!-- Net Profit/Loss Impact -->
-                            <div class="bg-gradient-to-br from-indigo-50 to-indigo-100 dark:from-indigo-900/20 dark:to-indigo-800/20 rounded-lg p-4 border border-indigo-200 dark:border-indigo-700">
-                                <div class="flex items-center justify-between mb-2">
-                                    <span class="text-xs font-medium text-indigo-700 dark:text-indigo-300">Dampak Laba/Rugi Bersih</span>
-                                    <span class="text-lg">💹</span>
-                                </div>
-                                <p class="text-xl font-bold" :class="summary.total_profit_loss_impact >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'">
-                                    {{ formatCurrency(summary.total_profit_loss_impact) }}
-                                </p>
-                                <p class="text-xs text-indigo-600 dark:text-indigo-400 mt-1">
-                                    {{ summary.total_profit_loss_impact >= 0 ? 'Keuntungan bersih' : 'Kerugian bersih' }}
-                                </p>
-                            </div>
-                        </div>
-
-                        <!-- Explanation -->
-                        <div class="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-700">
-                            <p class="text-xs text-blue-700 dark:text-blue-300 leading-relaxed">
-                                <strong>Catatan Perhitungan (Standar Internasional):</strong><br>
-                                • <strong>Penjualan:</strong> Pendapatan - COGS = Laba Kotor<br>
-                                • <strong>Non-Pendapatan</strong> (internal, pribadi, rusak, kadaluarsa): Kerugian murni tanpa pendapatan<br>
-                                • <strong>Retur ke Supplier:</strong> Refund di harga beli (break-even)<br>
-                                • <strong>Dampak Nilai Stok:</strong> Perubahan nilai inventori berdasarkan harga beli<br>
-                                • <strong>Dampak Laba/Rugi:</strong> Total keuntungan/kerugian dari semua penyesuaian stok
-                            </p>
-                        </div>
-                    </div>
-                </div>
 
                 <!-- Filters -->
                 <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg mb-4 sm:mb-6">
@@ -444,9 +332,6 @@ const getPurposeBadge = (purpose) => {
                                             Harga Beli
                                         </th>
                                         <th class="px-3 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                                            Nilai Stok
-                                        </th>
-                                        <th class="px-3 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                                             Harga Jual
                                         </th>
                                         <th class="px-3 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
@@ -456,7 +341,7 @@ const getPurposeBadge = (purpose) => {
                                             Laba/Rugi
                                         </th>
                                         <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                                            Oleh
+                                            Disesuaikan Oleh
                                         </th>
                                         <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                                             Catatan
@@ -465,7 +350,7 @@ const getPurposeBadge = (purpose) => {
                                 </thead>
                                 <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                                     <tr v-if="adjustments.data.length === 0">
-                                        <td colspan="14" class="px-6 py-12 text-center text-gray-500 dark:text-gray-400">
+                                        <td colspan="13" class="px-6 py-12 text-center text-gray-500 dark:text-gray-400">
                                             <div class="flex flex-col items-center justify-center">
                                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 text-gray-400 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -517,12 +402,6 @@ const getPurposeBadge = (purpose) => {
                                         <td class="px-3 py-3 whitespace-nowrap text-right text-sm text-gray-900 dark:text-gray-100">
                                             {{ formatCurrency(adjustment.product?.harga_beli || 0) }}
                                         </td>
-                                        <!-- Nilai Stok (COGS) -->
-                                        <td class="px-3 py-3 whitespace-nowrap text-right">
-                                            <div class="text-sm font-semibold" :class="adjustment.type === 'addition' ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'">
-                                                {{ adjustment.type === 'addition' ? '+' : '-' }}{{ formatCurrency(adjustment.cost_impact || 0) }}
-                                            </div>
-                                        </td>
                                         <!-- Harga Jual -->
                                         <td class="px-3 py-3 whitespace-nowrap text-right text-sm text-gray-900 dark:text-gray-100">
                                             {{ formatCurrency(adjustment.product?.harga_jual || 0) }}
@@ -539,9 +418,24 @@ const getPurposeBadge = (purpose) => {
                                                 {{ (adjustment.profit_loss_impact || 0) >= 0 ? '+' : '' }}{{ formatCurrency(adjustment.profit_loss_impact || 0) }}
                                             </div>
                                         </td>
-                                        <!-- Oleh -->
+                                        <!-- Disesuaikan Oleh -->
                                         <td class="px-3 py-3 whitespace-nowrap text-xs">
-                                            <div class="text-gray-900 dark:text-gray-100 font-medium">{{ adjustment.adjusted_by?.name || '-' }}</div>
+                                            <div v-if="adjustment.adjusted_by" class="flex items-center gap-2">
+                                                <img
+                                                    v-if="adjustment.adjusted_by.photo_url"
+                                                    :src="adjustment.adjusted_by.photo_url"
+                                                    :alt="adjustment.adjusted_by.name"
+                                                    class="w-8 h-8 rounded-full object-cover border-2 border-gray-200 dark:border-gray-700"
+                                                />
+                                                <div v-else class="w-8 h-8 rounded-full bg-indigo-500 flex items-center justify-center text-white font-semibold text-xs border-2 border-gray-200 dark:border-gray-700">
+                                                    {{ adjustment.adjusted_by.name.charAt(0).toUpperCase() }}
+                                                </div>
+                                                <div>
+                                                    <div class="text-gray-900 dark:text-gray-100 font-medium">{{ adjustment.adjusted_by.name }}</div>
+                                                    <div class="text-gray-500 dark:text-gray-400 text-xs">{{ adjustment.adjusted_by.role }}</div>
+                                                </div>
+                                            </div>
+                                            <div v-else class="text-gray-500 dark:text-gray-400">-</div>
                                         </td>
                                         <!-- Catatan -->
                                         <td class="px-3 py-3 text-xs text-gray-500 dark:text-gray-400 max-w-[120px]">

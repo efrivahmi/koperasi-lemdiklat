@@ -205,4 +205,23 @@ onMounted(() => {
 .float {
     animation: float 6s ease-in-out infinite;
 }
+
+/* Hide browser default password reveal icon */
+input[type="password"]::-ms-reveal,
+input[type="password"]::-ms-clear {
+    display: none;
+}
+
+input[type="password"]::-webkit-credentials-auto-fill-button,
+input[type="password"]::-webkit-contacts-auto-fill-button {
+    visibility: hidden;
+    pointer-events: none;
+    position: absolute;
+    right: 0;
+}
+
+/* Chrome, Safari, Edge - Hide password reveal button */
+input[type="password"]::-webkit-textfield-decoration-container {
+    padding-right: 3rem; /* Space for custom icon */
+}
 </style>

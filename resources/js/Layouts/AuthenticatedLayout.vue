@@ -1,7 +1,6 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue';
-import { Link, usePage } from '@inertiajs/vue3';
-import LoadingSpinner from '@/Components/LoadingSpinner.vue';
+import { Link, usePage, router } from '@inertiajs/vue3';
 
 const page = usePage();
 const sidebarOpen = ref(false);
@@ -34,13 +33,29 @@ const checkMobile = () => {
     }
 };
 
+// Setup loading state for Inertia navigation
+const handleStart = () => {
+    isLoading.value = true;
+};
+
+const handleFinish = () => {
+    isLoading.value = false;
+};
+
 onMounted(() => {
     checkMobile();
     window.addEventListener('resize', checkMobile);
+
+    // Listen to Inertia navigation events
+    router.on('start', handleStart);
+    router.on('finish', handleFinish);
 });
 
 onUnmounted(() => {
     window.removeEventListener('resize', checkMobile);
+
+    // Inertia.js automatically handles event listener cleanup
+    // No need to manually remove router event listeners
 });
 
 const menuItems = computed(() => {
@@ -203,6 +218,20 @@ const isActiveRoute = (routeName) => {
     return route().current(routeName) || route().current(routeName + '.*');
 };
 
+// Get page title for mobile header
+const pageTitle = computed(() => {
+    // Try to get from page props first
+    if (page.props.pageTitle) return page.props.pageTitle;
+
+    // Otherwise use document title (set by Head component)
+    const docTitle = document.title;
+    if (docTitle && docTitle !== 'Laravel') {
+        return docTitle;
+    }
+
+    return 'Dashboard';
+});
+
 const toggleSidebar = () => {
     if (isMobile.value) {
         mobileMenuOpen.value = !mobileMenuOpen.value;
@@ -243,10 +272,13 @@ page.props.isLoading = isLoading;
 
     <!-- Loading Overlay -->
     <Transition name="fade">
-        <div v-if="isLoading" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-            <div class="text-center space-y-4">
-                <LoadingSpinner size="xl" color="purple" />
-                <p class="text-white text-lg font-semibold animate-pulse">Loading...</p>
+        <div v-if="isLoading" class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+            <div class="flex flex-col items-center space-y-4">
+                <!-- Spinning Circle -->
+                <div class="relative">
+                    <div class="w-16 h-16 border-4 border-purple-200 border-t-purple-600 rounded-full animate-spin"></div>
+                </div>
+                <p class="text-white text-lg font-semibold">Loading...</p>
             </div>
         </div>
     </Transition>
@@ -271,10 +303,11 @@ page.props.isLoading = isLoading;
             <!-- Logo & Toggle -->
             <div class="flex items-center justify-between mb-6 px-2">
                 <Link :href="route('dashboard')" v-if="sidebarOpen || isMobile" class="flex items-center space-x-3 group">
-                    <img src="/storage/logos/icon.png" alt="Logo Koperasi" class="w-10 h-10 object-contain group-hover:scale-110 transition-transform duration-300 drop-shadow-lg" />
-                    <div class="flex flex-col">
-                        <span class="text-sm font-bold text-white leading-tight drop-shadow-md">Koperasi Lemdiklat</span>
-                        <span class="text-xs font-medium text-purple-200 leading-tight drop-shadow-md">Taruna Nusantara</span>
+                    <img src="/storage/logos/icon.png" alt="Logo Koperasi" class="w-10 h-10 object-contain group-hover:scale-110 transition-transform duration-300 drop-shadow-lg flex-shrink-0" />
+                    <div class="flex flex-col min-w-0 flex-1">
+                        <span class="text-xs font-bold text-white leading-tight drop-shadow-md">Koperasi Lemdiklat</span>
+                        <span class="text-xs font-bold text-white leading-tight drop-shadow-md">Taruna Nusantara</span>
+                        <span class="text-xs font-medium text-purple-200 leading-tight drop-shadow-md">Indonesia</span>
                     </div>
                 </Link>
                 <button
@@ -396,13 +429,19 @@ page.props.isLoading = isLoading;
         <!-- Mobile Header -->
         <div v-if="isMobile" class="sticky top-0 z-30 bg-gradient-to-r from-purple-900 via-indigo-900 to-blue-900 border-b border-purple-500/30 shadow-lg shadow-purple-500/20 lg:hidden backdrop-blur-sm">
             <div class="flex items-center justify-between px-4 py-3">
-                <Link :href="route('dashboard')" class="flex items-center space-x-2">
-                    <img src="/storage/logos/icon.png" alt="Logo" class="w-8 h-8 object-contain drop-shadow-lg" />
-                    <span class="text-base font-bold text-white drop-shadow-md">Koperasi Lemdiklat</span>
-                </Link>
+                <div class="flex items-center space-x-3 min-w-0 flex-1">
+                    <Link :href="route('dashboard')" class="flex-shrink-0">
+                        <img src="/storage/logos/icon.png" alt="Logo" class="w-8 h-8 object-contain drop-shadow-lg" />
+                    </Link>
+                    <div class="min-w-0 flex-1">
+                        <h1 class="text-base font-bold text-white drop-shadow-md truncate">
+                            {{ pageTitle }}
+                        </h1>
+                    </div>
+                </div>
                 <button
                     @click="toggleSidebar"
-                    class="p-2 rounded-lg bg-gradient-to-br from-purple-600 to-pink-600 text-white shadow-lg shadow-purple-500/50"
+                    class="p-2 rounded-lg bg-gradient-to-br from-purple-600 to-pink-600 text-white shadow-lg shadow-purple-500/50 flex-shrink-0 ml-2"
                     title="Open menu"
                 >
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">

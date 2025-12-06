@@ -175,8 +175,8 @@ const formatPercent = (value) => {
                                         <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Deskripsi</th>
                                         <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Kategori</th>
                                         <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Jumlah</th>
-                                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Dibuat</th>
-                                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Diubah</th>
+                                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-900 dark:text-gray-100 uppercase">Dibuat</th>
+                                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-900 dark:text-gray-100 uppercase">Diubah</th>
                                     </tr>
                                 </thead>
                                 <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">

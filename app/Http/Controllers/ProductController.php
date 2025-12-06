@@ -106,7 +106,7 @@ class ProductController extends Controller
     public function show(Product $product)
     {
         return Inertia::render('Admin/Products/Show', [
-            'product' => $product->load('category')
+            'product' => $product->load(['category', 'saleItems', 'stockIns'])
         ]);
     }
 
@@ -209,6 +209,20 @@ class ProductController extends Controller
         return Inertia::render('Admin/Products/BarcodeGenerator', [
             'products' => $products,
             'filters' => $request->only(['search'])
+        ]);
+    }
+
+    /**
+     * Print barcode label for single product
+     */
+    public function printBarcode(Product $product)
+    {
+        $products = collect([$product->load('category')]);
+        $quantity = 1;
+
+        return view('barcode-labels', [
+            'products' => $products,
+            'quantity' => $quantity
         ]);
     }
 

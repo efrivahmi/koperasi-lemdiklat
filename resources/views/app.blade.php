@@ -4,7 +4,7 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
 
-        <title inertia>{{ config('school.full_name') }} - {{ config('school.subtitle') }}</title>
+        <title inertia>{{ config('app.name', 'Laravel') }}</title>
 
         <!-- Favicon -->
         <link rel="icon" type="image/png" href="{{ config('school.logo.icon') }}">

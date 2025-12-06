@@ -17,6 +17,12 @@ class VoucherController extends Controller
      */
     public function index(Request $request)
     {
+        // Update expired vouchers status automatically
+        Voucher::where('status', 'available')
+            ->whereNotNull('expired_at')
+            ->where('expired_at', '<', now())
+            ->update(['status' => 'expired']);
+
         $query = Voucher::with(['student.user', 'usedBy', 'creator', 'updater']);
 
         if ($request->has('search')) {
@@ -65,6 +71,8 @@ class VoucherController extends Controller
                 'nominal' => $validated['nominal'],
                 'status' => 'available',
                 'expired_at' => $validated['expired_at'] ?? null,
+                'created_by' => auth()->id(),
+                'updated_by' => auth()->id(),
                 'created_at' => now(),
                 'updated_at' => now(),
             ];

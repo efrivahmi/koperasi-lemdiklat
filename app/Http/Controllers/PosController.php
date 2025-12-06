@@ -325,7 +325,7 @@ class PosController extends Controller
         $sales = Sale::with(['student.user', 'saleItems.product', 'user'])
             ->where('status', 'completed')
             ->where('created_at', '>=', now()->subHours(24)) // Last 24 hours only
-            ->oldest()
+            ->latest()
             ->limit(10)
             ->get();
 
@@ -405,5 +405,131 @@ class PosController extends Controller
         return view('receipt', [
             'sale' => $sale
         ]);
+    }
+
+    /**
+     * Show all transactions history with advanced search
+     */
+    public function transactionsHistory(Request $request)
+    {
+        try {
+            // OPTIMIZED: Only load necessary relationships with specific columns
+            $query = Sale::with([
+                'student:id,user_id,nis,kelas',
+                'student.user:id,name',
+                'user:id,name,role'
+            ])->select('id', 'student_id', 'user_id', 'payment_method', 'status', 'total', 'created_at');
+
+            // Filter by date range
+            if ($request->filled('date_from')) {
+                $query->whereDate('created_at', '>=', $request->date_from);
+            }
+
+            if ($request->filled('date_to')) {
+                $query->whereDate('created_at', '<=', $request->date_to);
+            }
+
+            // Filter by payment method
+            if ($request->filled('payment_method')) {
+                $query->where('payment_method', $request->payment_method);
+            }
+
+            // Filter by status
+            if ($request->filled('status')) {
+                $query->where('status', $request->status);
+            }
+
+            // Filter by student
+            if ($request->filled('student_id')) {
+                $query->where('student_id', $request->student_id);
+            }
+
+            // Filter by cashier/user
+            if ($request->filled('user_id')) {
+                $query->where('user_id', $request->user_id);
+            }
+
+            // Search by invoice ID, student name, or NIS
+            if ($request->filled('search')) {
+                $search = $request->search;
+                $query->where(function($q) use ($search) {
+                    $q->where('id', 'like', '%' . $search . '%')
+                      ->orWhereHas('student.user', function($q) use ($search) {
+                          $q->where('name', 'like', '%' . $search . '%');
+                      })
+                      ->orWhereHas('student', function($q) use ($search) {
+                          $q->where('nis', 'like', '%' . $search . '%');
+                      });
+                });
+            }
+
+            $sales = $query->latest()->paginate(20);
+
+            // OPTIMIZED: Use aggregate queries instead of loading all records
+            $summaryBase = Sale::query();
+            if ($request->filled('date_from')) {
+                $summaryBase->whereDate('created_at', '>=', $request->date_from);
+            }
+            if ($request->filled('date_to')) {
+                $summaryBase->whereDate('created_at', '<=', $request->date_to);
+            }
+            if ($request->filled('payment_method')) {
+                $summaryBase->where('payment_method', $request->payment_method);
+            }
+            if ($request->filled('status')) {
+                $summaryBase->where('status', $request->status);
+            }
+
+            // Use separate optimized queries for each metric
+            $summary = [
+                'total_transactions' => (clone $summaryBase)->count(),
+                'total_revenue' => (clone $summaryBase)->where('status', 'completed')->sum('total'),
+                'cash_transactions' => (clone $summaryBase)->where('payment_method', 'cash')->count(),
+                'balance_transactions' => (clone $summaryBase)->where('payment_method', 'balance')->count(),
+                'voided_transactions' => (clone $summaryBase)->where('status', 'voided')->count(),
+                'cash_revenue' => (clone $summaryBase)->where('payment_method', 'cash')->where('status', 'completed')->sum('total'),
+                'balance_revenue' => (clone $summaryBase)->where('payment_method', 'balance')->where('status', 'completed')->sum('total'),
+            ];
+
+            return Inertia::render('Kasir/TransactionsHistory', [
+                'sales' => $sales,
+                'summary' => $summary,
+                'filters' => [
+                    'date_from' => $request->date_from ?? '',
+                    'date_to' => $request->date_to ?? '',
+                    'payment_method' => $request->payment_method ?? '',
+                    'status' => $request->status ?? '',
+                    'student_id' => $request->student_id ?? '',
+                    'user_id' => $request->user_id ?? '',
+                    'search' => $request->search ?? '',
+                ],
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('Transactions history error: ' . $e->getMessage());
+
+            return Inertia::render('Kasir/TransactionsHistory', [
+                'sales' => new \Illuminate\Pagination\LengthAwarePaginator([], 0, 20),
+                'summary' => [
+                    'total_transactions' => 0,
+                    'total_revenue' => 0,
+                    'cash_transactions' => 0,
+                    'balance_transactions' => 0,
+                    'voided_transactions' => 0,
+                    'cash_revenue' => 0,
+                    'balance_revenue' => 0,
+                ],
+                'filters' => [
+                    'date_from' => '',
+                    'date_to' => '',
+                    'payment_method' => '',
+                    'status' => '',
+                    'student_id' => '',
+                    'user_id' => '',
+                    'search' => '',
+                ],
+                'error' => 'Gagal memuat riwayat transaksi: ' . $e->getMessage()
+            ]);
+        }
     }
 }

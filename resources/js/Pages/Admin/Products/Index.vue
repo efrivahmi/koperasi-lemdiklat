@@ -80,7 +80,7 @@ const formatCurrency = (value) => {
                         <span class="hidden sm:inline">Cetak Barcode</span>
                         <span class="sm:hidden">Barcode</span>
                     </Link>
-                    <Link :href="route('products.create')" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-3 sm:px-4 rounded text-sm sm:text-base flex-1 sm:flex-initial text-center">
+                    <Link :href="route('products.create')" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-3 sm:px-4 rounded-lg shadow-sm transition text-sm sm:text-base flex-1 sm:flex-initial text-center">
                         <span class="hidden sm:inline">Tambah Produk</span>
                         <span class="sm:hidden">+ Produk</span>
                     </Link>
@@ -99,8 +99,8 @@ const formatCurrency = (value) => {
                     action-text="Tambah Produk Pertama"
                 />
 
-                <div v-else class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                    <div class="p-3 sm:p-6 text-gray-900">
+                <div v-else class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
+                    <div class="p-3 sm:p-6 text-gray-900 dark:text-gray-100">
                         <div class="mb-4">
                             <label for="product-search" class="sr-only">Cari Produk</label>
                             <input
@@ -108,29 +108,29 @@ const formatCurrency = (value) => {
                                 v-model="search"
                                 type="text"
                                 placeholder="Cari produk (nama atau barcode)..."
-                                class="w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm text-sm sm:text-base"
+                                class="w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm text-sm sm:text-base"
                                 aria-label="Cari produk berdasarkan nama atau barcode"
                             />
                         </div>
 
                         <div class="overflow-x-auto -mx-3 sm:mx-0 scrollbar-thin">
-                            <table class="min-w-full divide-y divide-gray-200 text-xs sm:text-sm">
-                                <thead class="bg-gray-50 sticky top-0">
+                            <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700 text-xs sm:text-sm">
+                                <thead class="bg-gray-50 dark:bg-gray-800 sticky top-0">
                                     <tr>
-                                        <th class="px-2 sm:px-4 lg:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase">Gambar</th>
-                                        <th class="px-2 sm:px-4 lg:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase">Nama</th>
-                                        <th class="px-2 sm:px-4 lg:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase hidden md:table-cell">Kategori</th>
-                                        <th class="px-2 sm:px-4 lg:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase hidden lg:table-cell">Barcode</th>
-                                        <th class="px-2 sm:px-4 lg:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase">Stok</th>
-                                        <th class="px-2 sm:px-4 lg:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase hidden sm:table-cell">Harga Beli</th>
-                                        <th class="px-2 sm:px-4 lg:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase">Harga Jual</th>
-                                        <th class="px-2 sm:px-4 lg:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase hidden xl:table-cell">Dibuat</th>
-                                        <th class="px-2 sm:px-4 lg:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase hidden xl:table-cell">Diubah</th>
-                                        <th class="px-2 sm:px-4 lg:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase">Aksi</th>
+                                        <th class="px-2 sm:px-4 lg:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Gambar</th>
+                                        <th class="px-2 sm:px-4 lg:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Nama</th>
+                                        <th class="px-2 sm:px-4 lg:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase hidden md:table-cell">Kategori</th>
+                                        <th class="px-2 sm:px-4 lg:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase hidden lg:table-cell">Barcode</th>
+                                        <th class="px-2 sm:px-4 lg:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Stok</th>
+                                        <th class="px-2 sm:px-4 lg:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase hidden sm:table-cell">Harga Beli</th>
+                                        <th class="px-2 sm:px-4 lg:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Harga Jual</th>
+                                        <th class="px-2 sm:px-4 lg:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-900 dark:text-gray-100 uppercase hidden xl:table-cell">Dibuat</th>
+                                        <th class="px-2 sm:px-4 lg:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-900 dark:text-gray-100 uppercase hidden xl:table-cell">Diubah</th>
+                                        <th class="px-2 sm:px-4 lg:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Aksi</th>
                                     </tr>
                                 </thead>
-                                <tbody class="bg-white divide-y divide-gray-200">
-                                    <tr v-for="product in products.data" :key="product.id" class="hover:bg-gray-50">
+                                <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                                    <tr v-for="product in products.data" :key="product.id" class="hover:bg-gray-50 dark:hover:bg-gray-700">
                                         <td class="px-2 sm:px-4 lg:px-6 py-2 sm:py-4 whitespace-nowrap">
                                             <img
                                                 v-if="product.image_path"
@@ -138,19 +138,19 @@ const formatCurrency = (value) => {
                                                 :alt="product.name"
                                                 class="h-8 w-8 sm:h-10 sm:w-10 lg:h-12 lg:w-12 object-cover rounded"
                                             />
-                                            <div v-else class="h-8 w-8 sm:h-10 sm:w-10 lg:h-12 lg:w-12 bg-gray-200 rounded">
+                                            <div v-else class="h-8 w-8 sm:h-10 sm:w-10 lg:h-12 lg:w-12 bg-gray-200 dark:bg-gray-700 rounded">
                                             </div>
                                         </td>
-                                        <td class="px-2 sm:px-4 lg:px-6 py-2 sm:py-4 text-xs sm:text-sm font-medium text-gray-900 max-w-[120px] sm:max-w-none truncate">{{ product.name }}</td>
-                                        <td class="px-2 sm:px-4 lg:px-6 py-2 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-500 hidden md:table-cell">{{ product.category?.name || '-' }}</td>
-                                        <td class="px-2 sm:px-4 lg:px-6 py-2 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-500 font-mono hidden lg:table-cell">{{ product.barcode || '-' }}</td>
-                                        <td class="px-2 sm:px-4 lg:px-6 py-2 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-500">
-                                            <span :class="product.stock < 10 ? 'text-red-600 font-bold bg-red-50 px-1.5 py-0.5 rounded' : ''">
+                                        <td class="px-2 sm:px-4 lg:px-6 py-2 sm:py-4 text-xs sm:text-sm font-medium text-gray-900 dark:text-gray-100 max-w-[120px] sm:max-w-none truncate">{{ product.name }}</td>
+                                        <td class="px-2 sm:px-4 lg:px-6 py-2 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-500 dark:text-gray-400 hidden md:table-cell">{{ product.category?.name || '-' }}</td>
+                                        <td class="px-2 sm:px-4 lg:px-6 py-2 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-500 dark:text-gray-400 font-mono hidden lg:table-cell">{{ product.barcode || '-' }}</td>
+                                        <td class="px-2 sm:px-4 lg:px-6 py-2 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-500 dark:text-gray-400">
+                                            <span :class="product.stock < 10 ? 'text-red-600 dark:text-red-400 font-bold bg-red-50 dark:bg-red-900/20 px-1.5 py-0.5 rounded' : ''">
                                                 {{ product.stock }}
                                             </span>
                                         </td>
-                                        <td class="px-2 sm:px-4 lg:px-6 py-2 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-500 hidden sm:table-cell">{{ formatCurrency(product.harga_beli) }}</td>
-                                        <td class="px-2 sm:px-4 lg:px-6 py-2 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-900 font-semibold">{{ formatCurrency(product.harga_jual) }}</td>
+                                        <td class="px-2 sm:px-4 lg:px-6 py-2 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-500 dark:text-gray-400 hidden sm:table-cell">{{ formatCurrency(product.harga_beli) }}</td>
+                                        <td class="px-2 sm:px-4 lg:px-6 py-2 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-900 dark:text-gray-100 font-semibold">{{ formatCurrency(product.harga_jual) }}</td>
                                         <td class="px-2 sm:px-4 lg:px-6 py-2 sm:py-4 whitespace-nowrap text-xs text-gray-500 hidden xl:table-cell">
                                             <AuditInfo :user="product.creator" :timestamp="product.created_at" label="Dibuat" />
                                         </td>
@@ -159,16 +159,16 @@ const formatCurrency = (value) => {
                                         </td>
                                         <td class="px-2 sm:px-4 lg:px-6 py-2 sm:py-4 whitespace-nowrap text-xs sm:text-sm font-medium">
                                             <div class="flex flex-col sm:flex-row gap-1 sm:gap-2">
-                                                <Link :href="route('products.show', product.id)" class="text-blue-600 hover:text-blue-900 text-xs sm:text-sm" title="Detail">
+                                                <Link :href="route('products.show', product.id)" class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300 text-xs sm:text-sm" title="Detail">
                                                     Detail
                                                 </Link>
-                                                <button @click="openAdjustmentModal(product)" class="text-green-600 hover:text-green-900 text-left text-xs sm:text-sm" title="Sesuaikan Stok">
+                                                <button @click="openAdjustmentModal(product)" class="text-green-600 dark:text-green-400 hover:text-green-900 dark:hover:text-green-300 text-left text-xs sm:text-sm" title="Sesuaikan Stok">
                                                     Stok
                                                 </button>
-                                                <Link :href="route('products.edit', product.id)" class="text-indigo-600 hover:text-indigo-900 text-xs sm:text-sm" title="Edit">
+                                                <Link :href="route('products.edit', product.id)" class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300 text-xs sm:text-sm" title="Edit">
                                                     Edit
                                                 </Link>
-                                                <button @click="deleteProduct(product.id)" class="text-red-600 hover:text-red-900 text-left text-xs sm:text-sm" title="Hapus">
+                                                <button @click="deleteProduct(product.id)" class="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300 text-left text-xs sm:text-sm" title="Hapus">
                                                     Hapus
                                                 </button>
                                             </div>
@@ -177,11 +177,11 @@ const formatCurrency = (value) => {
                                     <tr v-if="products.data.length === 0 && search">
                                         <td colspan="10" class="px-6 py-12 text-center">
                                             <div class="text-gray-400">
-                                                <svg class="mx-auto h-12 w-12 text-gray-300 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <svg class="mx-auto h-12 w-12 text-gray-300 dark:text-gray-600 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                                                 </svg>
-                                                <h3 class="text-sm font-medium text-gray-900 mb-1">Tidak ada hasil</h3>
-                                                <p class="text-sm text-gray-500">Tidak ditemukan produk dengan kata kunci "{{ search }}"</p>
+                                                <h3 class="text-sm font-medium text-gray-900 dark:text-gray-100 mb-1">Tidak ada hasil</h3>
+                                                <p class="text-sm text-gray-500 dark:text-gray-400">Tidak ditemukan produk dengan kata kunci "{{ search }}"</p>
                                             </div>
                                         </td>
                                     </tr>
@@ -197,7 +197,7 @@ const formatCurrency = (value) => {
                                     v-html="link.label"
                                     :class="[
                                         'px-2 sm:px-3 py-1.5 sm:py-2 rounded text-xs sm:text-sm',
-                                        link.active ? 'bg-blue-500 text-white font-semibold' : 'bg-gray-200 hover:bg-gray-300 text-gray-700'
+                                        link.active ? 'bg-indigo-600 text-white font-semibold' : 'bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300'
                                     ]"
                                 />
                                 <span
@@ -288,7 +288,7 @@ const formatCurrency = (value) => {
                             <button
                                 type="submit"
                                 :disabled="adjustmentForm.processing"
-                                class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm disabled:opacity-50"
+                                class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:ml-3 sm:w-auto sm:text-sm disabled:opacity-50"
                             >
                                 {{ adjustmentForm.processing ? 'Memproses...' : 'Simpan' }}
                             </button>

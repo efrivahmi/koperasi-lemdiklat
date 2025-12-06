@@ -35,12 +35,16 @@ Route::middleware(['auth', 'role:admin,master'])->prefix('admin')->group(functio
 Route::middleware(['auth', 'role:admin,master,kasir'])->prefix('admin')->group(function () {
     // Master Data - Accessible by Kasir
     Route::resource('categories', \App\Http\Controllers\CategoryController::class);
-    Route::resource('products', \App\Http\Controllers\ProductController::class);
+
+    // Product specific routes (MUST come before resource routes)
     Route::get('products-barcode/generator', [\App\Http\Controllers\ProductController::class, 'barcodeGenerator'])->name('products.barcode-generator');
     Route::get('products-barcode/print', [\App\Http\Controllers\ProductController::class, 'printBarcodes'])->name('products.print-barcodes');
+    Route::get('products/{product}/print-barcode', [\App\Http\Controllers\ProductController::class, 'printBarcode'])->name('products.print-barcode');
     Route::get('api/generate-barcode', [\App\Http\Controllers\ProductController::class, 'generateBarcodeApi'])->name('api.generate-barcode');
     Route::post('products/{product}/adjust-stock', [\App\Http\Controllers\StockAdjustmentController::class, 'store'])->name('products.adjust-stock');
     Route::get('products/{product}/adjustment-history', [\App\Http\Controllers\StockAdjustmentController::class, 'history'])->name('products.adjustment-history');
+
+    Route::resource('products', \App\Http\Controllers\ProductController::class);
 
     // Inventory & Finance - Accessible by Kasir
     Route::resource('stock-ins', \App\Http\Controllers\StockInController::class);
@@ -91,6 +95,7 @@ Route::middleware(['auth', 'role:admin,master,kasir'])->group(function () {
     // POS
     Route::prefix('kasir')->group(function () {
         Route::get('/pos', [\App\Http\Controllers\PosController::class, 'index'])->name('pos.index');
+        Route::get('/transactions-history', [\App\Http\Controllers\PosController::class, 'transactionsHistory'])->name('pos.transactions-history');
 
         // API Routes for POS
         Route::get('/api/products', [\App\Http\Controllers\PosController::class, 'getProducts'])->name('pos.api.products');

@@ -1,10 +1,7 @@
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
-import InputLabel from '@/Components/InputLabel.vue';
-import TextInput from '@/Components/TextInput.vue';
 import InputError from '@/Components/InputError.vue';
-import PrimaryButton from '@/Components/PrimaryButton.vue';
 
 const props = defineProps({
     voucher: Object,
@@ -60,10 +57,10 @@ const getStatusText = (status) => {
             </div>
         </template>
 
-        <div class="py-12">
-            <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+        <div class="py-6 sm:py-12">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
-                    <div class="p-6 text-gray-900 dark:text-gray-100">
+                    <div class="p-4 sm:p-6 text-gray-900 dark:text-gray-100">
                         <!-- Voucher Info Card -->
                         <div class="mb-6 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -99,12 +96,12 @@ const getStatusText = (status) => {
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <!-- Nominal -->
                                 <div>
-                                    <InputLabel for="nominal" value="Nominal Voucher" />
-                                    <TextInput
+                                    <label for="nominal" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Nominal Voucher</label>
+                                    <input
                                         id="nominal"
                                         type="number"
                                         v-model="form.nominal"
-                                        class="mt-1 block w-full"
+                                        class="w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm text-sm sm:text-base py-2"
                                         min="1000"
                                         step="1000"
                                         required
@@ -118,11 +115,11 @@ const getStatusText = (status) => {
 
                                 <!-- Status -->
                                 <div>
-                                    <InputLabel for="status" value="Status" />
+                                    <label for="status" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Status</label>
                                     <select
                                         id="status"
                                         v-model="form.status"
-                                        class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm"
+                                        class="w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm text-sm sm:text-base py-2"
                                         required
                                     >
                                         <option value="available">Tersedia</option>
@@ -131,18 +128,18 @@ const getStatusText = (status) => {
                                     </select>
                                     <InputError :message="form.errors.status" class="mt-2" />
                                     <p v-if="form.status === 'used'" class="mt-1 text-sm text-yellow-600 dark:text-yellow-400">
-                                        ⚠ Mengubah status ke 'Sudah Digunakan' tidak akan menambah saldo siswa.
+                                        Mengubah status ke 'Sudah Digunakan' tidak akan menambah saldo siswa.
                                     </p>
                                 </div>
 
                                 <!-- Expired At -->
                                 <div class="md:col-span-2">
-                                    <InputLabel for="expired_at" value="Tanggal Kadaluarsa" />
-                                    <TextInput
+                                    <label for="expired_at" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Tanggal Kadaluarsa</label>
+                                    <input
                                         id="expired_at"
                                         type="date"
                                         v-model="form.expired_at"
-                                        class="mt-1 block w-full"
+                                        class="w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm text-sm sm:text-base py-2"
                                         :disabled="voucher.status === 'used'"
                                     />
                                     <InputError :message="form.errors.expired_at" class="mt-2" />
@@ -172,14 +169,14 @@ const getStatusText = (status) => {
                             </div>
 
                             <!-- Submit Button -->
-                            <div class="flex items-center gap-4">
-                                <PrimaryButton :disabled="form.processing">
+                            <div class="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4">
+                                <button type="submit" :disabled="form.processing" class="inline-flex items-center justify-center px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white rounded-lg font-semibold text-sm transition shadow-sm disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto">
                                     <span v-if="form.processing">Menyimpan...</span>
                                     <span v-else>Simpan Perubahan</span>
-                                </PrimaryButton>
+                                </button>
                                 <Link
                                     :href="route('vouchers.index')"
-                                    class="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100"
+                                    class="inline-flex items-center justify-center px-6 py-2.5 bg-gray-500 hover:bg-gray-600 text-white rounded-lg font-semibold text-sm transition shadow-sm w-full sm:w-auto"
                                 >
                                     Batal
                                 </Link>

@@ -1,10 +1,7 @@
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
-import InputLabel from '@/Components/InputLabel.vue';
-import TextInput from '@/Components/TextInput.vue';
 import InputError from '@/Components/InputError.vue';
-import PrimaryButton from '@/Components/PrimaryButton.vue';
 
 const props = defineProps({
     products: Array,
@@ -27,20 +24,20 @@ const submit = () => {
 
     <AuthenticatedLayout>
         <template #header>
-            <h2 class="font-semibold text-xl text-gray-800 leading-tight">Tambah Stok Masuk</h2>
+            <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">Tambah Stok Masuk</h2>
         </template>
 
-        <div class="py-12">
-            <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                    <div class="p-6 text-gray-900">
+        <div class="py-6 sm:py-12">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
+                    <div class="p-4 sm:p-6 text-gray-900 dark:text-gray-100">
                         <form @submit.prevent="submit" class="space-y-6">
                             <div>
-                                <InputLabel for="product_id" value="Produk" />
+                                <label for="product_id" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Produk</label>
                                 <select
                                     id="product_id"
                                     v-model="form.product_id"
-                                    class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm"
+                                    class="w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm text-sm sm:text-base py-2"
                                     required
                                 >
                                     <option value="">Pilih Produk</option>
@@ -52,12 +49,12 @@ const submit = () => {
                             </div>
 
                             <div>
-                                <InputLabel for="quantity" value="Jumlah / Quantity" />
-                                <TextInput
+                                <label for="quantity" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Jumlah / Quantity</label>
+                                <input
                                     id="quantity"
                                     type="number"
                                     v-model="form.quantity"
-                                    class="mt-1 block w-full"
+                                    class="w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm text-sm sm:text-base py-2"
                                     min="1"
                                     required
                                 />
@@ -65,32 +62,35 @@ const submit = () => {
                             </div>
 
                             <div>
-                                <InputLabel for="supplier" value="Supplier / Pemasok" />
-                                <TextInput
+                                <label for="supplier" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Supplier / Pemasok</label>
+                                <input
                                     id="supplier"
                                     type="text"
                                     v-model="form.supplier"
-                                    class="mt-1 block w-full"
+                                    class="w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm text-sm sm:text-base py-2"
                                     placeholder="Nama supplier (opsional)"
                                 />
                                 <InputError :message="form.errors.supplier" class="mt-2" />
                             </div>
 
                             <div>
-                                <InputLabel for="keterangan" value="Keterangan" />
+                                <label for="keterangan" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Keterangan</label>
                                 <textarea
                                     id="keterangan"
                                     v-model="form.keterangan"
-                                    class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm"
+                                    class="w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm text-sm sm:text-base py-2"
                                     rows="3"
                                     placeholder="Catatan tambahan (opsional)"
                                 ></textarea>
                                 <InputError :message="form.errors.keterangan" class="mt-2" />
                             </div>
 
-                            <div class="flex items-center gap-4">
-                                <PrimaryButton :disabled="form.processing">Simpan</PrimaryButton>
-                                <Link :href="route('stock-ins.index')" class="text-gray-600 hover:text-gray-900">Batal</Link>
+                            <div class="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4">
+                                <button type="submit" :disabled="form.processing" class="inline-flex items-center justify-center px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white rounded-lg font-semibold text-sm transition shadow-sm disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto">
+                                    <span v-if="!form.processing">Simpan</span>
+                                    <span v-else>Menyimpan...</span>
+                                </button>
+                                <Link :href="route('stock-ins.index')" class="inline-flex items-center justify-center px-6 py-2.5 bg-gray-500 hover:bg-gray-600 text-white rounded-lg font-semibold text-sm transition shadow-sm w-full sm:w-auto">Batal</Link>
                             </div>
                         </form>
                     </div>

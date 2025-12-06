@@ -35,7 +35,7 @@ class StockAdjustmentsExport implements FromCollection, WithHeadings, WithMappin
 
     public function collection()
     {
-        $query = StockAdjustment::with(['product', 'adjustedBy'])
+        $query = StockAdjustment::with(['product', 'adjustedBy', 'creator', 'updater'])
             ->whereBetween('created_at', [$this->dateFrom . ' 00:00:00', $this->dateTo . ' 23:59:59']);
 
         // Apply filters
@@ -75,11 +75,15 @@ class StockAdjustmentsExport implements FromCollection, WithHeadings, WithMappin
             'Jumlah Disesuaikan',
             'Stok Sesudah',
             'Harga Beli',
-            'Nilai Stok (COGS)',
+            'Harga Jual',
             'Pendapatan',
             'Laba/Rugi',
             'Disesuaikan Oleh',
             'Catatan',
+            'Dibuat Oleh',
+            'Dibuat Pada',
+            'Diubah Oleh',
+            'Diubah Pada',
         ];
     }
 
@@ -124,8 +128,6 @@ class StockAdjustmentsExport implements FromCollection, WithHeadings, WithMappin
             $profitLossImpact = $quantity * $profitMarginPerUnit;
         }
 
-        $sign = $adjustment->type === 'addition' ? '+' : '-';
-
         return [
             Carbon::parse($adjustment->created_at)->format('d/m/Y'),
             Carbon::parse($adjustment->created_at)->format('H:i:s'),
@@ -137,11 +139,15 @@ class StockAdjustmentsExport implements FromCollection, WithHeadings, WithMappin
             $adjustment->quantity_adjusted,
             $adjustment->quantity_after,
             number_format($hargaBeli, 0, ',', '.'),
-            $sign . number_format($costImpact, 0, ',', '.'),
+            number_format($hargaJual, 0, ',', '.'),
             number_format($revenue, 0, ',', '.'),
             ($profitLossImpact >= 0 ? '+' : '') . number_format($profitLossImpact, 0, ',', '.'),
             $adjustment->adjustedBy->name ?? '-',
             $adjustment->notes ?? '-',
+            $adjustment->creator->name ?? '-',
+            $adjustment->created_at ? Carbon::parse($adjustment->created_at)->format('d/m/Y H:i:s') : '-',
+            $adjustment->updater->name ?? '-',
+            $adjustment->updated_at ? Carbon::parse($adjustment->updated_at)->format('d/m/Y H:i:s') : '-',
         ];
     }
 
@@ -178,12 +184,16 @@ class StockAdjustmentsExport implements FromCollection, WithHeadings, WithMappin
             'G' => 12,  // Stok Sebelum
             'H' => 12,  // Jumlah Disesuaikan
             'I' => 12,  // Stok Sesudah
-            'J' => 12,  // Harga Beli
-            'K' => 18,  // Nilai Stok (COGS)
+            'J' => 15,  // Harga Beli
+            'K' => 15,  // Harga Jual
             'L' => 15,  // Pendapatan
             'M' => 15,  // Laba/Rugi
             'N' => 20,  // Disesuaikan Oleh
             'O' => 35,  // Catatan
+            'P' => 20,  // Dibuat Oleh
+            'Q' => 18,  // Dibuat Pada
+            'R' => 20,  // Diubah Oleh
+            'S' => 18,  // Diubah Pada
         ];
     }
 }

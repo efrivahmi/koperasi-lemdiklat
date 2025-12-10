@@ -15,9 +15,10 @@ const submit = () => {
 </script>
 
 <template>
-    <Head title="Generate Voucher" />
+    <Head title="Voucher" />
 
     <AuthenticatedLayout>
+        <template #mobileTitle>Voucher</template>
         <template #header>
             <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">Voucher</h2>
         </template>

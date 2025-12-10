@@ -32,6 +32,7 @@ const formatDateTime = (date) => {
     <Head title="Dashboard Kasir" />
 
     <AuthenticatedLayout>
+        <template #mobileTitle>Dashboard</template>
         <template #header>
             <div class="flex justify-between items-center">
                 <div>

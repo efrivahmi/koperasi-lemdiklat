@@ -94,6 +94,7 @@ const submit = () => {
     <Head title="Edit Pengguna" />
 
     <AuthenticatedLayout>
+        <template #mobileTitle>Pengguna</template>
         <template #header>
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">Edit Pengguna</h2>
         </template>

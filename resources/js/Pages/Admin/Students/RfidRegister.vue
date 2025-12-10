@@ -23,6 +23,7 @@ const submit = () => {
     <Head title="Daftarkan Kartu RFID" />
 
     <AuthenticatedLayout>
+        <template #mobileTitle>RFID</template>
         <template #header>
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">Daftarkan Kartu RFID</h2>
         </template>

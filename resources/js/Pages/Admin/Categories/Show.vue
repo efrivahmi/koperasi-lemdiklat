@@ -20,7 +20,7 @@ const totalValue = props.category.products?.reduce((sum, product) => sum + (prod
 </script>
 
 <template>
-    <Head :title="`Detail Kategori - ${category.name}`" />
+    <Head title="Detail Kategori" />
 
     <AuthenticatedLayout>
         <template #header>

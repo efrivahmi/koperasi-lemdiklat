@@ -29,6 +29,7 @@ const getTransactionColor = (type) => {
 <template>
     <Head title="Portal Siswa" />
     <AuthenticatedLayout>
+        <template #mobileTitle>Portal Siswa</template>
         <template #header>
             <div class="flex justify-between items-center">
                 <div>

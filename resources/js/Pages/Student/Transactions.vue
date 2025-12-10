@@ -43,6 +43,7 @@ const getTransactionLabel = (type) => {
 <template>
     <Head title="Riwayat Transaksi" />
     <AuthenticatedLayout>
+        <template #mobileTitle>Transaksi</template>
         <template #header>
             <div class="flex justify-between items-center">
                 <div>

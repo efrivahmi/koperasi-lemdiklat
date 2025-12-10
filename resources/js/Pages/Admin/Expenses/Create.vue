@@ -7,8 +7,9 @@ const form = useForm({ description: '', category: '', amount: '', expense_date: 
 </script>
 
 <template>
-    <Head title="Tambah Pengeluaran" />
+    <Head title="Biaya Operasional" />
     <AuthenticatedLayout>
+        <template #mobileTitle>Pengeluaran</template>
         <template #header><h2 class="font-semibold text-xl text-gray-800 leading-tight">Biaya Operasional</h2></template>
         <div class="py-6 sm:py-12">
             <div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">

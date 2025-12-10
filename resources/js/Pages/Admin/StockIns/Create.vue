@@ -20,9 +20,10 @@ const submit = () => {
 </script>
 
 <template>
-    <Head title="Tambah Stok Masuk" />
+    <Head title="Barang Masuk" />
 
     <AuthenticatedLayout>
+        <template #mobileTitle>Stok Masuk</template>
         <template #header>
             <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">Barang Masuk</h2>
         </template>

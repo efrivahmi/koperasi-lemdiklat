@@ -2,6 +2,13 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { Link, usePage, router } from '@inertiajs/vue3';
 
+const props = defineProps({
+    mobileTitle: {
+        type: String,
+        default: null
+    }
+});
+
 const page = usePage();
 const sidebarOpen = ref(false);
 const mobileMenuOpen = ref(false);
@@ -220,6 +227,9 @@ const isActiveRoute = (routeName) => {
 
 // Get page title for mobile header
 const pageTitle = computed(() => {
+    // Use mobileTitle prop if provided (prevents delay on navigation)
+    if (props.mobileTitle) return props.mobileTitle;
+
     // Try to get from page props first
     if (page.props.pageTitle) return page.props.pageTitle;
 
@@ -434,7 +444,10 @@ page.props.isLoading = isLoading;
                         <img src="/storage/logos/icon.png" alt="Logo" class="w-8 h-8 object-contain drop-shadow-lg" />
                     </Link>
                     <div class="min-w-0 flex-1">
-                        <h1 class="text-base font-bold text-white drop-shadow-md truncate">
+                        <h1 v-if="$slots.mobileTitle" class="text-base font-bold text-white drop-shadow-md truncate">
+                            <slot name="mobileTitle" />
+                        </h1>
+                        <h1 v-else class="text-base font-bold text-white drop-shadow-md truncate">
                             {{ pageTitle }}
                         </h1>
                     </div>

@@ -94,6 +94,7 @@ const formatCurrency = (val) => new Intl.NumberFormat('id-ID', { style: 'currenc
 <template>
     <Head title="Top-up Saldo" />
     <AuthenticatedLayout>
+        <template #mobileTitle>Top-up</template>
         <template #header>
             <div class="flex justify-between items-center">
                 <h2 class="font-semibold text-xl text-gray-800 leading-tight">Top-up Saldo Siswa</h2>

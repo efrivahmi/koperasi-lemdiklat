@@ -76,6 +76,7 @@ const getPurposeLabel = (purpose) => {
 <template>
     <Head title="Laporan Inventaris" />
     <AuthenticatedLayout>
+        <template #mobileTitle>Laporan</template>
         <template #header>
             <h2 class="font-semibold text-lg sm:text-xl text-gray-800 dark:text-gray-200 leading-tight">Laporan Inventaris</h2>
         </template>

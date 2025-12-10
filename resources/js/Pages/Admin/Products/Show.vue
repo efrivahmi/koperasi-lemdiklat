@@ -36,7 +36,7 @@ const totalStockIn = props.product.stockIns?.reduce((sum, item) => sum + item.qu
 </script>
 
 <template>
-    <Head :title="`Detail Produk - ${product.name}`" />
+    <Head title="Detail Produk" />
 
     <AuthenticatedLayout>
         <template #header>

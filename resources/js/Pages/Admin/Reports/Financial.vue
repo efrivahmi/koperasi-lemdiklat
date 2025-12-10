@@ -36,6 +36,7 @@ const formatPercent = (value) => {
 <template>
     <Head title="Laporan Keuangan" />
     <AuthenticatedLayout>
+        <template #mobileTitle>Laporan</template>
         <template #header>
             <h2 class="font-semibold text-lg sm:text-xl text-gray-800 dark:text-gray-200 leading-tight">Laporan Keuangan</h2>
         </template>

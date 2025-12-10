@@ -107,9 +107,10 @@ const availableVouchersCount = computed(() => {
 </script>
 
 <template>
-    <Head title="Voucher" />
+    <Head title="Manajemen Voucher" />
 
     <AuthenticatedLayout>
+        <template #mobileTitle>Voucher</template>
         <template #header>
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">Manajemen Voucher</h2>
         </template>

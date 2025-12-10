@@ -96,9 +96,10 @@ const printBatchCards = () => {
 </script>
 
 <template>
-    <Head title="Siswa" />
+    <Head title="Data Siswa" />
 
     <AuthenticatedLayout>
+        <template #mobileTitle>Siswa</template>
         <template #header>
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">Data Siswa</h2>
         </template>

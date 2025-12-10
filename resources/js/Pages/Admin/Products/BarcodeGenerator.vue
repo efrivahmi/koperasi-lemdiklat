@@ -82,19 +82,21 @@ const generateBarcodes = () => {
 </script>
 
 <template>
-    <Head title="Generate Barcode" />
+    <Head title="Generate Barcode Produk" />
 
     <AuthenticatedLayout>
         <template #header>
-            <div class="flex justify-between items-center">
-                <h2 class="text-xl font-semibold leading-tight text-gray-800 dark:text-gray-200">
-                    Generate Barcode Produk
+            <div class="flex justify-between items-center gap-2">
+                <h2 class="text-lg sm:text-xl font-semibold leading-tight text-gray-800 dark:text-gray-200">
+                    <span class="hidden sm:inline">Generate Barcode Produk</span>
+                    <span class="sm:hidden">Barcode Produk</span>
                 </h2>
                 <Link
                     :href="route('products.index')"
-                    class="inline-flex items-center px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white text-sm font-medium rounded-lg transition-colors"
+                    class="inline-flex items-center px-3 sm:px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white text-sm font-medium rounded-lg transition-colors whitespace-nowrap"
                 >
-                    ← Kembali
+                    <span class="hidden sm:inline">← Kembali</span>
+                    <span class="sm:hidden">←</span>
                 </Link>
             </div>
         </template>

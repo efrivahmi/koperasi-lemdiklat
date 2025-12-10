@@ -36,7 +36,7 @@ const getRoleLabel = (role) => {
 </script>
 
 <template>
-    <Head :title="`Detail User - ${user.name}`" />
+    <Head title="Detail User" />
 
     <AuthenticatedLayout>
         <template #header>

@@ -49,9 +49,10 @@ const submit = () => {
 </script>
 
 <template>
-    <Head title="Edit Produk" />
+    <Head title="Produk" />
 
     <AuthenticatedLayout>
+        <template #mobileTitle>Produk</template>
         <template #header>
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">Produk</h2>
         </template>

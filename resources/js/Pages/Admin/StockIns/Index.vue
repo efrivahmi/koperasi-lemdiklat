@@ -43,9 +43,10 @@ const formatDate = (date) => {
 </script>
 
 <template>
-    <Head title="Barang Masuk" />
+    <Head title="Stok Masuk" />
 
     <AuthenticatedLayout>
+        <template #mobileTitle>Stok Masuk</template>
         <template #header>
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">Stok Masuk</h2>
         </template>

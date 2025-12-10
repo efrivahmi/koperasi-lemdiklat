@@ -17,9 +17,10 @@ const deleteCategory = (id) => {
 </script>
 
 <template>
-    <Head title="Kategori" />
+    <Head title="Kategori Produk" />
 
     <AuthenticatedLayout>
+        <template #mobileTitle>Kategori</template>
         <template #header>
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">Kategori Produk</h2>
         </template>

@@ -91,6 +91,7 @@ const printReceipt = (saleId) => {
     <Head title="Riwayat Transaksi Lengkap" />
 
     <AuthenticatedLayout>
+        <template #mobileTitle>Riwayat</template>
         <template #header>
             <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <div>

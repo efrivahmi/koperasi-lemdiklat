@@ -33,6 +33,7 @@ const getPaymentBadge = (method) => {
 <template>
     <Head title="Riwayat Pembelian" />
     <AuthenticatedLayout>
+        <template #mobileTitle>Pembelian</template>
         <template #header>
             <div class="flex justify-between items-center">
                 <div>

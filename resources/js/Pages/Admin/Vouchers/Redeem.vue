@@ -227,6 +227,7 @@ onUnmounted(() => {
     <Head title="Redeem Voucher" />
 
     <AuthenticatedLayout>
+        <template #mobileTitle>Voucher</template>
         <template #header>
             <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">Redeem Voucher</h2>
         </template>

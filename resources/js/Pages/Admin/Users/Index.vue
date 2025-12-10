@@ -54,9 +54,10 @@ const getRoleLabel = (role) => {
 </script>
 
 <template>
-    <Head title="Pengguna" />
+    <Head title="Manajemen Pengguna (Staf)" />
 
     <AuthenticatedLayout>
+        <template #mobileTitle>Pengguna</template>
         <template #header>
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">Manajemen Pengguna (Staf)</h2>
         </template>

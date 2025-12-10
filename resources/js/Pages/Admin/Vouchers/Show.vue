@@ -45,6 +45,7 @@ const canEdit = computed(() => {
     <Head :title="`Detail Voucher - ${voucher.code}`" />
 
     <AuthenticatedLayout>
+        <template #mobileTitle>Voucher</template>
         <template #header>
             <div class="flex justify-between items-center">
                 <h2 class="font-semibold text-xl text-gray-800 leading-tight">

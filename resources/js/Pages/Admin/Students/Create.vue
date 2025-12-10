@@ -36,9 +36,10 @@ const submit = () => {
 </script>
 
 <template>
-    <Head title="Tambah Siswa" />
+    <Head title="Siswa" />
 
     <AuthenticatedLayout>
+        <template #mobileTitle>Siswa</template>
         <template #header>
             <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">Siswa</h2>
         </template>

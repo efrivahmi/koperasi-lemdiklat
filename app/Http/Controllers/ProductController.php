@@ -175,7 +175,7 @@ class ProductController extends Controller
     public function stockMonitor()
     {
         $products = Product::with('category')
-            ->where('stock', '<=', 10) // Only show products with stock <= 10
+            ->where('stock', '<=', config('business.inventory.low_stock_threshold'))
             ->orderBy('stock', 'asc')
             ->get()
             ->map(function ($product) {

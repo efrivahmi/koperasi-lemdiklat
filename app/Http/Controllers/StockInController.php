@@ -24,7 +24,7 @@ class StockInController extends Controller
             });
         }
 
-        $stock_ins = $query->oldest()->paginate(10);
+        $stock_ins = $query->latest()->paginate(10);
 
         return Inertia::render('Admin/StockIns/Index', [
             'stock_ins' => $stock_ins,

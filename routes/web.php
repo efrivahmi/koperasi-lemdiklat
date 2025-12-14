@@ -96,18 +96,23 @@ Route::middleware(['auth', 'role:admin,master,kasir'])->group(function () {
         Route::get('/pos', [\App\Http\Controllers\PosController::class, 'index'])->name('pos.index');
         Route::get('/transactions-history', [\App\Http\Controllers\PosController::class, 'transactionsHistory'])->name('pos.transactions-history');
 
-        // API Routes for POS
-        Route::get('/api/products', [\App\Http\Controllers\PosController::class, 'getProducts'])->name('pos.api.products');
-        Route::get('/api/products/barcode/{barcode}', [\App\Http\Controllers\PosController::class, 'getProductByBarcode'])->name('pos.api.barcode');
-        Route::get('/api/students/rfid/{rfid_uid}', [\App\Http\Controllers\PosController::class, 'getStudentByRfid'])->name('pos.api.rfid');
-        Route::get('/api/students/search', [\App\Http\Controllers\PosController::class, 'searchStudent'])->name('pos.api.search');
-        Route::post('/api/checkout', [\App\Http\Controllers\PosController::class, 'checkout'])->name('pos.api.checkout');
-        Route::get('/api/recent-sales', [\App\Http\Controllers\PosController::class, 'getRecentSales'])->name('pos.api.recent-sales');
-        Route::post('/api/void/{sale}', [\App\Http\Controllers\PosController::class, 'voidSale'])->name('pos.api.void');
-        Route::get('/receipt/{sale}', [\App\Http\Controllers\PosController::class, 'printReceipt'])->name('pos.receipt');
+        // API Routes for POS - Rate limited to prevent abuse
+        Route::middleware('throttle:60,1')->group(function () {
+            Route::get('/api/products', [\App\Http\Controllers\PosController::class, 'getProducts'])->name('pos.api.products');
+            Route::get('/api/products/barcode/{barcode}', [\App\Http\Controllers\PosController::class, 'getProductByBarcode'])->name('pos.api.barcode');
+            Route::get('/api/students/rfid/{rfid_uid}', [\App\Http\Controllers\PosController::class, 'getStudentByRfid'])->name('pos.api.rfid');
+            Route::get('/api/students/search', [\App\Http\Controllers\PosController::class, 'searchStudent'])->name('pos.api.search');
+            Route::get('/api/recent-sales', [\App\Http\Controllers\PosController::class, 'getRecentSales'])->name('pos.api.recent-sales');
+            Route::get('/api/stock-monitor', [\App\Http\Controllers\ProductController::class, 'stockMonitor'])->name('api.stock-monitor');
 
-        // Stock Monitor API
-        Route::get('/api/stock-monitor', [\App\Http\Controllers\ProductController::class, 'stockMonitor'])->name('api.stock-monitor');
+            // Stricter rate limiting for write operations
+            Route::middleware('throttle:30,1')->group(function () {
+                Route::post('/api/checkout', [\App\Http\Controllers\PosController::class, 'checkout'])->name('pos.api.checkout');
+                Route::post('/api/void/{sale}', [\App\Http\Controllers\PosController::class, 'voidSale'])->name('pos.api.void');
+            });
+        });
+
+        Route::get('/receipt/{sale}', [\App\Http\Controllers\PosController::class, 'printReceipt'])->name('pos.receipt');
     });
 
     // Top-up Saldo (KASIR BISA AKSES)

@@ -39,7 +39,7 @@ class TransactionController extends Controller
                 $query->where('transaction_method', $request->transaction_method);
             }
 
-            $transactions = $query->oldest()->paginate(15);
+            $transactions = $query->latest()->paginate(15);
 
             // Get statistics
             $stats = [
@@ -100,16 +100,19 @@ class TransactionController extends Controller
      */
     public function topup(Request $request)
     {
+        $minTopup = config('business.balance.min_topup');
+        $maxTopup = config('business.balance.max_topup');
+
         $validated = $request->validate([
             'student_id' => 'required|exists:students,id',
-            'amount' => 'required|numeric|min:1000|max:10000000',
+            'amount' => "required|numeric|min:{$minTopup}|max:{$maxTopup}",
             'description' => 'nullable|string|max:255',
         ], [
             'student_id.required' => 'Silakan pilih siswa terlebih dahulu',
             'student_id.exists' => 'Data siswa tidak ditemukan',
             'amount.required' => 'Jumlah top-up harus diisi',
-            'amount.min' => 'Minimal top-up adalah Rp 1.000',
-            'amount.max' => 'Maksimal top-up adalah Rp 10.000.000',
+            'amount.min' => 'Minimal top-up adalah Rp ' . number_format($minTopup, 0, ',', '.'),
+            'amount.max' => 'Maksimal top-up adalah Rp ' . number_format($maxTopup, 0, ',', '.'),
         ]);
 
         try {
@@ -129,7 +132,7 @@ class TransactionController extends Controller
                 }
 
                 // Check if balance will exceed reasonable limit (safety check)
-                $maxBalance = 50000000; // 50 juta
+                $maxBalance = config('business.balance.max_balance');
                 if (($student->balance + $validated['amount']) > $maxBalance) {
                     throw new \Exception("Saldo siswa akan melebihi batas maksimal (Rp " . number_format($maxBalance, 0, ',', '.') . ")");
                 }
@@ -197,7 +200,7 @@ class TransactionController extends Controller
         $student = Student::with('user')->findOrFail($studentId);
 
         $transactions = Transaction::where('student_id', $studentId)
-            ->oldest()
+            ->latest()
             ->paginate(20);
 
         return Inertia::render('Admin/Transactions/StudentHistory', [

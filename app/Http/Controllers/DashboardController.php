@@ -41,8 +41,8 @@ class DashboardController extends Controller
 
         // Products statistics
         $totalProducts = Product::count();
-        $lowStockProducts = Product::where('stock', '<=', 10)->count();
-        $outOfStockProducts = Product::where('stock', 0)->count();
+        $lowStockProducts = Product::where('stock', '<=', config('business.inventory.low_stock_threshold'))->count();
+        $outOfStockProducts = Product::where('stock', config('business.inventory.out_of_stock_threshold'))->count();
 
         // Students statistics
         $totalStudents = Student::count();
@@ -60,8 +60,8 @@ class DashboardController extends Controller
 
         // Recent transactions (last 10)
         $recentTransactions = Transaction::with(['student.user'])
-            ->oldest()
-            ->limit(10)
+            ->latest()
+            ->limit(config('business.transaction.recent_transactions_limit'))
             ->get();
 
         // Top selling products this month
@@ -72,14 +72,14 @@ class DashboardController extends Controller
             ->where('sales.created_at', '>=', $monthStart)
             ->groupBy('products.id', 'products.name')
             ->orderBy('total_sold', 'desc')
-            ->limit(5)
+            ->limit(config('business.transaction.top_products_limit'))
             ->get();
 
         // Low stock products (need restock)
         $lowStockList = Product::with('category')
-            ->where('stock', '<=', 10)
+            ->where('stock', '<=', config('business.inventory.low_stock_threshold'))
             ->orderBy('stock', 'asc')
-            ->limit(10)
+            ->limit(config('business.transaction.recent_transactions_limit'))
             ->get();
 
         // Sales chart data (last 7 days)

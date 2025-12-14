@@ -66,7 +66,7 @@ class StudentController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
-            'password' => 'required|string|min:8',
+            'password' => ['required', 'string', 'min:8', 'regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$/'],
             'nis' => 'required|string|unique:students,nis',
             'kelas' => 'required|string|max:50',
             'jenjang' => 'required|string|in:SMA Taruna Nusantara Indonesia,SMK Taruna Nusantara Jaya',

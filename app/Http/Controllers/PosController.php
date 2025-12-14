@@ -480,15 +480,25 @@ class PosController extends Controller
                 $summaryBase->where('status', $request->status);
             }
 
-            // Use separate optimized queries for each metric
+            // Optimized: Single query using aggregation instead of 7 separate queries
+            $stats = $summaryBase->selectRaw('
+                COUNT(*) as total_transactions,
+                SUM(CASE WHEN status = "completed" THEN total ELSE 0 END) as total_revenue,
+                COUNT(CASE WHEN payment_method = "cash" THEN 1 END) as cash_transactions,
+                COUNT(CASE WHEN payment_method = "balance" THEN 1 END) as balance_transactions,
+                COUNT(CASE WHEN status = "voided" THEN 1 END) as voided_transactions,
+                SUM(CASE WHEN payment_method = "cash" AND status = "completed" THEN total ELSE 0 END) as cash_revenue,
+                SUM(CASE WHEN payment_method = "balance" AND status = "completed" THEN total ELSE 0 END) as balance_revenue
+            ')->first();
+
             $summary = [
-                'total_transactions' => (clone $summaryBase)->count(),
-                'total_revenue' => (clone $summaryBase)->where('status', 'completed')->sum('total'),
-                'cash_transactions' => (clone $summaryBase)->where('payment_method', 'cash')->count(),
-                'balance_transactions' => (clone $summaryBase)->where('payment_method', 'balance')->count(),
-                'voided_transactions' => (clone $summaryBase)->where('status', 'voided')->count(),
-                'cash_revenue' => (clone $summaryBase)->where('payment_method', 'cash')->where('status', 'completed')->sum('total'),
-                'balance_revenue' => (clone $summaryBase)->where('payment_method', 'balance')->where('status', 'completed')->sum('total'),
+                'total_transactions' => (int) $stats->total_transactions,
+                'total_revenue' => (float) $stats->total_revenue,
+                'cash_transactions' => (int) $stats->cash_transactions,
+                'balance_transactions' => (int) $stats->balance_transactions,
+                'voided_transactions' => (int) $stats->voided_transactions,
+                'cash_revenue' => (float) $stats->cash_revenue,
+                'balance_revenue' => (float) $stats->balance_revenue,
             ];
 
             return Inertia::render('Kasir/TransactionsHistory', [

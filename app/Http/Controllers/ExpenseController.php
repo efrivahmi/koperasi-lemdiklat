@@ -25,7 +25,7 @@ class ExpenseController extends Controller
             $query->where('category', $request->category);
         }
 
-        $expenses = $query->oldest()->paginate(10);
+        $expenses = $query->latest('expense_date')->paginate(10);
 
         return Inertia::render('Admin/Expenses/Index', [
             'expenses' => $expenses,

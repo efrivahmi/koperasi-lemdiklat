@@ -17,9 +17,11 @@ use App\Exports\InventoryReportExport;
 use App\Exports\FinancialReportExport;
 use App\Exports\StudentTransactionsExport;
 use App\Exports\StockAdjustmentsExport;
+use App\Traits\HandlesReportErrors;
 
 class ReportController extends Controller
 {
+    use HandlesReportErrors;
     /**
      * Sales Report
      */
@@ -54,7 +56,7 @@ class ReportController extends Controller
                 });
             }
 
-            $sales = $query->oldest()->paginate(20);
+            $sales = $query->latest()->paginate(20);
 
             // Calculate summary
             $allSales = Sale::whereBetween('created_at', [$dateFrom . ' 00:00:00', $dateTo . ' 23:59:59'])->get();
@@ -82,28 +84,26 @@ class ReportController extends Controller
             ]);
 
         } catch (\Exception $e) {
-            \Log::error('Sales report error: ' . $e->getMessage(), [
-                'trace' => $e->getTraceAsString(),
-                'user_id' => auth()->id()
-            ]);
-
-            // Return Inertia response dengan empty data dan error message
-            return Inertia::render('Admin/Reports/Sales', [
-                'sales' => new \Illuminate\Pagination\LengthAwarePaginator([], 0, 20),
-                'summary' => [
-                    'total_sales' => 0,
-                    'total_revenue' => 0,
-                    'cash_sales' => 0,
-                    'balance_sales' => 0,
+            return $this->handleReportError(
+                $e,
+                'Admin/Reports/Sales',
+                [
+                    'sales' => new \Illuminate\Pagination\LengthAwarePaginator([], 0, 20),
+                    'summary' => [
+                        'total_sales' => 0,
+                        'total_revenue' => 0,
+                        'cash_sales' => 0,
+                        'balance_sales' => 0,
+                    ],
                 ],
-                'filters' => [
+                [
                     'date_from' => Carbon::now()->startOfMonth()->format('Y-m-d'),
                     'date_to' => Carbon::now()->format('Y-m-d'),
                     'payment_method' => '',
                     'search' => '',
                 ],
-                'error' => 'Gagal memuat laporan: ' . $e->getMessage()
-            ]);
+                'Sales report error'
+            );
         }
     }
 
@@ -137,12 +137,13 @@ class ReportController extends Controller
 
             // Filter by stock status
             if ($request->has('stock_status') && $request->stock_status) {
+                $lowStockThreshold = config('business.inventory.low_stock_threshold');
                 if ($request->stock_status === 'out') {
                     $query->where('stock', 0);
                 } elseif ($request->stock_status === 'low') {
-                    $query->where('stock', '>', 0)->where('stock', '<=', 10);
+                    $query->where('stock', '>', 0)->where('stock', '<=', $lowStockThreshold);
                 } elseif ($request->stock_status === 'available') {
-                    $query->where('stock', '>', 10);
+                    $query->where('stock', '>', $lowStockThreshold);
                 }
             }
 
@@ -165,12 +166,13 @@ class ReportController extends Controller
             }
 
             // Calculate summary using optimized aggregate queries
+            $lowStockThreshold = config('business.inventory.low_stock_threshold');
             $summary = [
                 'total_products' => DB::table('products')->count(),
                 'total_stock_value' => DB::table('products')->sum(DB::raw('stock * harga_beli')),
                 'total_potential_revenue' => DB::table('products')->sum(DB::raw('stock * harga_jual')),
                 'out_of_stock' => DB::table('products')->where('stock', 0)->count(),
-                'low_stock' => DB::table('products')->where('stock', '>', 0)->where('stock', '<=', 10)->count(),
+                'low_stock' => DB::table('products')->where('stock', '>', 0)->where('stock', '<=', $lowStockThreshold)->count(),
             ];
 
             $categories = \App\Models\Category::all();
@@ -354,7 +356,7 @@ class ReportController extends Controller
                 });
             }
 
-            $transactions = $query->oldest()->paginate(50);
+            $transactions = $query->latest()->paginate(50);
 
             // Get unique classes for filter
             $classes = \App\Models\Student::select('kelas')->distinct()->orderBy('kelas')->pluck('kelas');
@@ -467,7 +469,7 @@ class ReportController extends Controller
                 });
             }
 
-            $adjustments = $query->oldest()->paginate(20);
+            $adjustments = $query->latest()->paginate(20);
 
             // Add financial calculations to each adjustment based on purpose
             $adjustments->getCollection()->transform(function ($adjustment) {

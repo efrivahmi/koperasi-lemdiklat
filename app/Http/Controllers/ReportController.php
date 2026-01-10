@@ -437,7 +437,7 @@ class ReportController extends Controller
                 'filters' => $request->all()
             ]);
 
-            $query = StockAdjustment::with(['product', 'adjustedBy']);
+            $query = StockAdjustment::with(['product', 'adjustedBy', 'creator', 'updater']);
 
             // Default date range (this month)
             $dateFrom = $request->date_from ?? Carbon::now()->startOfMonth()->format('Y-m-d');

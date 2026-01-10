@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Transaction;
 use App\Models\Student;
+use App\Models\Teacher;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\DB;
@@ -100,16 +101,16 @@ class TransactionController extends Controller
      */
     public function topup(Request $request)
     {
-        $minTopup = config('business.balance.min_topup');
-        $maxTopup = config('business.balance.max_topup');
+        $minTopup = config('business.balance.min_topup', 1000);
+        $maxTopup = config('business.balance.max_topup', 10000000);
 
         $validated = $request->validate([
-            'student_id' => 'required|exists:students,id',
+            'buyer_type' => 'nullable|in:student,teacher',
+            'buyer_id' => 'nullable|required_with:buyer_type|integer',
+            'student_id' => 'nullable|exists:students,id', // backward compatibility
             'amount' => "required|numeric|min:{$minTopup}|max:{$maxTopup}",
             'description' => 'nullable|string|max:255',
         ], [
-            'student_id.required' => 'Silakan pilih siswa terlebih dahulu',
-            'student_id.exists' => 'Data siswa tidak ditemukan',
             'amount.required' => 'Jumlah top-up harus diisi',
             'amount.min' => 'Minimal top-up adalah Rp ' . number_format($minTopup, 0, ',', '.'),
             'amount.max' => 'Maksimal top-up adalah Rp ' . number_format($maxTopup, 0, ',', '.'),
@@ -117,58 +118,80 @@ class TransactionController extends Controller
 
         try {
             return DB::transaction(function () use ($validated) {
-                // Lock student row to prevent concurrent updates
-                $student = Student::where('id', $validated['student_id'])
-                    ->lockForUpdate()
-                    ->first();
+                $buyer = null;
+                $buyerModel = null;
 
-                if (!$student) {
-                    throw new \Exception("Data siswa tidak ditemukan");
+                // Support both new polymorphic and old student_id
+                if (!empty($validated['buyer_type']) && !empty($validated['buyer_id'])) {
+                    if ($validated['buyer_type'] === 'student') {
+                        $buyer = Student::where('id', $validated['buyer_id'])->lockForUpdate()->first();
+                        $buyerModel = 'App\Models\Student';
+                    } else {
+                        $buyer = Teacher::where('id', $validated['buyer_id'])->lockForUpdate()->first();
+                        $buyerModel = 'App\Models\Teacher';
+                    }
+                } elseif (!empty($validated['student_id'])) {
+                    // Backward compatibility
+                    $buyer = Student::where('id', $validated['student_id'])->lockForUpdate()->first();
+                    $buyerModel = 'App\Models\Student';
                 }
 
-                // Validate amount is positive integer
+                if (!$buyer) {
+                    throw new \Exception("Data pembeli tidak ditemukan");
+                }
+
+                // Validate amount
                 if ($validated['amount'] <= 0) {
                     throw new \Exception("Jumlah top-up harus lebih dari 0");
                 }
 
-                // Check if balance will exceed reasonable limit (safety check)
-                $maxBalance = config('business.balance.max_balance');
-                if (($student->balance + $validated['amount']) > $maxBalance) {
-                    throw new \Exception("Saldo siswa akan melebihi batas maksimal (Rp " . number_format($maxBalance, 0, ',', '.') . ")");
+                // Check max balance
+                $maxBalance = config('business.balance.max_balance', 100000000);
+                if (($buyer->balance + $validated['amount']) > $maxBalance) {
+                    throw new \Exception("Saldo akan melebihi batas maksimal (Rp " . number_format($maxBalance, 0, ',', '.') . ")");
                 }
 
-                $balanceBefore = $student->balance;
+                $balanceBefore = $buyer->balance;
 
                 // Add balance
-                $student->increment('balance', $validated['amount']);
-                $student->refresh();
+                $buyer->increment('balance', $validated['amount']);
+                $buyer->refresh();
 
                 // Create transaction record
-                Transaction::create([
-                    'student_id' => $student->id,
+                $transactionData = [
+                    'buyer_type' => $buyerModel,
+                    'buyer_id' => $buyer->id,
                     'type' => 'topup',
-                    'transaction_method' => 'manual', // Manual top-up by admin/kasir
+                    'transaction_method' => 'manual',
                     'amount' => $validated['amount'],
                     'description' => $validated['description'] ?? 'Top-up saldo oleh ' . auth()->user()->name,
-                    'ending_balance' => $student->balance,
+                    'ending_balance' => $buyer->balance,
                     'reference_type' => 'manual_topup',
-                ]);
+                ];
+
+                // Keep student_id for backward compatibility
+                if ($buyerModel === 'App\Models\Student') {
+                    $transactionData['student_id'] = $buyer->id;
+                }
+
+                Transaction::create($transactionData);
 
                 \Log::info('Top-up successful', [
-                    'student_id' => $student->id,
-                    'student_name' => $student->user->name,
+                    'buyer_type' => $buyerModel,
+                    'buyer_id' => $buyer->id,
+                    'buyer_name' => $buyer->user->name ?? $buyer->name,
                     'amount' => $validated['amount'],
                     'balance_before' => $balanceBefore,
-                    'balance_after' => $student->balance,
+                    'balance_after' => $buyer->balance,
                     'processed_by' => auth()->user()->name,
                 ]);
 
                 return response()->json([
                     'success' => true,
                     'message' => 'Top-up berhasil diproses',
-                    'student' => $student->load('user'),
+                    'buyer' => $buyer->load('user'),
                     'balance_before' => $balanceBefore,
-                    'balance_after' => $student->balance,
+                    'balance_after' => $buyer->balance,
                 ]);
             });
 
@@ -180,7 +203,8 @@ class TransactionController extends Controller
         } catch (\Exception $e) {
             \Log::error('Top-up failed: ' . $e->getMessage(), [
                 'user_id' => auth()->id(),
-                'student_id' => $validated['student_id'] ?? null,
+                'buyer_type' => $validated['buyer_type'] ?? null,
+                'buyer_id' => $validated['buyer_id'] ?? null,
                 'amount' => $validated['amount'] ?? null,
                 'trace' => $e->getTraceAsString()
             ]);
@@ -247,6 +271,50 @@ class TransactionController extends Controller
             return response()->json([
                 'success' => false,
                 'students' => [],
+                'message' => 'Pencarian gagal'
+            ], 500);
+        }
+    }
+
+    /**
+     * Search teacher for topup
+     */
+    public function searchTeacher(Request $request)
+    {
+        try {
+            $search = $request->input('search', '');
+
+            // Require at least 2 characters for search
+            if (strlen($search) < 2) {
+                return response()->json([
+                    'success' => true,
+                    'teachers' => [],
+                    'message' => 'Minimal 2 karakter untuk pencarian'
+                ]);
+            }
+
+            $query = Teacher::with('user')
+                ->where(function($q) use ($search) {
+                    $q->where('nip', 'like', '%' . $search . '%')
+                      ->orWhere('nuptk', 'like', '%' . $search . '%')
+                      ->orWhereHas('user', function($q2) use ($search) {
+                          $q2->where('name', 'like', '%' . $search . '%');
+                      });
+                });
+
+            $teachers = $query->limit(10)->get();
+
+            return response()->json([
+                'success' => true,
+                'teachers' => $teachers
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('Teacher search failed: ' . $e->getMessage());
+
+            return response()->json([
+                'success' => false,
+                'teachers' => [],
                 'message' => 'Pencarian gagal'
             ], 500);
         }

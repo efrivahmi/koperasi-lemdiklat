@@ -211,8 +211,8 @@ const availableVouchersCount = computed(() => {
                                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Nominal</th>
                                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Status</th>
                                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Digunakan Oleh</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-900 dark:text-gray-100 uppercase hidden xl:table-cell">Dibuat</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-900 dark:text-gray-100 uppercase hidden xl:table-cell">Diubah</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-900 dark:text-gray-100 uppercase">Dibuat</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-900 dark:text-gray-100 uppercase">Diubah</th>
                                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Aksi</th>
                                     </tr>
                                 </thead>
@@ -238,10 +238,10 @@ const availableVouchersCount = computed(() => {
                                         <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
                                             {{ voucher.student?.user?.name || '-' }}
                                         </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-xs text-gray-500 hidden xl:table-cell">
+                                        <td class="px-6 py-4 whitespace-nowrap text-xs text-gray-500">
                                             <AuditInfo :user="voucher.creator" :timestamp="voucher.created_at" label="Dibuat" />
                                         </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-xs text-gray-500 hidden xl:table-cell">
+                                        <td class="px-6 py-4 whitespace-nowrap text-xs text-gray-500">
                                             <AuditInfo :user="voucher.updater" :timestamp="voucher.updated_at" label="Diubah" />
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">

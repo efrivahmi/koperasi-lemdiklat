@@ -106,7 +106,13 @@ class ProductController extends Controller
     public function show(Product $product)
     {
         return Inertia::render('Admin/Products/Show', [
-            'product' => $product->load(['category', 'saleItems', 'stockIns'])
+            'product' => $product->load([
+                'category',
+                'saleItems.creator',
+                'saleItems.updater',
+                'stockIns.creator',
+                'stockIns.updater'
+            ])
         ]);
     }
 

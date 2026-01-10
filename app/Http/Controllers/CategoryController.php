@@ -50,7 +50,7 @@ class CategoryController extends Controller
     public function show(Category $category)
     {
         return Inertia::render('Admin/Categories/Show', [
-            'category' => $category->load('products')
+            'category' => $category->load(['products.creator', 'products.updater'])
         ]);
     }
 

@@ -2,6 +2,7 @@
 import { ref, computed } from 'vue';
 import { Head, Link, router } from '@inertiajs/vue3';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
+import AuditInfo from '@/Components/AuditInfo.vue';
 
 const props = defineProps({
     adjustments: Object,
@@ -347,11 +348,17 @@ const getPurposeBadge = (purpose) => {
                                         <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                                             Catatan
                                         </th>
+                                        <th class="px-3 py-3 text-left text-xs font-medium text-gray-900 dark:text-gray-100 uppercase tracking-wider hidden xl:table-cell">
+                                            Dibuat
+                                        </th>
+                                        <th class="px-3 py-3 text-left text-xs font-medium text-gray-900 dark:text-gray-100 uppercase tracking-wider hidden xl:table-cell">
+                                            Diubah
+                                        </th>
                                     </tr>
                                 </thead>
                                 <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                                     <tr v-if="adjustments.data.length === 0">
-                                        <td colspan="13" class="px-6 py-12 text-center text-gray-500 dark:text-gray-400">
+                                        <td colspan="15" class="px-6 py-12 text-center text-gray-500 dark:text-gray-400">
                                             <div class="flex flex-col items-center justify-center">
                                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 text-gray-400 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -443,6 +450,14 @@ const getPurposeBadge = (purpose) => {
                                             <div class="line-clamp-2" :title="adjustment.notes || '-'">
                                                 {{ adjustment.notes || '-' }}
                                             </div>
+                                        </td>
+                                        <!-- Dibuat -->
+                                        <td class="px-3 py-3 whitespace-nowrap text-xs text-gray-500 dark:text-gray-400 hidden xl:table-cell">
+                                            <AuditInfo :user="adjustment.creator" :timestamp="adjustment.created_at" label="Dibuat" />
+                                        </td>
+                                        <!-- Diubah -->
+                                        <td class="px-3 py-3 whitespace-nowrap text-xs text-gray-500 dark:text-gray-400 hidden xl:table-cell">
+                                            <AuditInfo :user="adjustment.updater" :timestamp="adjustment.updated_at" label="Diubah" />
                                         </td>
                                     </tr>
                                 </tbody>

@@ -66,6 +66,11 @@ class User extends Authenticatable
         return $this->hasOne(Student::class);
     }
 
+    public function teacher()
+    {
+        return $this->hasOne(Teacher::class);
+    }
+
     public function sales()
     {
         return $this->hasMany(Sale::class);
@@ -96,8 +101,8 @@ class User extends Authenticatable
             return true;
         }
 
-        // Siswa tidak punya permissions (gunakan role-based saja)
-        if ($this->role === 'siswa') {
+        // Siswa dan Guru tidak punya permissions (gunakan role-based saja)
+        if (in_array($this->role, ['siswa', 'guru'])) {
             return false;
         }
 

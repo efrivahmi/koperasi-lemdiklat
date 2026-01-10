@@ -15,7 +15,7 @@ class UserController extends Controller
     public function index(Request $request)
     {
         // Only show admin and staff users (not students)
-        $query = User::whereIn('role', ['admin', 'kasir']);
+        $query = User::with(['creator', 'updater'])->whereIn('role', ['admin', 'kasir']);
 
         if ($request->has('search')) {
             $search = $request->search;

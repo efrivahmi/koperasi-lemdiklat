@@ -10,7 +10,9 @@ class Sale extends Model
     use Auditable;
 
     protected $fillable = [
-        'student_id',
+        'buyer_type',
+        'buyer_id',
+        'student_id', // Kept for backward compatibility
         'user_id',
         'payment_method',
         'transaction_method',
@@ -22,6 +24,13 @@ class Sale extends Model
         'updated_by',
     ];
 
+    // Polymorphic relation: buyer bisa Student atau Teacher
+    public function buyer()
+    {
+        return $this->morphTo();
+    }
+
+    // Legacy relation: backward compatibility dengan student_id
     public function student()
     {
         return $this->belongsTo(Student::class);

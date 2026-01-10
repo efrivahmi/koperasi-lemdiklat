@@ -73,6 +73,20 @@ Route::middleware(['auth', 'role:admin,master'])->prefix('admin')->group(functio
     Route::get('students/{student}/generate-card', [\App\Http\Controllers\StudentCardController::class, 'generate'])->name('students.card.generate');
     Route::post('students/generate-cards-batch', [\App\Http\Controllers\StudentCardController::class, 'generateBatch'])->name('students.cards.batch');
     Route::get('students/{student}/export-rfid', [\App\Http\Controllers\StudentCardController::class, 'exportForRfid'])->name('students.rfid.export');
+
+    // Teachers Management - Only for Admin & Master
+    Route::resource('teachers', \App\Http\Controllers\TeacherController::class);
+    Route::get('teachers/{teacher}/rfid-register', [\App\Http\Controllers\TeacherController::class, 'rfidRegister'])->name('teachers.rfid.register');
+    Route::post('teachers/{teacher}/rfid-store', [\App\Http\Controllers\TeacherController::class, 'rfidStore'])->name('teachers.rfid.store');
+    Route::get('api/generate-teacher-rfid', [\App\Http\Controllers\TeacherController::class, 'generateRfidApi'])->name('api.generate-teacher-rfid');
+
+    // Savings Management - Only for Admin & Master
+    Route::get('savings', [\App\Http\Controllers\SavingController::class, 'index'])->name('savings.index');
+    Route::get('savings/create', [\App\Http\Controllers\SavingController::class, 'create'])->name('savings.create');
+    Route::post('savings', [\App\Http\Controllers\SavingController::class, 'store'])->name('savings.store');
+    Route::get('savings/{saverType}/{saverId}', [\App\Http\Controllers\SavingController::class, 'show'])->name('savings.show');
+    Route::post('savings/deposit', [\App\Http\Controllers\SavingController::class, 'deposit'])->name('savings.deposit');
+    Route::post('savings/withdraw', [\App\Http\Controllers\SavingController::class, 'withdraw'])->name('savings.withdraw');
 });
 
 // Reports - Accessible by Admin, Master & Kasir
@@ -102,6 +116,8 @@ Route::middleware(['auth', 'role:admin,master,kasir'])->group(function () {
             Route::get('/api/products/barcode/{barcode}', [\App\Http\Controllers\PosController::class, 'getProductByBarcode'])->name('pos.api.barcode');
             Route::get('/api/students/rfid/{rfid_uid}', [\App\Http\Controllers\PosController::class, 'getStudentByRfid'])->name('pos.api.rfid');
             Route::get('/api/students/search', [\App\Http\Controllers\PosController::class, 'searchStudent'])->name('pos.api.search');
+            Route::get('/api/teachers/rfid/{rfid_uid}', [\App\Http\Controllers\PosController::class, 'getTeacherByRfid'])->name('pos.api.teacher-rfid');
+            Route::get('/api/teachers/search', [\App\Http\Controllers\PosController::class, 'searchTeacher'])->name('pos.api.teacher-search');
             Route::get('/api/recent-sales', [\App\Http\Controllers\PosController::class, 'getRecentSales'])->name('pos.api.recent-sales');
             Route::get('/api/stock-monitor', [\App\Http\Controllers\ProductController::class, 'stockMonitor'])->name('api.stock-monitor');
 
@@ -119,6 +135,7 @@ Route::middleware(['auth', 'role:admin,master,kasir'])->group(function () {
     Route::get('transactions/topup', [\App\Http\Controllers\TransactionController::class, 'topupForm'])->name('transactions.topup.form');
     Route::post('transactions/topup', [\App\Http\Controllers\TransactionController::class, 'topup'])->name('transactions.topup');
     Route::get('transactions/search-student', [\App\Http\Controllers\TransactionController::class, 'searchStudent'])->name('transactions.search.student');
+    Route::get('transactions/search-teacher', [\App\Http\Controllers\TransactionController::class, 'searchTeacher'])->name('transactions.search.teacher');
 });
 
 // Student Portal Routes
@@ -126,6 +143,15 @@ Route::middleware(['auth', 'role:siswa'])->prefix('student')->group(function () 
     Route::get('/dashboard', [\App\Http\Controllers\StudentPortalController::class, 'dashboard'])->name('student.dashboard');
     Route::get('/transactions', [\App\Http\Controllers\StudentPortalController::class, 'transactions'])->name('student.transactions');
     Route::get('/purchase-history', [\App\Http\Controllers\StudentPortalController::class, 'purchaseHistory'])->name('student.purchases');
+    Route::get('/savings', [\App\Http\Controllers\StudentPortalController::class, 'savings'])->name('student.savings');
+});
+
+// Teacher Portal Routes
+Route::middleware(['auth', 'role:guru'])->prefix('teacher')->group(function () {
+    Route::get('/dashboard', [\App\Http\Controllers\TeacherPortalController::class, 'dashboard'])->name('teacher.dashboard');
+    Route::get('/transactions', [\App\Http\Controllers\TeacherPortalController::class, 'transactions'])->name('teacher.transactions');
+    Route::get('/purchase-history', [\App\Http\Controllers\TeacherPortalController::class, 'purchaseHistory'])->name('teacher.purchases');
+    Route::get('/savings', [\App\Http\Controllers\TeacherPortalController::class, 'savings'])->name('teacher.savings');
 });
 
 require __DIR__.'/auth.php';

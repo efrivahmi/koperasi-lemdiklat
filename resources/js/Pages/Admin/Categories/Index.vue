@@ -64,8 +64,8 @@ const deleteCategory = (id) => {
                                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">ID</th>
                                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Nama</th>
                                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Deskripsi</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-900 dark:text-gray-100 uppercase tracking-wider hidden xl:table-cell">Dibuat</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-900 dark:text-gray-100 uppercase tracking-wider hidden xl:table-cell">Diubah</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-900 dark:text-gray-100 uppercase tracking-wider">Dibuat</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-900 dark:text-gray-100 uppercase tracking-wider">Diubah</th>
                                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Aksi</th>
                                     </tr>
                                 </thead>
@@ -74,10 +74,10 @@ const deleteCategory = (id) => {
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">{{ category.id }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">{{ category.name }}</td>
                                         <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">{{ category.description || '-' }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-xs text-gray-500 dark:text-gray-400 hidden xl:table-cell">
+                                        <td class="px-6 py-4 whitespace-nowrap text-xs text-gray-500 dark:text-gray-400">
                                             <AuditInfo :user="category.creator" :timestamp="category.created_at" label="Dibuat" />
                                         </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-xs text-gray-500 dark:text-gray-400 hidden xl:table-cell">
+                                        <td class="px-6 py-4 whitespace-nowrap text-xs text-gray-500 dark:text-gray-400">
                                             <AuditInfo :user="category.updater" :timestamp="category.updated_at" label="Diubah" />
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">

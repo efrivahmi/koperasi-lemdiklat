@@ -3,9 +3,12 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Traits\Auditable;
 
 class StockAdjustment extends Model
 {
+    use Auditable;
+
     protected $fillable = [
         'product_id',
         'quantity_before',
@@ -15,6 +18,8 @@ class StockAdjustment extends Model
         'purpose',
         'notes',
         'adjusted_by',
+        'created_by',
+        'updated_by',
     ];
 
     public function product()

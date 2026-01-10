@@ -1,5 +1,6 @@
 <script setup>
 import EmptyState from '@/Components/EmptyState.vue';
+import AuditInfo from '@/Components/AuditInfo.vue';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head, Link, router, usePage } from '@inertiajs/vue3';
 import { ref, watch, computed } from 'vue';
@@ -123,7 +124,8 @@ const getRoleLabel = (role) => {
                                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Nama</th>
                                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Email</th>
                                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Role</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Dibuat</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-900 dark:text-gray-100 uppercase tracking-wider">Dibuat</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-900 dark:text-gray-100 uppercase tracking-wider">Diubah</th>
                                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Aksi</th>
                                     </tr>
                                 </thead>
@@ -136,8 +138,11 @@ const getRoleLabel = (role) => {
                                                 {{ getRoleLabel(user.role) }}
                                             </span>
                                         </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                                            {{ new Date(user.created_at).toLocaleDateString('id-ID') }}
+                                        <td class="px-6 py-4 whitespace-nowrap text-xs text-gray-500 dark:text-gray-400">
+                                            <AuditInfo :user="user.creator" :timestamp="user.created_at" label="Dibuat" />
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-xs text-gray-500 dark:text-gray-400">
+                                            <AuditInfo :user="user.updater" :timestamp="user.updated_at" label="Diubah" />
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                             <Link :href="route('users.edit', user.id)" class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300 mr-3">Edit</Link>
@@ -145,7 +150,7 @@ const getRoleLabel = (role) => {
                                         </td>
                                     </tr>
                                     <tr v-if="users.data.length === 0 && search">
-                                        <td colspan="5" class="px-6 py-12 text-center">
+                                        <td colspan="6" class="px-6 py-12 text-center">
                                             <div class="text-gray-400">
                                                 <svg class="mx-auto h-12 w-12 text-gray-300 dark:text-gray-600 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />

@@ -41,8 +41,8 @@ class DashboardController extends Controller
 
         // Products statistics
         $totalProducts = Product::count();
-        $lowStockProducts = Product::where('stock', '<=', config('business.inventory.low_stock_threshold'))->count();
-        $outOfStockProducts = Product::where('stock', config('business.inventory.out_of_stock_threshold'))->count();
+        $lowStockProducts = Product::where('stock', '<=', config('business.inventory.low_stock_threshold', 10))->count();
+        $outOfStockProducts = Product::where('stock', '<=', config('business.inventory.out_of_stock_threshold', 0))->count();
 
         // Students statistics
         $totalStudents = Student::count();
@@ -61,7 +61,7 @@ class DashboardController extends Controller
         // Recent transactions (last 10)
         $recentTransactions = Transaction::with(['student.user'])
             ->latest()
-            ->limit(config('business.transaction.recent_transactions_limit'))
+            ->limit(config('business.transaction.recent_transactions_limit', 10))
             ->get();
 
         // Top selling products this month
@@ -72,14 +72,14 @@ class DashboardController extends Controller
             ->where('sales.created_at', '>=', $monthStart)
             ->groupBy('products.id', 'products.name')
             ->orderBy('total_sold', 'desc')
-            ->limit(config('business.transaction.top_products_limit'))
+            ->limit(config('business.transaction.top_products_limit', 5))
             ->get();
 
         // Low stock products (need restock)
         $lowStockList = Product::with('category')
-            ->where('stock', '<=', config('business.inventory.low_stock_threshold'))
+            ->where('stock', '<=', config('business.inventory.low_stock_threshold', 10))
             ->orderBy('stock', 'asc')
-            ->limit(config('business.transaction.recent_transactions_limit'))
+            ->limit(config('business.transaction.recent_transactions_limit', 10))
             ->get();
 
         // Sales chart data (last 7 days)

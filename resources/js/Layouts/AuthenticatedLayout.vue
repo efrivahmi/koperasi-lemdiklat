@@ -88,7 +88,8 @@ const menuItems = computed(() => {
             items: [
                 { name: 'Kategori', route: 'categories.index', icon: '📁', gradient: 'from-purple-500 to-pink-500' },
                 { name: 'Produk', route: 'products.index', icon: '📦', gradient: 'from-green-500 to-emerald-500' },
-                { name: 'Siswa', route: 'students.index', icon: '👥', gradient: 'from-orange-500 to-red-500' }
+                { name: 'Siswa', route: 'students.index', icon: '👥', gradient: 'from-orange-500 to-red-500' },
+                { name: 'Guru', route: 'teachers.index', icon: '👨‍🏫', gradient: 'from-blue-500 to-cyan-500' }
             ]
         });
 
@@ -98,7 +99,8 @@ const menuItems = computed(() => {
                 { name: 'Stok Masuk', route: 'stock-ins.index', icon: '📥', gradient: 'from-indigo-500 to-blue-500' },
                 { name: 'Voucher', route: 'vouchers.index', icon: '🎟️', gradient: 'from-yellow-500 to-orange-500' },
                 { name: 'Pengeluaran', route: 'expenses.index', icon: '💸', gradient: 'from-red-500 to-pink-500' },
-                { name: 'Transaksi', route: 'transactions.index', icon: '💳', gradient: 'from-cyan-500 to-blue-500' }
+                { name: 'Transaksi', route: 'transactions.index', icon: '💳', gradient: 'from-cyan-500 to-blue-500' },
+                { name: 'Tabungan', route: 'savings.index', icon: '💰', gradient: 'from-emerald-500 to-green-500' }
             ]
         });
 
@@ -213,7 +215,20 @@ const menuItems = computed(() => {
             title: 'Aktivitas Saya',
             items: [
                 { name: 'Transaksi Saya', route: 'student.transactions', icon: '💳', gradient: 'from-purple-500 to-indigo-500' },
-                { name: 'Riwayat Pembelian', route: 'student.purchases', icon: '🛍️', gradient: 'from-pink-500 to-purple-500' }
+                { name: 'Riwayat Pembelian', route: 'student.purchases', icon: '🛍️', gradient: 'from-pink-500 to-purple-500' },
+                { name: 'Tabungan Saya', route: 'student.savings', icon: '💰', gradient: 'from-emerald-500 to-green-500' }
+            ]
+        });
+    }
+
+    // Menu untuk Guru
+    if (role === 'guru') {
+        sections.push({
+            title: 'Aktivitas Saya',
+            items: [
+                { name: 'Transaksi Saya', route: 'teacher.transactions', icon: '💳', gradient: 'from-purple-500 to-indigo-500' },
+                { name: 'Riwayat Pembelian', route: 'teacher.purchases', icon: '🛍️', gradient: 'from-pink-500 to-purple-500' },
+                { name: 'Tabungan Saya', route: 'teacher.savings', icon: '💰', gradient: 'from-emerald-500 to-green-500' }
             ]
         });
     }

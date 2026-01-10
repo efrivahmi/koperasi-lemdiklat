@@ -118,7 +118,12 @@ class StudentController extends Controller
     public function show(Student $student)
     {
         return Inertia::render('Admin/Students/Show', [
-            'student' => $student->load('user')
+            'student' => $student->load([
+                'user',
+                'transactions.creator',
+                'transactions.updater',
+                'sales.sale_items.product'
+            ])
         ]);
     }
 

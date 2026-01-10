@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Product;
 use App\Models\Student;
+use App\Models\Teacher;
 use App\Models\Sale;
 use App\Models\SaleItem;
 use App\Models\Transaction;
@@ -120,6 +121,50 @@ class PosController extends Controller
     }
 
     /**
+     * Get teacher by RFID
+     */
+    public function getTeacherByRfid($rfid_uid)
+    {
+        $teacher = Teacher::with('user')
+            ->where('rfid_uid', $rfid_uid)
+            ->first();
+
+        if (!$teacher) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Kartu RFID guru tidak terdaftar'
+            ], 404);
+        }
+
+        return response()->json([
+            'success' => true,
+            'teacher' => $teacher
+        ]);
+    }
+
+    /**
+     * Search teacher by NIP or name
+     */
+    public function searchTeacher(Request $request)
+    {
+        $query = Teacher::with('user');
+
+        if ($request->has('q') && $request->q) {
+            $search = $request->q;
+            $query->where('nip', 'like', '%' . $search . '%')
+                  ->orWhereHas('user', function($q) use ($search) {
+                      $q->where('name', 'like', '%' . $search . '%');
+                  });
+        }
+
+        $teachers = $query->limit(10)->get();
+
+        return response()->json([
+            'teachers' => $teachers
+        ]);
+    }
+
+    /**
      * Process checkout
      */
     public function checkout(Request $request)
@@ -139,7 +184,9 @@ class PosController extends Controller
             'items.*.quantity' => 'required|integer|min:1',
             'items.*.price' => 'required|numeric|min:0',
             'payment_method' => 'required|in:cash,balance',
-            'student_id' => 'nullable|required_if:payment_method,balance|exists:students,id',
+            'buyer_type' => 'nullable|required_if:payment_method,balance|in:student,teacher',
+            'buyer_id' => 'nullable|required_if:payment_method,balance|integer',
+            'student_id' => 'nullable|exists:students,id', // backward compatibility
             'cash_amount' => 'nullable|required_if:payment_method,cash|numeric|min:0',
             'used_rfid' => 'nullable|boolean',
             'used_barcode' => 'nullable|boolean',
@@ -188,19 +235,32 @@ class PosController extends Controller
                     }
                 }
 
-                // Validate student balance if payment method is balance
-                $student = null;
+                // Validate buyer balance if payment method is balance
+                $buyer = null;
+                $buyerModel = null;
                 if ($validated['payment_method'] === 'balance') {
-                    $student = Student::where('id', $validated['student_id'])
-                        ->lockForUpdate()
-                        ->first();
-
-                    if (!$student) {
-                        throw new \Exception("Data siswa tidak ditemukan");
+                    // Support both new polymorphic and old student_id for backward compatibility
+                    if (!empty($validated['buyer_type']) && !empty($validated['buyer_id'])) {
+                        if ($validated['buyer_type'] === 'student') {
+                            $buyer = Student::where('id', $validated['buyer_id'])->lockForUpdate()->first();
+                            $buyerModel = 'App\Models\Student';
+                        } else {
+                            $buyer = Teacher::where('id', $validated['buyer_id'])->lockForUpdate()->first();
+                            $buyerModel = 'App\Models\Teacher';
+                        }
+                    } elseif (!empty($validated['student_id'])) {
+                        // Backward compatibility
+                        $buyer = Student::where('id', $validated['student_id'])->lockForUpdate()->first();
+                        $buyerModel = 'App\Models\Student';
                     }
 
-                    if ($student->balance < $total) {
-                        throw new \Exception("Saldo tidak mencukupi. Saldo saat ini: Rp " . number_format($student->balance, 0, ',', '.') . ", Total belanja: Rp " . number_format($total, 0, ',', '.'));
+                    if (!$buyer) {
+                        throw new \Exception("Data pembeli tidak ditemukan");
+                    }
+
+                    if ($buyer->balance < $total) {
+                        $buyerName = $buyer->user->name ?? $buyer->name;
+                        throw new \Exception("Saldo tidak mencukupi. Saldo saat ini: Rp " . number_format($buyer->balance, 0, ',', '.') . ", Total belanja: Rp " . number_format($total, 0, ',', '.'));
                     }
                 }
 
@@ -221,17 +281,27 @@ class PosController extends Controller
                     $transactionMethod = 'barcode'; // Barcode scanner used
                 }
 
-                // Create sale record
-                $sale = Sale::create([
+                // Create sale record with polymorphic buyer
+                $saleData = [
                     'user_id' => auth()->id(), // Kasir
-                    'student_id' => $validated['payment_method'] === 'balance' ? $validated['student_id'] : null,
                     'total' => $total,
                     'payment_method' => $validated['payment_method'],
                     'transaction_method' => $transactionMethod,
                     'cash_amount' => $validated['payment_method'] === 'cash' ? $validated['cash_amount'] : null,
                     'change_amount' => $validated['payment_method'] === 'cash' ? ($validated['cash_amount'] - $total) : null,
                     'status' => 'completed',
-                ]);
+                ];
+
+                if ($validated['payment_method'] === 'balance' && $buyer) {
+                    $saleData['buyer_type'] = $buyerModel;
+                    $saleData['buyer_id'] = $buyer->id;
+                    // Keep student_id for backward compatibility
+                    if ($buyerModel === 'App\Models\Student') {
+                        $saleData['student_id'] = $buyer->id;
+                    }
+                }
+
+                $sale = Sale::create($saleData);
 
                 // Create sale items and update stock
                 foreach ($validated['items'] as $item) {
@@ -249,36 +319,44 @@ class PosController extends Controller
                     $product->decrement('stock', $item['quantity']);
                 }
 
-                // If payment method is balance, deduct from student balance
-                if ($validated['payment_method'] === 'balance') {
+                // If payment method is balance, deduct from buyer balance
+                if ($validated['payment_method'] === 'balance' && $buyer) {
                     \Log::info('Before balance deduction', [
-                        'student_id' => $student->id,
-                        'student_name' => $student->user->name,
-                        'balance_before' => $student->balance,
+                        'buyer_type' => $buyerModel,
+                        'buyer_id' => $buyer->id,
+                        'buyer_name' => $buyer->user->name ?? $buyer->name,
+                        'balance_before' => $buyer->balance,
                         'total_to_deduct' => $total,
                         'sale_id' => $sale->id
                     ]);
 
-                    $student->decrement('balance', $total);
-                    $student->refresh();
+                    $buyer->decrement('balance', $total);
+                    $buyer->refresh();
 
                     \Log::info('After balance deduction', [
-                        'student_id' => $student->id,
-                        'balance_after' => $student->balance,
-                        'expected_balance' => $student->balance,
+                        'buyer_id' => $buyer->id,
+                        'balance_after' => $buyer->balance,
                     ]);
 
-                    // Create transaction record
-                    $transaction = Transaction::create([
-                        'student_id' => $student->id,
+                    // Create transaction record with polymorphic buyer
+                    $transactionData = [
+                        'buyer_type' => $buyerModel,
+                        'buyer_id' => $buyer->id,
                         'type' => 'purchase',
                         'transaction_method' => $transactionMethod,
                         'amount' => $total,
                         'description' => 'Pembelian di koperasi - Invoice #' . $sale->id,
-                        'ending_balance' => $student->balance,
+                        'ending_balance' => $buyer->balance,
                         'reference_id' => $sale->id,
                         'reference_type' => 'sale',
-                    ]);
+                    ];
+
+                    // Keep student_id for backward compatibility
+                    if ($buyerModel === 'App\Models\Student') {
+                        $transactionData['student_id'] = $buyer->id;
+                    }
+
+                    $transaction = Transaction::create($transactionData);
 
                     \Log::info('Transaction record created', [
                         'transaction_id' => $transaction->id,
@@ -322,7 +400,7 @@ class PosController extends Controller
      */
     public function getRecentSales()
     {
-        $sales = Sale::with(['student.user', 'saleItems.product', 'user'])
+        $sales = Sale::with(['buyer', 'student.user', 'saleItems.product', 'user'])
             ->where('status', 'completed')
             ->where('created_at', '>=', now()->subHours(24)) // Last 24 hours only
             ->latest()
@@ -355,22 +433,45 @@ class PosController extends Controller
                 $item->product->increment('stock', $item->quantity);
             }
 
-            // Return balance to student if payment was using balance
-            if ($sale->payment_method === 'balance' && $sale->student) {
-                $sale->student->increment('balance', $sale->total);
-                $sale->student->refresh();
+            // Return balance to buyer (student or teacher) if payment was using balance
+            if ($sale->payment_method === 'balance') {
+                $buyer = null;
+                $buyerModel = null;
 
-                // Create reversal transaction record
-                Transaction::create([
-                    'student_id' => $sale->student_id,
-                    'type' => 'return',
-                    'transaction_method' => 'system', // system reversal
-                    'amount' => $sale->total,
-                    'description' => 'Pembatalan transaksi - Invoice #' . $sale->id,
-                    'ending_balance' => $sale->student->balance,
-                    'reference_id' => $sale->id,
-                    'reference_type' => 'void_sale',
-                ]);
+                // Get buyer using polymorphic relation or fallback to student
+                if ($sale->buyer) {
+                    $buyer = $sale->buyer;
+                    $buyerModel = $sale->buyer_type;
+                } elseif ($sale->student) {
+                    // Backward compatibility
+                    $buyer = $sale->student;
+                    $buyerModel = 'App\Models\Student';
+                }
+
+                if ($buyer) {
+                    $buyer->increment('balance', $sale->total);
+                    $buyer->refresh();
+
+                    // Create reversal transaction record
+                    $transactionData = [
+                        'buyer_type' => $buyerModel,
+                        'buyer_id' => $buyer->id,
+                        'type' => 'return',
+                        'transaction_method' => 'system', // system reversal
+                        'amount' => $sale->total,
+                        'description' => 'Pembatalan transaksi - Invoice #' . $sale->id,
+                        'ending_balance' => $buyer->balance,
+                        'reference_id' => $sale->id,
+                        'reference_type' => 'void_sale',
+                    ];
+
+                    // Keep student_id for backward compatibility
+                    if ($buyerModel === 'App\Models\Student') {
+                        $transactionData['student_id'] = $buyer->id;
+                    }
+
+                    Transaction::create($transactionData);
+                }
             }
 
             // Mark sale as voided

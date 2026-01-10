@@ -56,8 +56,8 @@ const formatDate = (date) => new Date(date).toLocaleDateString('id-ID');
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Deskripsi</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Kategori</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Jumlah</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-900 dark:text-gray-100 uppercase hidden xl:table-cell">Dibuat</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-900 dark:text-gray-100 uppercase hidden xl:table-cell">Diubah</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-900 dark:text-gray-100 uppercase">Dibuat</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-900 dark:text-gray-100 uppercase">Diubah</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Aksi</th>
                                 </tr>
                             </thead>
@@ -67,10 +67,10 @@ const formatDate = (date) => new Date(date).toLocaleDateString('id-ID');
                                     <td class="px-6 py-4 text-sm text-gray-900 dark:text-gray-100">{{ expense.description }}</td>
                                     <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">{{ expense.category }}</td>
                                     <td class="px-6 py-4 text-sm font-semibold text-gray-900 dark:text-gray-100">{{ formatCurrency(expense.amount) }}</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-xs text-gray-500 hidden xl:table-cell">
+                                    <td class="px-6 py-4 whitespace-nowrap text-xs text-gray-500">
                                         <AuditInfo :user="expense.creator" :timestamp="expense.created_at" label="Dibuat" />
                                     </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-xs text-gray-500 hidden xl:table-cell">
+                                    <td class="px-6 py-4 whitespace-nowrap text-xs text-gray-500">
                                         <AuditInfo :user="expense.updater" :timestamp="expense.updated_at" label="Diubah" />
                                     </td>
                                     <td class="px-6 py-4 text-sm font-medium">

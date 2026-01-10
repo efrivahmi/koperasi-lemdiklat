@@ -398,10 +398,10 @@ const summary = computed(() => {
                                         <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                                             Saldo Akhir
                                         </th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider hidden xl:table-cell">
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-900 dark:text-gray-100 uppercase tracking-wider">
                                             Dibuat
                                         </th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider hidden xl:table-cell">
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-900 dark:text-gray-100 uppercase tracking-wider">
                                             Diubah
                                         </th>
                                     </tr>
@@ -489,12 +489,12 @@ const summary = computed(() => {
                                         </td>
 
                                         <!-- Audit Info: Created -->
-                                        <td class="px-6 py-4 whitespace-nowrap text-xs text-gray-500 dark:text-gray-400 hidden xl:table-cell">
+                                        <td class="px-6 py-4 whitespace-nowrap text-xs text-gray-500 dark:text-gray-400">
                                             <AuditInfo :user="transaction.creator" :timestamp="transaction.created_at" label="Dibuat" />
                                         </td>
 
                                         <!-- Audit Info: Updated -->
-                                        <td class="px-6 py-4 whitespace-nowrap text-xs text-gray-500 dark:text-gray-400 hidden xl:table-cell">
+                                        <td class="px-6 py-4 whitespace-nowrap text-xs text-gray-500 dark:text-gray-400">
                                             <AuditInfo :user="transaction.updater" :timestamp="transaction.updated_at" label="Diubah" />
                                         </td>
                                     </tr>

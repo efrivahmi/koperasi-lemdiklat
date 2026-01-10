@@ -137,8 +137,8 @@ const formatCurrency = (value) => {
                                         <th class="px-2 sm:px-4 lg:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Stok</th>
                                         <th class="px-2 sm:px-4 lg:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase hidden sm:table-cell">Harga Beli</th>
                                         <th class="px-2 sm:px-4 lg:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Harga Jual</th>
-                                        <th class="px-2 sm:px-4 lg:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-900 dark:text-gray-100 uppercase hidden xl:table-cell">Dibuat</th>
-                                        <th class="px-2 sm:px-4 lg:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-900 dark:text-gray-100 uppercase hidden xl:table-cell">Diubah</th>
+                                        <th class="px-2 sm:px-4 lg:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-900 dark:text-gray-100 uppercase">Dibuat</th>
+                                        <th class="px-2 sm:px-4 lg:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-900 dark:text-gray-100 uppercase">Diubah</th>
                                         <th class="px-2 sm:px-4 lg:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Aksi</th>
                                     </tr>
                                 </thead>
@@ -164,10 +164,10 @@ const formatCurrency = (value) => {
                                         </td>
                                         <td class="px-2 sm:px-4 lg:px-6 py-2 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-500 dark:text-gray-400 hidden sm:table-cell">{{ formatCurrency(product.harga_beli) }}</td>
                                         <td class="px-2 sm:px-4 lg:px-6 py-2 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-900 dark:text-gray-100 font-semibold">{{ formatCurrency(product.harga_jual) }}</td>
-                                        <td class="px-2 sm:px-4 lg:px-6 py-2 sm:py-4 whitespace-nowrap text-xs text-gray-500 hidden xl:table-cell">
+                                        <td class="px-2 sm:px-4 lg:px-6 py-2 sm:py-4 whitespace-nowrap text-xs text-gray-500">
                                             <AuditInfo :user="product.creator" :timestamp="product.created_at" label="Dibuat" />
                                         </td>
-                                        <td class="px-2 sm:px-4 lg:px-6 py-2 sm:py-4 whitespace-nowrap text-xs text-gray-500 hidden xl:table-cell">
+                                        <td class="px-2 sm:px-4 lg:px-6 py-2 sm:py-4 whitespace-nowrap text-xs text-gray-500">
                                             <AuditInfo :user="product.updater" :timestamp="product.updated_at" label="Diubah" />
                                         </td>
                                         <td class="px-2 sm:px-4 lg:px-6 py-2 sm:py-4 whitespace-nowrap text-xs sm:text-sm font-medium">

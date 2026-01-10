@@ -105,8 +105,8 @@ const formatDate = (date) => {
                                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Harga Beli</th>
                                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Total</th>
                                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Supplier</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-900 dark:text-gray-100 uppercase hidden xl:table-cell">Dibuat</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-900 dark:text-gray-100 uppercase hidden xl:table-cell">Diubah</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-900 dark:text-gray-100 uppercase">Dibuat</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-900 dark:text-gray-100 uppercase">Diubah</th>
                                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Aksi</th>
                                     </tr>
                                 </thead>
@@ -123,10 +123,10 @@ const formatDate = (date) => {
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{{ formatCurrency(stock.product.harga_beli) }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900 dark:text-gray-100">{{ formatCurrency(stock.quantity * stock.product.harga_beli) }}</td>
                                         <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">{{ stock.supplier || '-' }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-xs text-gray-500 hidden xl:table-cell">
+                                        <td class="px-6 py-4 whitespace-nowrap text-xs text-gray-500">
                                             <AuditInfo :user="stock.creator" :timestamp="stock.created_at" label="Dibuat" />
                                         </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-xs text-gray-500 hidden xl:table-cell">
+                                        <td class="px-6 py-4 whitespace-nowrap text-xs text-gray-500">
                                             <AuditInfo :user="stock.updater" :timestamp="stock.updated_at" label="Diubah" />
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">

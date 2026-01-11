@@ -18,15 +18,22 @@ class ProductController extends Controller
     private function generateBarcode()
     {
         do {
-            // Generate 12 random digits, then calculate check digit
-            $baseCode = '2' . str_pad(mt_rand(0, 999999999999), 11, '0', STR_PAD_LEFT);
+            // BEST PRACTICE: Generate string angka digit per digit 
+            // untuk menghindari limit Integer pada OS tertentu (Windows/32-bit).
+            // Kita butuh 12 digit (Prefix '2' + 11 digit random) sebelum check digit
+            $baseCode = '2';
+            for ($i = 0; $i < 11; $i++) {
+                $baseCode .= mt_rand(0, 9);
+            }
 
-            // Calculate EAN-13 check digit
+            // Hitung Check Digit EAN-13
             $sum = 0;
             for ($i = 0; $i < 12; $i++) {
                 $sum += (int)$baseCode[$i] * (($i % 2 === 0) ? 1 : 3);
             }
             $checkDigit = (10 - ($sum % 10)) % 10;
+            
+            // Gabungkan Base Code + Check Digit
             $barcode = $baseCode . $checkDigit;
 
         } while (Product::where('barcode', $barcode)->exists());
@@ -46,6 +53,7 @@ class ProductController extends Controller
                   ->orWhere('barcode', 'like', '%' . $request->search . '%');
         }
 
+        // --- PENTING: MENGGUNAKAN OLDEST() ---
         $products = $query->oldest()->paginate(10);
 
         return Inertia::render('Admin/Products/Index', [
@@ -210,6 +218,7 @@ class ProductController extends Controller
                   ->orWhere('barcode', 'like', '%' . $request->search . '%');
         }
 
+        // Konsisten pakai oldest() juga di sini
         $products = $query->oldest()->paginate(20);
 
         return Inertia::render('Admin/Products/BarcodeGenerator', [

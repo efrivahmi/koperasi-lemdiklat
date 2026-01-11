@@ -76,10 +76,8 @@ const formatCurrency = (value) => {
 
         <div class="py-6 sm:py-12">
             <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
-                <!-- Toolbar Section -->
                 <div class="mb-6 bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-gray-800 dark:to-gray-800 border border-purple-200 dark:border-purple-500/30 rounded-lg shadow-sm p-4">
                     <div class="flex flex-col lg:flex-row gap-4 items-stretch lg:items-center">
-                        <!-- Search Bar -->
                         <div class="flex-1">
                             <div class="relative">
                                 <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -97,7 +95,6 @@ const formatCurrency = (value) => {
                                 />
                             </div>
                         </div>
-                        <!-- Action Buttons -->
                         <div class="flex flex-wrap gap-2">
                             <Link :href="route('products.barcode-generator')" class="flex-1 sm:flex-initial inline-flex items-center justify-center px-4 py-2.5 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-lg shadow-sm transition">
                                 <svg class="w-5 h-5 sm:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -115,6 +112,7 @@ const formatCurrency = (value) => {
                         </div>
                     </div>
                 </div>
+
                 <EmptyState
                     v-if="products.data.length === 0 && !search"
                     icon="box"
@@ -130,6 +128,8 @@ const formatCurrency = (value) => {
                             <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700 text-xs sm:text-sm">
                                 <thead class="bg-gray-50 dark:bg-gray-800 sticky top-0">
                                     <tr>
+                                        <th class="px-2 sm:px-4 lg:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase w-12">No</th>
+                                        
                                         <th class="px-2 sm:px-4 lg:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Gambar</th>
                                         <th class="px-2 sm:px-4 lg:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Nama</th>
                                         <th class="px-2 sm:px-4 lg:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase hidden md:table-cell">Kategori</th>
@@ -143,7 +143,17 @@ const formatCurrency = (value) => {
                                     </tr>
                                 </thead>
                                 <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                                    <tr v-for="product in products.data" :key="product.id" class="hover:bg-gray-50 dark:hover:bg-gray-700">
+                                    <tr v-for="(product, index) in products.data" :key="product.id" class="hover:bg-gray-50 dark:hover:bg-gray-700">
+                                        
+                                        <td class="px-2 sm:px-4 lg:px-6 py-2 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-500 dark:text-gray-400">
+                                            <div class="font-medium text-gray-700 dark:text-gray-300">
+                                                {{ (products.current_page - 1) * products.per_page + index + 1 }}
+                                            </div>
+                                            <!-- <div class="text-[10px] text-gray-300 dark:text-gray-600 mt-0.5 select-all font-mono" title="Database ID">
+                                                ID:{{ product.id }}
+                                            </div> -->
+                                        </td>
+
                                         <td class="px-2 sm:px-4 lg:px-6 py-2 sm:py-4 whitespace-nowrap">
                                             <img
                                                 v-if="product.image_path"
@@ -188,8 +198,7 @@ const formatCurrency = (value) => {
                                         </td>
                                     </tr>
                                     <tr v-if="products.data.length === 0 && search">
-                                        <td colspan="10" class="px-6 py-12 text-center">
-                                            <div class="text-gray-400">
+                                        <td colspan="11" class="px-6 py-12 text-center"> <div class="text-gray-400">
                                                 <svg class="mx-auto h-12 w-12 text-gray-300 dark:text-gray-600 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                                                 </svg>
@@ -225,7 +234,6 @@ const formatCurrency = (value) => {
             </div>
         </div>
 
-        <!-- Stock Adjustment Modal -->
         <div v-if="showAdjustmentModal" class="fixed inset-0 z-[9999] overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
             <div class="flex items-end justify-center min-h-screen pt-4 px-3 sm:px-4 pb-20 text-center sm:block sm:p-0">
                 <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity backdrop-blur-sm" @click.self="closeAdjustmentModal"></div>

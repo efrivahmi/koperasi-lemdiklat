@@ -176,153 +176,129 @@ const summary = computed(() => {
             </div>
         </template>
 
-        <div class="py-12">
-            <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
-                <!-- Statistics Cards -->
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-                    <!-- Manual Transactions -->
-                    <div class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg shadow-lg p-6 text-white">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <p class="text-blue-100 text-sm font-medium">Transaksi Manual</p>
-                                <h3 class="text-3xl font-bold mt-2">{{ stats.total_manual }}</h3>
-                                <p class="text-blue-100 text-xs mt-1">{{ formatCurrency(stats.total_amount_manual) }}</p>
-                            </div>
-                            <div class="text-5xl opacity-50">✍️</div>
+
+        <div class="py-6 sm:py-12 bg-gray-100 dark:bg-slate-900 min-h-screen transition-colors duration-200">
+            <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
+                
+                <!-- Stats Overview -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                    <!-- Total Transaksi -->
+                    <div class="bg-white dark:bg-slate-800 overflow-hidden shadow-sm rounded-lg border border-gray-200 dark:border-slate-700 p-4 transition-colors">
+                        <div class="text-sm font-medium text-slate-500 dark:text-slate-400 truncate">Total Transaksi</div>
+                        <div class="mt-1 text-2xl font-semibold text-slate-900 dark:text-white">{{ transactions.total }}</div>
+                        <div class="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                            Hari ini: {{ stats.total_manual + stats.total_rfid + stats.total_barcode + stats.total_voucher + stats.total_system }}
                         </div>
                     </div>
 
-                    <!-- RFID Transactions -->
-                    <div class="bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg shadow-lg p-6 text-white">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <p class="text-purple-100 text-sm font-medium">RFID Scanner</p>
-                                <h3 class="text-3xl font-bold mt-2">{{ stats.total_rfid }}</h3>
-                                <p class="text-purple-100 text-xs mt-1">Otomatis</p>
-                            </div>
-                            <div class="text-5xl opacity-50">📡</div>
+                    <!-- Omset Tunai (Manual) -->
+                    <div class="bg-white dark:bg-slate-800 overflow-hidden shadow-sm rounded-lg border border-gray-200 dark:border-slate-700 p-4 transition-colors">
+                        <div class="text-sm font-medium text-slate-500 dark:text-slate-400 truncate">Omset Tunai (Manual)</div>
+                        <div class="mt-1 text-2xl font-semibold text-emerald-600 dark:text-emerald-400">{{ formatCurrency(stats.total_amount_manual) }}</div>
+                        <div class="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                            {{ stats.total_manual }} Transaksi
                         </div>
                     </div>
 
-                    <!-- Barcode + Voucher -->
-                    <div class="bg-gradient-to-br from-orange-500 to-orange-600 rounded-lg shadow-lg p-6 text-white">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <p class="text-orange-100 text-sm font-medium">Barcode + Voucher</p>
-                                <h3 class="text-3xl font-bold mt-2">{{ stats.total_barcode + stats.total_voucher }}</h3>
-                                <p class="text-orange-100 text-xs mt-1">{{ formatCurrency(stats.total_amount_automated) }}</p>
-                            </div>
-                            <div class="text-5xl opacity-50">📊</div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Check if any filter is active -->
-                <template v-if="searchForm.search || searchForm.type || searchForm.transaction_method || searchForm.date_from || searchForm.date_to || transactions.data.length > 0">
-                <!-- Summary Cards -->
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg p-6">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <p class="text-sm text-gray-600 dark:text-gray-400">Total Masuk (Credit)</p>
-                                <p class="text-2xl font-bold text-green-600 dark:text-green-400">
-                                    {{ formatCurrency(summary.totalCredit) }}
-                                </p>
-                            </div>
-                            <div class="text-4xl">💰</div>
+                    <!-- Omset Non-Tunai -->
+                    <div class="bg-white dark:bg-slate-800 overflow-hidden shadow-sm rounded-lg border border-gray-200 dark:border-slate-700 p-4 transition-colors">
+                        <div class="text-sm font-medium text-slate-500 dark:text-slate-400 truncate">Omset Non-Tunai</div>
+                        <div class="mt-1 text-2xl font-semibold text-indigo-600 dark:text-indigo-400">{{ formatCurrency(stats.total_amount_automated) }}</div>
+                        <div class="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                            {{ stats.total_rfid + stats.total_barcode + stats.total_voucher }} Transaksi
                         </div>
                     </div>
 
-                    <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg p-6">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <p class="text-sm text-gray-600 dark:text-gray-400">Total Keluar (Debit)</p>
-                                <p class="text-2xl font-bold text-red-600 dark:text-red-400">
-                                    {{ formatCurrency(summary.totalDebit) }}
-                                </p>
-                            </div>
-                            <div class="text-4xl">🛒</div>
-                        </div>
-                    </div>
-
-                    <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg p-6">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <p class="text-sm text-gray-600 dark:text-gray-400">Net Flow (Halaman Ini)</p>
-                                <p class="text-2xl font-bold" :class="summary.netFlow >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'">
-                                    {{ formatCurrency(summary.netFlow) }}
-                                </p>
-                            </div>
-                            <div class="text-4xl">📊</div>
+                    <!-- Voucher Terpakai -->
+                    <div class="bg-white dark:bg-slate-800 overflow-hidden shadow-sm rounded-lg border border-gray-200 dark:border-slate-700 p-4 transition-colors">
+                        <div class="text-sm font-medium text-slate-500 dark:text-slate-400 truncate">Voucher Terpakai</div>
+                        <div class="mt-1 text-2xl font-semibold text-amber-600 dark:text-amber-400">{{ stats.total_voucher }}</div>
+                        <div class="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                            Transaksi via Voucher
                         </div>
                     </div>
                 </div>
 
-                <!-- Filters -->
-                <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
-                    <div class="p-6">
-                        <h3 class="font-semibold text-lg mb-4 text-gray-900 dark:text-gray-100">Filter & Pencarian</h3>
-                        <form @submit.prevent="search" class="grid grid-cols-1 md:grid-cols-5 gap-4">
+                <!-- Toolbar Section -->
+                <div class="mb-6 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg shadow-sm p-4 transition-colors">
+                    <div class="flex flex-col lg:flex-row gap-4 items-stretch lg:items-center">
+                        <div class="flex-1 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                             <!-- Search -->
-                            <div>
-                                <label for="transaction-search" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                    Cari Siswa
-                                </label>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <svg class="h-5 w-5 text-gray-400 dark:text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                    </svg>
+                                </div>
                                 <input
-                                    id="transaction-search"
-                                    name="search"
-                                    type="text"
                                     v-model="searchForm.search"
-                                    placeholder="Nama atau NIS siswa..."
-                                    class="w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm"
-                                    aria-label="Cari siswa berdasarkan nama atau NIS"
+                                    @input="search"
+                                    type="text"
+                                    placeholder="Cari siswa/transaksi..."
+                                    class="block w-full pl-10 pr-3 py-2.5 bg-gray-50 dark:bg-slate-900 border-gray-300 dark:border-slate-700 text-slate-900 dark:text-white focus:border-indigo-500 dark:focus:border-indigo-400 focus:ring-indigo-500 dark:focus:ring-indigo-400 rounded-lg shadow-sm text-sm transition-colors"
                                 />
                             </div>
 
-                            <!-- Type Filter -->
-                            <div>
-                                <label for="transaction-type" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                    Tipe Transaksi
-                                </label>
-                                <select
-                                    id="transaction-type"
-                                    name="type"
-                                    v-model="searchForm.type"
-                                    class="w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm"
-                                    aria-label="Filter berdasarkan tipe transaksi"
-                                >
-                                    <option value="">Semua Tipe</option>
-                                    <option value="topup">Top-up Saldo</option>
-                                    <option value="purchase">Pembelian</option>
-                                    <option value="redeem">Redeem Voucher</option>
-                                    <option value="return">Return/Void</option>
-                                    <option value="debit">Debit Manual</option>
-                                </select>
+                            <!-- Filter Type -->
+                            <select 
+                                v-model="searchForm.type" 
+                                @change="search"
+                                class="block w-full py-2.5 pl-3 pr-10 bg-gray-50 dark:bg-slate-900 border-gray-300 dark:border-slate-700 text-slate-900 dark:text-white focus:border-indigo-500 dark:focus:border-indigo-400 focus:ring-indigo-500 dark:focus:ring-indigo-400 rounded-lg shadow-sm text-sm transition-colors"
+                            >
+                                <option value="">Semua Tipe</option>
+                                <option value="purchase">Pembelian</option>
+                                <option value="topup">Top Up</option>
+                                <option value="redeem">Redeem Voucher</option>
+                                <option value="return">Retur</option>
+                            </select>
+
+                            <!-- Filter Method -->
+                            <select 
+                                v-model="searchForm.transaction_method" 
+                                @change="search"
+                                class="block w-full py-2.5 pl-3 pr-10 bg-gray-50 dark:bg-slate-900 border-gray-300 dark:border-slate-700 text-slate-900 dark:text-white focus:border-indigo-500 dark:focus:border-indigo-400 focus:ring-indigo-500 dark:focus:ring-indigo-400 rounded-lg shadow-sm text-sm transition-colors"
+                            >
+                                <option value="">Semua Metode</option>
+                                <option value="manual">Manual</option>
+                                <option value="rfid">RFID Card</option>
+                                <option value="barcode">Barcode</option>
+                                <option value="voucher">Voucher Code</option>
+                            </select>
+
+                            <!-- Reset Button -->
+                            <button 
+                                @click="resetFilters"
+                                class="inline-flex items-center justify-center px-4 py-2.5 bg-gray-100 hover:bg-gray-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 font-medium rounded-lg transition-colors"
+                            >
+                                Reset Filter
+                            </button>
+                        </div>
+
+                        <!-- Action Button -->
+                        <div class="flex-shrink-0">
+                            <Link v-if="can('transactions.topup')" :href="route('transactions.topup.form')" class="w-full lg:w-auto inline-flex items-center justify-center px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 text-white font-semibold rounded-lg shadow-sm transition-colors">
+                                <svg class="w-5 h-5 sm:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                                </svg>
+                                <span class="hidden sm:inline">Top Up Saldo</span>
+                                <span class="sm:hidden">Top Up</span>
+                            </Link>
+                        </div>
+                    </div>
                             </div>
 
-                            <!-- Transaction Method Filter -->
-                            <div>
-                                <label for="transaction-method" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                    Metode Transaksi
-                                </label>
-                                <select
-                                    id="transaction-method"
-                                    name="transaction_method"
-                                    v-model="searchForm.transaction_method"
-                                    class="w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm"
-                                    aria-label="Filter berdasarkan metode transaksi"
-                                >
-                                    <option value="">Semua Metode</option>
-                                    <option value="manual">✍️ Manual</option>
-                                    <option value="rfid">📡 RFID Scanner</option>
-                                    <option value="barcode">📊 Barcode Scanner</option>
-                                    <option value="voucher">🎫 Voucher</option>
-                                    <option value="system">⚙️ System/Auto</option>
-                                </select>
-                            </div>
+                <!-- Empty State -->
+                <EmptyState
+                    v-if="transactions.data.length === 0"
+                    icon="receipt"
+                    title="Belum Ada Transaksi"
+                    description="Belum ada riwayat transaksi yang tercatat sistem."
+                />
 
-                            <!-- Date From -->
-                            <div>
+                <!-- Table with Data -->
+                <div v-else class="bg-white dark:bg-slate-800 overflow-hidden shadow-sm sm:rounded-lg border border-gray-200 dark:border-slate-700 transition-colors">
+                    <div class="p-6 text-slate-900 dark:text-white">
+                            <form @submit.prevent="search">
                                 <label for="transaction-date-from" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                                     Dari Tanggal
                                 </label>
@@ -555,17 +531,7 @@ const summary = computed(() => {
                         </div>
                     </div>
                 </div>
-                </template>
 
-                <!-- Empty State - No transactions and no filters -->
-                <EmptyState
-                    v-else
-                    icon="cash"
-                    title="Belum Ada Transaksi"
-                    description="Transaksi akan tercatat otomatis saat siswa melakukan top-up atau pembelian."
-                    :action-url="can('pos.access') ? route('transactions.topup.form') : null"
-                    :action-text="can('pos.access') ? 'Top-up Saldo Siswa' : null"
-                />
             </div>
         </div>
     </AuthenticatedLayout>

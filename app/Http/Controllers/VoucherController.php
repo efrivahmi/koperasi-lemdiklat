@@ -36,6 +36,14 @@ class VoucherController extends Controller
 
         $vouchers = $query->oldest()->paginate(10);
 
+        // Check for Kasir route
+        if ($request->routeIs('kasir.*')) {
+            return Inertia::render('Kasir/Vouchers/Index', [
+                'vouchers' => $vouchers,
+                'filters' => $request->only(['search', 'status'])
+            ]);
+        }
+
         return Inertia::render('Admin/Vouchers/Index', [
             'vouchers' => $vouchers,
             'filters' => $request->only(['search', 'status'])
@@ -140,8 +148,11 @@ class VoucherController extends Controller
     /**
      * Show redeem voucher page
      */
-    public function redeemForm()
+    public function redeemForm(Request $request)
     {
+        if ($request->routeIs('kasir.*')) {
+            return Inertia::render('Kasir/Vouchers/Redeem');
+        }
         return Inertia::render('Admin/Vouchers/Redeem');
     }
 

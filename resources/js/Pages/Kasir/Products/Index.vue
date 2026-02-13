@@ -1,0 +1,353 @@
+<script setup>
+import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
+import EmptyState from '@/Components/EmptyState.vue';
+import AuditInfo from '@/Components/AuditInfo.vue';
+import { Head, Link, router, useForm } from '@inertiajs/vue3';
+import { ref, watch } from 'vue';
+import { usePermissions } from '@/Composables/usePermissions';
+
+const { can } = usePermissions();
+
+const props = defineProps({
+    products: Object,
+    filters: Object,
+});
+
+const search = ref(props.filters.search || '');
+const showAdjustmentModal = ref(false);
+const selectedProduct = ref(null);
+
+const adjustmentForm = useForm({
+    quantity: '',
+    type: 'deduction',
+    purpose: 'other',
+    notes: '',
+});
+
+watch(search, (value) => {
+    router.get(route('kasir.products.index'), { search: value }, {
+        preserveState: true,
+        replace: true,
+    });
+});
+
+const deleteProduct = (id) => {
+    if (confirm('Apakah Anda yakin ingin menghapus produk ini?')) {
+        router.delete(route('kasir.products.destroy', id));
+    }
+};
+
+const openAdjustmentModal = (product) => {
+    selectedProduct.value = product;
+    adjustmentForm.reset();
+    adjustmentForm.type = 'deduction';
+    showAdjustmentModal.value = true;
+};
+
+const closeAdjustmentModal = () => {
+    showAdjustmentModal.value = false;
+    selectedProduct.value = null;
+    adjustmentForm.reset();
+};
+
+const submitAdjustment = () => {
+    adjustmentForm.post(route('kasir.products.adjust-stock', selectedProduct.value.id), {
+        onSuccess: () => {
+            closeAdjustmentModal();
+        },
+        preserveScroll: true,
+    });
+};
+
+const formatCurrency = (value) => {
+    return new Intl.NumberFormat('id-ID', {
+        style: 'currency',
+        currency: 'IDR',
+        minimumFractionDigits: 0
+    }).format(value);
+};
+</script>
+
+<template>
+    <Head title="Produk" />
+
+    <AuthenticatedLayout>
+        <template #mobileTitle>Produk</template>
+        <template #header>
+            <h2 class="font-semibold text-xl text-gray-800 leading-tight">Produk</h2>
+        </template>
+
+        <div class="py-6 sm:py-12">
+            <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
+                <div class="mb-6 bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-gray-800 dark:to-gray-800 border border-purple-200 dark:border-purple-500/30 rounded-lg shadow-sm p-4">
+                    <div class="flex flex-col lg:flex-row gap-4 items-stretch lg:items-center">
+                        <div class="flex-1">
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                    </svg>
+                                </div>
+                                <input
+                                    id="product-search"
+                                    v-model="search"
+                                    type="text"
+                                    placeholder="Cari produk (nama atau barcode)..."
+                                    class="block w-full pl-10 pr-3 py-2.5 border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-lg shadow-sm text-sm"
+                                    aria-label="Cari produk berdasarkan nama atau barcode"
+                                />
+                            </div>
+                        </div>
+                        <div class="flex flex-wrap gap-2">
+                            <Link v-if="can('products.barcode')" :href="route('kasir.products.barcode-generator')" class="flex-1 sm:flex-initial inline-flex items-center justify-center px-4 py-2.5 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-lg shadow-sm transition">
+                                <svg class="w-5 h-5 sm:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
+                                </svg>
+                                <span class="hidden sm:inline">Cetak Barcode</span>
+                            </Link>
+                            <Link v-if="can('products.create')" :href="route('kasir.products.create')" class="flex-1 sm:flex-initial inline-flex items-center justify-center px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg shadow-sm transition">
+                                <svg class="w-5 h-5 sm:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                                </svg>
+                                <span class="hidden sm:inline">Tambah Produk</span>
+                                <span class="sm:hidden">Produk</span>
+                            </Link>
+                        </div>
+                    </div>
+                </div>
+
+                <EmptyState
+                    v-if="products.data.length === 0 && !search"
+                    icon="box"
+                    title="Belum Ada Produk"
+                    description="Mulai tambahkan produk pertama Anda untuk ditampilkan di katalog koperasi. Produk yang ditambahkan dapat langsung dijual di sistem POS."
+                    :action-url="route('kasir.products.create')"
+                    action-text="Tambah Produk Pertama"
+                />
+
+                <div v-else class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
+                    <div class="p-3 sm:p-6 text-gray-900 dark:text-gray-100">
+                        <div class="overflow-x-auto -mx-3 sm:mx-0 scrollbar-thin">
+                            <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700 text-xs sm:text-sm">
+                                <thead class="bg-gray-50 dark:bg-gray-800 sticky top-0">
+                                    <tr>
+                                        <th class="px-2 sm:px-4 lg:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase w-12">No</th>
+                                        
+                                        <th class="px-2 sm:px-4 lg:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Gambar</th>
+                                        <th class="px-2 sm:px-4 lg:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Nama</th>
+                                        <th class="px-2 sm:px-4 lg:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase hidden md:table-cell">Kategori</th>
+                                        <th class="px-2 sm:px-4 lg:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase hidden lg:table-cell">Barcode</th>
+                                        <th class="px-2 sm:px-4 lg:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Stok</th>
+                                        <th class="px-2 sm:px-4 lg:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase hidden sm:table-cell">Harga Beli</th>
+                                        <th class="px-2 sm:px-4 lg:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Harga Jual</th>
+                                        <th class="px-2 sm:px-4 lg:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-900 dark:text-gray-100 uppercase">Dibuat</th>
+                                        <th class="px-2 sm:px-4 lg:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-900 dark:text-gray-100 uppercase">Diubah</th>
+                                        <th class="px-2 sm:px-4 lg:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                                    <tr v-for="(product, index) in products.data" :key="product.id" class="hover:bg-gray-50 dark:hover:bg-gray-700">
+                                        
+                                        <td class="px-2 sm:px-4 lg:px-6 py-2 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-500 dark:text-gray-400">
+                                            <div class="font-medium text-gray-700 dark:text-gray-300">
+                                                {{ (products.current_page - 1) * products.per_page + index + 1 }}
+                                            </div>
+                                            <!-- <div class="text-[10px] text-gray-300 dark:text-gray-600 mt-0.5 select-all font-mono" title="Database ID">
+                                                ID:{{ product.id }}
+                                            </div> -->
+                                        </td>
+
+                                        <td class="px-2 sm:px-4 lg:px-6 py-2 sm:py-4 whitespace-nowrap">
+                                            <img
+                                                v-if="product.image_path"
+                                                :src="`/storage/${product.image_path}`"
+                                                :alt="product.name"
+                                                class="h-8 w-8 sm:h-10 sm:w-10 lg:h-12 lg:w-12 object-cover rounded"
+                                            />
+                                            <div v-else class="h-8 w-8 sm:h-10 sm:w-10 lg:h-12 lg:w-12 bg-gray-200 dark:bg-gray-700 rounded">
+                                            </div>
+                                        </td>
+                                        <td class="px-2 sm:px-4 lg:px-6 py-2 sm:py-4 text-xs sm:text-sm font-medium text-gray-900 dark:text-gray-100 max-w-[120px] sm:max-w-none truncate">{{ product.name }}</td>
+                                        <td class="px-2 sm:px-4 lg:px-6 py-2 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-500 dark:text-gray-400 hidden md:table-cell">{{ product.category?.name || '-' }}</td>
+                                        <td class="px-2 sm:px-4 lg:px-6 py-2 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-500 dark:text-gray-400 font-mono hidden lg:table-cell">{{ product.barcode || '-' }}</td>
+                                        <td class="px-2 sm:px-4 lg:px-6 py-2 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-500 dark:text-gray-400">
+                                            <span :class="product.stock < 10 ? 'text-red-600 dark:text-red-400 font-bold bg-red-50 dark:bg-red-900/20 px-1.5 py-0.5 rounded' : ''">
+                                                {{ product.stock }}
+                                            </span>
+                                        </td>
+                                        <td class="px-2 sm:px-4 lg:px-6 py-2 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-500 dark:text-gray-400 hidden sm:table-cell">{{ formatCurrency(product.harga_beli) }}</td>
+                                        <td class="px-2 sm:px-4 lg:px-6 py-2 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-900 dark:text-gray-100 font-semibold">{{ formatCurrency(product.harga_jual) }}</td>
+                                        <td class="px-2 sm:px-4 lg:px-6 py-2 sm:py-4 whitespace-nowrap text-xs text-gray-500">
+                                            <AuditInfo :user="product.creator" :timestamp="product.created_at" label="Dibuat" />
+                                        </td>
+                                        <td class="px-2 sm:px-4 lg:px-6 py-2 sm:py-4 whitespace-nowrap text-xs text-gray-500">
+                                            <AuditInfo :user="product.updater" :timestamp="product.updated_at" label="Diubah" />
+                                        </td>
+                                        <td class="px-2 sm:px-4 lg:px-6 py-2 sm:py-4 whitespace-nowrap text-xs sm:text-sm font-medium">
+                                            <div class="flex flex-col sm:flex-row gap-1 sm:gap-2">
+                                                <Link :href="route('kasir.products.show', product.id)" class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300 text-xs sm:text-sm" title="Detail">
+                                                    Detail
+                                                </Link>
+                                                <button v-if="can('products.stock')" @click="openAdjustmentModal(product)" class="text-green-600 dark:text-green-400 hover:text-green-900 dark:hover:text-green-300 text-left text-xs sm:text-sm" title="Sesuaikan Stok">
+                                                    Stok
+                                                </button>
+                                                <Link v-if="can('products.edit')" :href="route('kasir.products.edit', product.id)" class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300 text-xs sm:text-sm" title="Edit">
+                                                    Edit
+                                                </Link>
+                                                <button v-if="can('products.delete')" @click="deleteProduct(product.id)" class="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300 text-left text-xs sm:text-sm" title="Hapus">
+                                                    Hapus
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr v-if="products.data.length === 0 && search">
+                                        <td colspan="11" class="px-6 py-12 text-center"> <div class="text-gray-400">
+                                                <svg class="mx-auto h-12 w-12 text-gray-300 dark:text-gray-600 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                                </svg>
+                                                <h3 class="text-sm font-medium text-gray-900 dark:text-gray-100 mb-1">Tidak ada hasil</h3>
+                                                <p class="text-sm text-gray-500 dark:text-gray-400">Tidak ditemukan produk dengan kata kunci "{{ search }}"</p>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div v-if="products.links.length > 3" class="mt-4 flex flex-wrap justify-center gap-1 sm:gap-2">
+                            <template v-for="link in products.links" :key="link.label">
+                                <Link
+                                    v-if="link.url"
+                                    :href="link.url"
+                                    v-html="link.label"
+                                    :class="[
+                                        'px-2 sm:px-3 py-1.5 sm:py-2 rounded text-xs sm:text-sm',
+                                        link.active ? 'bg-indigo-600 text-white font-semibold' : 'bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300'
+                                    ]"
+                                />
+                                <span
+                                    v-else
+                                    v-html="link.label"
+                                    :class="'px-2 sm:px-3 py-1.5 sm:py-2 rounded text-xs sm:text-sm bg-gray-200 text-gray-400 opacity-50 cursor-not-allowed'"
+                                />
+                            </template>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div v-if="showAdjustmentModal" class="fixed inset-0 z-[9999] overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+            <div class="flex items-end justify-center min-h-screen pt-4 px-3 sm:px-4 pb-20 text-center sm:block sm:p-0">
+                <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity backdrop-blur-sm" @click.self="closeAdjustmentModal"></div>
+
+                <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+
+                <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg w-full sm:w-full z-50 relative">
+                    <form @submit.prevent="submitAdjustment">
+                        <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                            <h3 class="text-lg font-medium leading-6 text-gray-900 mb-4" id="modal-title">
+                                Sesuaikan Stok: {{ selectedProduct?.name }}
+                            </h3>
+
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">Stok Saat Ini</label>
+                                    <p class="mt-1 text-lg font-bold text-gray-900">{{ selectedProduct?.stock }}</p>
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Tipe Penyesuaian</label>
+                                    <select v-model="adjustmentForm.type" class="w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">
+                                        <option value="deduction">Pengurangan</option>
+                                        <option value="addition">Penambahan</option>
+                                    </select>
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Tujuan Penyesuaian</label>
+                                    <select v-model="adjustmentForm.purpose" required class="w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">
+                                        <option value="sale">Penjualan (Transaksi)</option>
+                                        <option value="internal_use">Keperluan Internal/Kantor</option>
+                                        <option value="personal_use">Keperluan Pribadi</option>
+                                        <option value="damage">Kerusakan Barang</option>
+                                        <option value="expired">Barang Kadaluarsa</option>
+                                        <option value="return_to_supplier">Retur ke Supplier</option>
+                                        <option value="other">Lainnya</option>
+                                    </select>
+                                    <p class="mt-1 text-xs text-gray-500">Pilih tujuan penyesuaian untuk perhitungan keuangan yang tepat</p>
+                                    <div v-if="adjustmentForm.errors.purpose" class="mt-1 text-sm text-red-600">
+                                        {{ adjustmentForm.errors.purpose }}
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Jumlah</label>
+                                    <input
+                                        v-model="adjustmentForm.quantity"
+                                        type="number"
+                                        min="1"
+                                        required
+                                        class="w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm"
+                                        placeholder="Masukkan jumlah"
+                                    />
+                                    <div v-if="adjustmentForm.errors.quantity" class="mt-1 text-sm text-red-600">
+                                        {{ adjustmentForm.errors.quantity }}
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Catatan (Opsional)</label>
+                                    <textarea
+                                        v-model="adjustmentForm.notes"
+                                        rows="3"
+                                        class="w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm"
+                                        placeholder="Alasan penyesuaian stok..."
+                                    ></textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                            <button
+                                type="submit"
+                                :disabled="adjustmentForm.processing"
+                                class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:ml-3 sm:w-auto sm:text-sm disabled:opacity-50"
+                            >
+                                {{ adjustmentForm.processing ? 'Memproses...' : 'Simpan' }}
+                            </button>
+                            <button
+                                type="button"
+                                @click="closeAdjustmentModal"
+                                class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
+                            >
+                                Batal
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </AuthenticatedLayout>
+</template>
+
+<style scoped>
+/* Custom scrollbar for webkit browsers */
+.scrollbar-thin::-webkit-scrollbar {
+    height: 6px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb {
+    background-color: #d1d5db;
+    border-radius: 3px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb:hover {
+    background-color: #9ca3af;
+}
+
+.scrollbar-thin::-webkit-scrollbar-track {
+    background-color: #f3f4f6;
+    border-radius: 3px;
+}
+</style>

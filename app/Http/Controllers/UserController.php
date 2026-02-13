@@ -27,27 +27,60 @@ class UserController extends Controller
             ],
             'Master Data: Kategori' => [
                 ['key' => 'categories.view',   'label' => 'Lihat Kategori'],
-                ['key' => 'categories.create', 'label' => 'Tambah/Edit Kategori'],
+                ['key' => 'categories.create', 'label' => 'Tambah Kategori'],
+                ['key' => 'categories.edit',   'label' => 'Edit Kategori'],
                 ['key' => 'categories.delete', 'label' => 'Hapus Kategori'],
             ],
             'Data Siswa & Guru' => [
                 ['key' => 'students.view',   'label' => 'Lihat Data Siswa'],
-                ['key' => 'students.manage', 'label' => 'Kelola Siswa (Add/Edit/Del)'],
+                ['key' => 'students.create', 'label' => 'Tambah Siswa'],
+                ['key' => 'students.edit',   'label' => 'Edit Siswa'],
+                ['key' => 'students.delete', 'label' => 'Hapus Siswa'],
                 ['key' => 'teachers.view',   'label' => 'Lihat Data Guru'],
-                ['key' => 'teachers.manage', 'label' => 'Kelola Guru'],
+                ['key' => 'teachers.create', 'label' => 'Tambah Guru'],
+                ['key' => 'teachers.edit',   'label' => 'Edit Guru'],
+                ['key' => 'teachers.delete', 'label' => 'Hapus Guru'],
+            ],
+            'Inventori (Stok Masuk)' => [
+                ['key' => 'stock_ins.view',   'label' => 'Lihat Riwayat Stok Masuk'],
+                ['key' => 'stock_ins.create', 'label' => 'Catat Stok Masuk'],
+                ['key' => 'stock_ins.delete', 'label' => 'Hapus Data Stok Masuk'],
+            ],
+            'Voucher' => [
+                ['key' => 'vouchers.view',    'label' => 'Lihat Daftar Voucher'],
+                ['key' => 'vouchers.create',  'label' => 'Generate Voucher'],
+                ['key' => 'vouchers.print',   'label' => 'Cetak Voucher'],
+                ['key' => 'vouchers.redeem',  'label' => 'Redeem Voucher'],
+                ['key' => 'vouchers.delete',  'label' => 'Hapus Voucher'],
+            ],
+            'Tabungan (Savings)' => [
+                ['key' => 'savings.view',     'label' => 'Lihat Data Tabungan'],
+                ['key' => 'savings.manage',   'label' => 'Kelola Tabungan (Setor/Tarik)'],
             ],
             'Transaksi (Kasir)' => [
                 ['key' => 'pos.access',           'label' => 'Akses Mesin Kasir (POS)'],
                 ['key' => 'transactions.history', 'label' => 'Lihat Riwayat Transaksi'],
+                ['key' => 'transactions.topup',   'label' => 'Top-up Saldo Manual'],
                 ['key' => 'transactions.void',    'label' => 'Batalkan/Hapus Transaksi'],
             ],
+            'Pengeluaran (Expenses)' => [
+                ['key' => 'expenses.view',    'label' => 'Lihat Data Pengeluaran'],
+                ['key' => 'expenses.create',  'label' => 'Catat Pengeluaran'],
+                ['key' => 'expenses.delete',  'label' => 'Hapus Pengeluaran'],
+            ],
             'Laporan & Keuangan' => [
-                ['key' => 'reports.view',    'label' => 'Lihat Laporan Penjualan'],
-                ['key' => 'reports.download','label' => 'Download Laporan (Excel/PDF)'],
+                ['key' => 'reports.sales',                'label' => 'Laporan Penjualan'],
+                ['key' => 'reports.inventory',            'label' => 'Laporan Inventori'],
+                ['key' => 'reports.stock_adjustments',    'label' => 'Laporan Penyesuaian Stok'],
+                ['key' => 'reports.financial',            'label' => 'Laporan Keuangan'],
+                ['key' => 'reports.student_transactions', 'label' => 'Laporan Transaksi Siswa'],
+                ['key' => 'reports.download',             'label' => 'Download Laporan (Excel/PDF)'],
             ],
             'Manajemen User' => [
                 ['key' => 'users.view',   'label' => 'Lihat Daftar User'],
-                ['key' => 'users.manage', 'label' => 'Tambah/Edit User Lain'],
+                ['key' => 'users.create', 'label' => 'Tambah User'],
+                ['key' => 'users.edit',   'label' => 'Edit User'],
+                ['key' => 'users.delete', 'label' => 'Hapus User'],
             ]
         ];
     }

@@ -3,6 +3,9 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import EmptyState from '@/Components/EmptyState.vue';
 import AuditInfo from '@/Components/AuditInfo.vue';
 import { Head, Link, router } from '@inertiajs/vue3';
+import { usePermissions } from '@/Composables/usePermissions';
+
+const { can } = usePermissions();
 
 defineProps({ expenses: Object, filters: Object });
 
@@ -28,7 +31,7 @@ const formatDate = (date) => new Date(date).toLocaleDateString('id-ID');
                             </svg>
                             <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Catat dan kelola pengeluaran operasional</span>
                         </div>
-                        <Link :href="route('expenses.create')" class="w-full sm:w-auto inline-flex items-center justify-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg shadow-sm transition">
+                        <Link v-if="can('expenses.create')" :href="route('expenses.create')" class="w-full sm:w-auto inline-flex items-center justify-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg shadow-sm transition">
                             <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                             </svg>
@@ -74,7 +77,7 @@ const formatDate = (date) => new Date(date).toLocaleDateString('id-ID');
                                         <AuditInfo :user="expense.updater" :timestamp="expense.updated_at" label="Diubah" />
                                     </td>
                                     <td class="px-6 py-4 text-sm font-medium">
-                                        <button @click="router.delete(route('expenses.destroy', expense.id))" class="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300">Hapus</button>
+                                        <button v-if="can('expenses.delete')" @click="router.delete(route('expenses.destroy', expense.id))" class="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300">Hapus</button>
                                     </td>
                                 </tr>
                             </tbody>

@@ -4,6 +4,9 @@ import AuditInfo from '@/Components/AuditInfo.vue';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head, Link, router } from '@inertiajs/vue3';
 import { ref, computed } from 'vue';
+import { usePermissions } from '@/Composables/usePermissions';
+
+const { can } = usePermissions();
 
 const props = defineProps({
     transactions: Object,
@@ -161,6 +164,7 @@ const summary = computed(() => {
                     Riwayat Transaksi Siswa
                 </h2>
                 <Link
+                    v-if="can('pos.access')"
                     :href="route('transactions.topup.form')"
                     class="inline-flex items-center px-4 py-2 bg-green-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-green-700 focus:bg-green-700 active:bg-green-900 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition ease-in-out duration-150"
                 >
@@ -559,8 +563,8 @@ const summary = computed(() => {
                     icon="cash"
                     title="Belum Ada Transaksi"
                     description="Transaksi akan tercatat otomatis saat siswa melakukan top-up atau pembelian."
-                    :action-url="route('transactions.topup.form')"
-                    action-text="Top-up Saldo Siswa"
+                    :action-url="can('pos.access') ? route('transactions.topup.form') : null"
+                    :action-text="can('pos.access') ? 'Top-up Saldo Siswa' : null"
                 />
             </div>
         </div>

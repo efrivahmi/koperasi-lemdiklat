@@ -26,6 +26,13 @@ class StockInController extends Controller
 
         $stock_ins = $query->latest()->paginate(10);
 
+        if ($request->routeIs('kasir.*')) {
+            return Inertia::render('Kasir/StockIns/Index', [
+                'stock_ins' => $stock_ins,
+                'filters' => $request->only(['search'])
+            ]);
+        }
+
         return Inertia::render('Admin/StockIns/Index', [
             'stock_ins' => $stock_ins,
             'filters' => $request->only(['search'])
@@ -38,6 +45,12 @@ class StockInController extends Controller
     public function create()
     {
         $products = Product::with('category')->get();
+
+        if ($request->routeIs('kasir.*')) {
+            return Inertia::render('Kasir/StockIns/Create', [
+                'products' => $products
+            ]);
+        }
 
         return Inertia::render('Admin/StockIns/Create', [
             'products' => $products
@@ -65,7 +78,8 @@ class StockInController extends Controller
         $product = Product::find($validated['product_id']);
         $product->increment('stock', $validated['quantity']);
 
-        return redirect()->route('stock-ins.index')
+        $route = $request->routeIs('kasir.*') ? 'kasir.stock-ins.index' : 'stock-ins.index';
+        return redirect()->route($route)
             ->with('success', 'Barang masuk berhasil dicatat.');
     }
 
@@ -115,7 +129,8 @@ class StockInController extends Controller
         $newProduct = Product::find($validated['product_id']);
         $newProduct->increment('stock', $validated['quantity']);
 
-        return redirect()->route('stock-ins.index')
+        $route = $request->routeIs('kasir.*') ? 'kasir.stock-ins.index' : 'stock-ins.index';
+        return redirect()->route($route)
             ->with('success', 'Data barang masuk berhasil diupdate.');
     }
 
@@ -130,7 +145,8 @@ class StockInController extends Controller
 
         $stockIn->delete();
 
-        return redirect()->route('stock-ins.index')
+        $route = $request->routeIs('kasir.*') ? 'kasir.stock-ins.index' : 'stock-ins.index';
+        return redirect()->route($route)
             ->with('success', 'Data barang masuk berhasil dihapus.');
     }
 }

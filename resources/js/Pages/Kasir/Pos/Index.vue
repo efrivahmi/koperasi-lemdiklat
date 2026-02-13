@@ -447,7 +447,7 @@ onUnmounted(() => {
                 <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">POS / Kasir</h2>
                 <div class="flex gap-2">
                     <Link
-                        :href="route('pos.transactions-history')"
+                        :href="route('kasir.pos.transactions-history')"
                         class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded-lg shadow transition-colors flex items-center gap-2"
                     >
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

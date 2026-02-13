@@ -32,6 +32,14 @@ class TeacherController extends Controller
 
         $teachers = $query->oldest()->paginate(10);
 
+        // Check for Kasir route
+        if ($request->routeIs('kasir.*')) {
+            return Inertia::render('Kasir/Teachers/Index', [
+                'teachers' => $teachers,
+                'filters' => $request->only(['search'])
+            ]);
+        }
+
         return Inertia::render('Admin/Teachers/Index', [
             'teachers' => $teachers,
             'filters' => $request->only(['search'])

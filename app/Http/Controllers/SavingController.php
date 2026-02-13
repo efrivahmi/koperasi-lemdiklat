@@ -57,6 +57,19 @@ class SavingController extends Controller
         $totalWithdrawals = Saving::where('type', 'withdrawal')->sum('amount');
         $netSavings = $totalDeposits - $totalWithdrawals;
 
+        // Check for Kasir route
+        if ($request->routeIs('kasir.*')) {
+            return Inertia::render('Kasir/Savings/Index', [
+                'savings' => $savings,
+                'filters' => $request->only(['search', 'type', 'saver_type', 'date_from', 'date_to']),
+                'stats' => [
+                    'total_deposits' => $totalDeposits,
+                    'total_withdrawals' => $totalWithdrawals,
+                    'net_savings' => $netSavings,
+                ]
+            ]);
+        }
+
         return Inertia::render('Admin/Savings/Index', [
             'savings' => $savings,
             'filters' => $request->only(['search', 'type', 'saver_type', 'date_from', 'date_to']),
@@ -142,6 +155,12 @@ class SavingController extends Controller
             DB::commit();
 
             $message = $validated['type'] === 'deposit' ? 'Setoran' : 'Penarikan';
+            
+            if ($request->routeIs('kasir.*')) {
+                return redirect()->route('kasir.savings.index')
+                    ->with('success', $message . ' tabungan berhasil dicatat!');
+            }
+            
             return redirect()->route('savings.index')
                 ->with('success', $message . ' tabungan berhasil dicatat!');
 

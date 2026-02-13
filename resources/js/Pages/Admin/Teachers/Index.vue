@@ -4,6 +4,9 @@ import AuditInfo from '@/Components/AuditInfo.vue';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head, Link, router } from '@inertiajs/vue3';
 import { ref, watch } from 'vue';
+import { usePermissions } from '@/Composables/usePermissions';
+
+const { can } = usePermissions();
 
 const props = defineProps({
     teachers: Object,
@@ -66,7 +69,7 @@ const formatCurrency = (value) => {
                         </div>
                         <!-- Action Buttons -->
                         <div class="flex flex-wrap gap-2">
-                            <Link :href="route('teachers.create')" class="flex-1 sm:flex-initial inline-flex items-center justify-center px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg shadow-sm transition">
+                            <Link v-if="can('teachers.create')" :href="route('teachers.create')" class="flex-1 sm:flex-initial inline-flex items-center justify-center px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg shadow-sm transition">
                                 <svg class="w-5 h-5 sm:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                                 </svg>
@@ -140,9 +143,9 @@ const formatCurrency = (value) => {
                                             <AuditInfo :user="teacher.updater" :timestamp="teacher.updated_at" label="Diubah" />
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                            <Link :href="route('teachers.edit', teacher.id)" class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300 mr-3">Edit</Link>
-                                            <Link v-if="!teacher.rfid_uid" :href="route('teachers.rfid.register', teacher.id)" class="text-green-600 dark:text-green-400 hover:text-green-900 dark:hover:text-green-300 mr-3">RFID</Link>
-                                            <button @click="deleteTeacher(teacher.id)" class="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300">Hapus</button>
+                                            <Link v-if="can('teachers.edit')" :href="route('teachers.edit', teacher.id)" class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300 mr-3">Edit</Link>
+                                            <Link v-if="!teacher.rfid_uid && can('teachers.edit')" :href="route('teachers.rfid.register', teacher.id)" class="text-green-600 dark:text-green-400 hover:text-green-900 dark:hover:text-green-300 mr-3">RFID</Link>
+                                            <button v-if="can('teachers.delete')" @click="deleteTeacher(teacher.id)" class="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300">Hapus</button>
                                         </td>
                                     </tr>
                                     <tr v-if="teachers.data.length === 0 && search">

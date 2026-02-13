@@ -56,6 +56,15 @@ class ProductController extends Controller
         // --- PENTING: MENGGUNAKAN OLDEST() ---
         $products = $query->oldest()->paginate(10);
 
+        // Check if we are in the Kasir route group
+        if ($request->routeIs('kasir.*')) {
+            return Inertia::render('Kasir/Products/Index', [
+                'products' => $products,
+                'categories' => Category::all(),
+                'filters' => $request->only(['search']),
+            ]);
+        }
+
         return Inertia::render('Admin/Products/Index', [
             'products' => $products,
             'filters' => $request->only(['search'])
@@ -104,7 +113,8 @@ class ProductController extends Controller
 
         Product::create($validated);
 
-        return redirect()->route('products.index')
+        $route = $request->routeIs('kasir.*') ? 'kasir.products.index' : 'products.index';
+        return redirect()->route($route)
             ->with('success', 'Produk berhasil ditambahkan dengan barcode: ' . $validated['barcode'] . '. Kelola stok melalui menu "Barang Masuk".');
     }
 

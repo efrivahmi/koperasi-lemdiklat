@@ -4,6 +4,9 @@ import EmptyState from '@/Components/EmptyState.vue';
 import AuditInfo from '@/Components/AuditInfo.vue';
 import { Head, Link, router, useForm } from '@inertiajs/vue3';
 import { ref, watch } from 'vue';
+import { usePermissions } from '@/Composables/usePermissions';
+
+const { can } = usePermissions();
 
 const props = defineProps({
     products: Object,
@@ -96,13 +99,13 @@ const formatCurrency = (value) => {
                             </div>
                         </div>
                         <div class="flex flex-wrap gap-2">
-                            <Link :href="route('products.barcode-generator')" class="flex-1 sm:flex-initial inline-flex items-center justify-center px-4 py-2.5 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-lg shadow-sm transition">
+                            <Link v-if="can('products.barcode')" :href="route('products.barcode-generator')" class="flex-1 sm:flex-initial inline-flex items-center justify-center px-4 py-2.5 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-lg shadow-sm transition">
                                 <svg class="w-5 h-5 sm:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
                                 </svg>
                                 <span class="hidden sm:inline">Cetak Barcode</span>
                             </Link>
-                            <Link :href="route('products.create')" class="flex-1 sm:flex-initial inline-flex items-center justify-center px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg shadow-sm transition">
+                            <Link v-if="can('products.create')" :href="route('products.create')" class="flex-1 sm:flex-initial inline-flex items-center justify-center px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg shadow-sm transition">
                                 <svg class="w-5 h-5 sm:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                                 </svg>
@@ -185,13 +188,13 @@ const formatCurrency = (value) => {
                                                 <Link :href="route('products.show', product.id)" class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300 text-xs sm:text-sm" title="Detail">
                                                     Detail
                                                 </Link>
-                                                <button @click="openAdjustmentModal(product)" class="text-green-600 dark:text-green-400 hover:text-green-900 dark:hover:text-green-300 text-left text-xs sm:text-sm" title="Sesuaikan Stok">
+                                                <button v-if="can('products.stock')" @click="openAdjustmentModal(product)" class="text-green-600 dark:text-green-400 hover:text-green-900 dark:hover:text-green-300 text-left text-xs sm:text-sm" title="Sesuaikan Stok">
                                                     Stok
                                                 </button>
-                                                <Link :href="route('products.edit', product.id)" class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300 text-xs sm:text-sm" title="Edit">
+                                                <Link v-if="can('products.edit')" :href="route('products.edit', product.id)" class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300 text-xs sm:text-sm" title="Edit">
                                                     Edit
                                                 </Link>
-                                                <button @click="deleteProduct(product.id)" class="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300 text-left text-xs sm:text-sm" title="Hapus">
+                                                <button v-if="can('products.delete')" @click="deleteProduct(product.id)" class="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300 text-left text-xs sm:text-sm" title="Hapus">
                                                     Hapus
                                                 </button>
                                             </div>

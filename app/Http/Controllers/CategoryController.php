@@ -15,6 +15,12 @@ class CategoryController extends Controller
     {
         $categories = Category::with(['creator', 'updater'])->oldest()->paginate(10);
 
+        if ($request->routeIs('kasir.*')) {
+            return Inertia::render('Kasir/Categories/Index', [
+                'categories' => $categories
+            ]);
+        }
+
         return Inertia::render('Admin/Categories/Index', [
             'categories' => $categories
         ]);
@@ -40,7 +46,8 @@ class CategoryController extends Controller
 
         Category::create($validated);
 
-        return redirect()->route('categories.index')
+        $route = $request->routeIs('kasir.*') ? 'kasir.categories.index' : 'categories.index';
+        return redirect()->route($route)
             ->with('success', 'Kategori berhasil ditambahkan.');
     }
 
@@ -76,7 +83,8 @@ class CategoryController extends Controller
 
         $category->update($validated);
 
-        return redirect()->route('categories.index')
+        $route = $request->routeIs('kasir.*') ? 'kasir.categories.index' : 'categories.index';
+        return redirect()->route($route)
             ->with('success', 'Kategori berhasil diupdate.');
     }
 
@@ -87,7 +95,8 @@ class CategoryController extends Controller
     {
         $category->delete();
 
-        return redirect()->route('categories.index')
+        $route = $request->routeIs('kasir.*') ? 'kasir.categories.index' : 'categories.index';
+        return redirect()->route($route)
             ->with('success', 'Kategori berhasil dihapus.');
     }
 }

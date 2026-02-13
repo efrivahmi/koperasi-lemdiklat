@@ -471,7 +471,7 @@ const topProductsChartOptions = {
                         <span>Quick Actions</span>
                     </h3>
                     <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                        <Link v-if="hasPermission('module_pos')" :href="route('pos.index')" class="bg-white/20 hover:bg-white/30 backdrop-blur-sm rounded-lg p-4 text-center transition-all duration-300 transform hover:scale-110 hover:shadow-lg group">
+                        <Link v-if="hasPermission('module_pos')" :href="route('kasir.pos.index')" class="bg-white/20 hover:bg-white/30 backdrop-blur-sm rounded-lg p-4 text-center transition-all duration-300 transform hover:scale-110 hover:shadow-lg group">
                             <div class="text-3xl mb-2 group-hover:scale-125 transition-transform duration-300">🛒</div>
                             <div class="font-semibold">POS / Kasir</div>
                         </Link>

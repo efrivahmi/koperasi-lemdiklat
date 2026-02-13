@@ -372,7 +372,7 @@ class PosController extends Controller
                     'sale' => $sale->load('saleItems.product'),
                     'sale_id' => $sale->id,
                     'change' => $validated['payment_method'] === 'cash' ? ($validated['cash_amount'] - $total) : 0,
-                    'receipt_url' => route('pos.receipt', $sale->id),
+                    'receipt_url' => route('kasir.pos.receipt', $sale->id),
                 ]);
             });
 

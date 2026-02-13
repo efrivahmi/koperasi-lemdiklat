@@ -4,6 +4,9 @@ import AuditInfo from '@/Components/AuditInfo.vue';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head, Link, router } from '@inertiajs/vue3';
 import { ref, watch } from 'vue';
+import { usePermissions } from '@/Composables/usePermissions';
+
+const { can } = usePermissions();
 
 const props = defineProps({
     students: Object,
@@ -128,7 +131,7 @@ const printBatchCards = () => {
                         <!-- Action Buttons -->
                         <div class="flex flex-wrap gap-2">
                             <button
-                                v-if="selectedStudents.size > 0"
+                                v-if="can('students.view') && selectedStudents.size > 0"
                                 @click="printBatchCards"
                                 class="flex-1 sm:flex-initial inline-flex items-center justify-center px-4 py-2.5 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-lg shadow-sm transition"
                             >
@@ -137,7 +140,7 @@ const printBatchCards = () => {
                                 </svg>
                                 <span>Cetak {{ selectedStudents.size }} Kartu</span>
                             </button>
-                            <Link :href="route('students.create')" class="flex-1 sm:flex-initial inline-flex items-center justify-center px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg shadow-sm transition">
+                            <Link v-if="can('students.create')" :href="route('students.create')" class="flex-1 sm:flex-initial inline-flex items-center justify-center px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg shadow-sm transition">
                                 <svg class="w-5 h-5 sm:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                                 </svg>
@@ -225,10 +228,10 @@ const printBatchCards = () => {
                                             <AuditInfo :user="student.updater" :timestamp="student.updated_at" label="Diubah" />
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                            <button @click="printCard(student.id)" class="text-purple-600 dark:text-purple-400 hover:text-purple-900 dark:hover:text-purple-300 mr-3">🖨️ Kartu</button>
-                                            <Link :href="route('students.edit', student.id)" class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300 mr-3">Edit</Link>
-                                            <Link v-if="!student.rfid_uid" :href="route('students.rfid.register', student.id)" class="text-green-600 dark:text-green-400 hover:text-green-900 dark:hover:text-green-300 mr-3">RFID</Link>
-                                            <button @click="deleteStudent(student.id)" class="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300">Hapus</button>
+                                            <button v-if="can('students.view')" @click="printCard(student.id)" class="text-purple-600 dark:text-purple-400 hover:text-purple-900 dark:hover:text-purple-300 mr-3">🖨️ Kartu</button>
+                                            <Link v-if="can('students.edit')" :href="route('students.edit', student.id)" class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300 mr-3">Edit</Link>
+                                            <Link v-if="!student.rfid_uid && can('students.edit')" :href="route('students.rfid.register', student.id)" class="text-green-600 dark:text-green-400 hover:text-green-900 dark:hover:text-green-300 mr-3">RFID</Link>
+                                            <button v-if="can('students.delete')" @click="deleteStudent(student.id)" class="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300">Hapus</button>
                                         </td>
                                     </tr>
                                     <tr v-if="students.data.length === 0 && search">

@@ -30,6 +30,14 @@ class StudentController extends Controller
 
         $students = $query->oldest()->paginate(10);
 
+        // Check for Kasir route
+        if ($request->routeIs('kasir.*')) {
+            return Inertia::render('Kasir/Students/Index', [
+                'students' => $students,
+                'filters' => $request->only(['search'])
+            ]);
+        }
+
         return Inertia::render('Admin/Students/Index', [
             'students' => $students,
             'filters' => $request->only(['search'])

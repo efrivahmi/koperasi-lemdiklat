@@ -23,6 +23,7 @@
     "dependencies": {
         "chart.js": "^4.5.1",
         "jsbarcode": "^3.12.1",
-        "vue-chartjs": "^5.3.3"
+        "vue-chartjs": "^5.3.3",
+        "ziggy-js": "^2.6.0"
     }
 }

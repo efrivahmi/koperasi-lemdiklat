@@ -19,7 +19,7 @@ class SecurityHeaders
 
         // Determine environment-specific CSP
         $isDevelopment = app()->environment('local', 'development');
-        $viteUrl = $isDevelopment ? 'https://koperasi-lemdiklat.test:5173 https://koperasi-lemdiklat.test:5174 https://localhost:5173 https://localhost:5174 ws: wss:' : '';
+        $viteUrl = $isDevelopment ? '*' : '';
 
         // Content Security Policy (CSP)
         $csp = "default-src 'self'; " .

@@ -19,7 +19,7 @@ const searchForm = ref({
 });
 
 const applyFilters = () => {
-    router.get(route('pos.transactions-history'), searchForm.value, {
+    router.get(route('kasir.pos.transactions-history'), searchForm.value, {
         preserveState: true,
         preserveScroll: true,
     });
@@ -83,7 +83,7 @@ const getPaymentText = (method) => {
 };
 
 const printReceipt = (saleId) => {
-    window.open(route('pos.receipt', saleId), '_blank');
+    window.open(route('kasir.pos.receipt', saleId), '_blank');
 };
 </script>
 
@@ -103,7 +103,7 @@ const printReceipt = (saleId) => {
                     </p>
                 </div>
                 <Link
-                    :href="route('pos.index')"
+                    :href="route('kasir.pos.index')"
                     class="inline-flex items-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white rounded-lg font-semibold text-sm transition shadow-sm"
                 >
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">

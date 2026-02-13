@@ -59,6 +59,15 @@ class TransactionController extends Controller
                 'filters' => $request->only(['search', 'type'])
             ]);
 
+            // Check for Kasir route
+            if ($request->routeIs('kasir.*')) {
+                return Inertia::render('Kasir/Transactions/Index', [
+                    'transactions' => $transactions,
+                    'filters' => $request->only(['search', 'type', 'transaction_method']),
+                    'stats' => $stats
+                ]);
+            }
+
             return Inertia::render('Admin/Transactions/Index', [
                 'transactions' => $transactions,
                 'filters' => $request->only(['search', 'type', 'transaction_method']),

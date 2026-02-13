@@ -115,7 +115,7 @@ const menuItems = computed(() => {
         sections.push({
             title: 'Penjualan',
             items: [
-                { name: 'Point of Sale', route: 'pos.index', icon: '🛒', gradient: 'from-pink-500 to-rose-500' }
+                { name: 'Point of Sale', route: 'kasir.pos.index', icon: '🛒', gradient: 'from-pink-500 to-rose-500' }
             ]
         });
 
@@ -131,18 +131,21 @@ const menuItems = computed(() => {
         });
     }
 
-    // Menu untuk Kasir - Berdasarkan permissions
+    // Menu untuk Kasir - Berdasarkan permissions (granular keys)
     if (role === 'kasir') {
         // Master Data
         const masterDataItems = [];
-        if (permissions.module_categories) {
-            masterDataItems.push({ name: 'Kategori', route: 'categories.index', icon: '📁', gradient: 'from-purple-500 to-pink-500' });
+        if (permissions['categories.view']) {
+            masterDataItems.push({ name: 'Kategori', route: 'kasir.categories.index', icon: '📁', gradient: 'from-purple-500 to-pink-500' });
         }
-        if (permissions.module_products) {
-            masterDataItems.push({ name: 'Produk', route: 'products.index', icon: '📦', gradient: 'from-green-500 to-emerald-500' });
+        if (permissions['products.view']) {
+            masterDataItems.push({ name: 'Produk', route: 'kasir.products.index', icon: '📦', gradient: 'from-green-500 to-emerald-500' });
         }
-        if (permissions.module_students) {
-            masterDataItems.push({ name: 'Siswa', route: 'students.index', icon: '👥', gradient: 'from-orange-500 to-red-500' });
+        if (permissions['students.view']) {
+            masterDataItems.push({ name: 'Siswa', route: 'kasir.students.index', icon: '👥', gradient: 'from-orange-500 to-red-500' });
+        }
+        if (permissions['teachers.view']) {
+            masterDataItems.push({ name: 'Guru', route: 'kasir.teachers.index', icon: '👨‍🏫', gradient: 'from-blue-500 to-cyan-500' });
         }
         if (masterDataItems.length > 0) {
             sections.push({ title: 'Master Data', items: masterDataItems });
@@ -150,58 +153,61 @@ const menuItems = computed(() => {
 
         // Inventori & Keuangan
         const inventoryItems = [];
-        if (permissions.module_stock_ins) {
-            inventoryItems.push({ name: 'Stok Masuk', route: 'stock-ins.index', icon: '📥', gradient: 'from-indigo-500 to-blue-500' });
+        if (permissions['products.view']) {
+            inventoryItems.push({ name: 'Stok Masuk', route: 'kasir.stock-ins.index', icon: '📥', gradient: 'from-indigo-500 to-blue-500' });
         }
-        if (permissions.module_vouchers) {
-            inventoryItems.push({ name: 'Voucher', route: 'vouchers.index', icon: '🎟️', gradient: 'from-yellow-500 to-orange-500' });
+        if (permissions['pos.access']) {
+            inventoryItems.push({ name: 'Voucher', route: 'kasir.vouchers.index', icon: '🎟️', gradient: 'from-yellow-500 to-orange-500' });
         }
-        if (permissions.module_expenses) {
+        if (permissions['reports.view']) {
             inventoryItems.push({ name: 'Pengeluaran', route: 'expenses.index', icon: '💸', gradient: 'from-red-500 to-pink-500' });
         }
-        if (permissions.module_transactions) {
-            inventoryItems.push({ name: 'Transaksi', route: 'transactions.index', icon: '💳', gradient: 'from-cyan-500 to-blue-500' });
+        if (permissions['transactions.history']) {
+            inventoryItems.push({ name: 'Transaksi', route: 'kasir.transactions.index', icon: '💳', gradient: 'from-cyan-500 to-blue-500' });
+        }
+        if (permissions['savings.view']) {
+            inventoryItems.push({ name: 'Tabungan', route: 'kasir.savings.index', icon: '💰', gradient: 'from-emerald-500 to-green-500' });
         }
         if (inventoryItems.length > 0) {
             sections.push({ title: 'Inventori & Keuangan', items: inventoryItems });
         }
 
         // Manajemen User
-        if (permissions.module_users) {
-            sections.push({
-                title: 'Manajemen User',
-                items: [
-                    { name: 'Daftar Pengguna', route: 'users.index', icon: '👤', gradient: 'from-violet-500 to-purple-500' },
-                    { name: 'Tambah Pengguna', route: 'users.create', icon: '➕', gradient: 'from-green-500 to-emerald-500' }
-                ]
-            });
+        if (permissions['users.view']) {
+            const userItems = [
+                { name: 'Daftar Pengguna', route: 'users.index', icon: '👤', gradient: 'from-violet-500 to-purple-500' }
+            ];
+            if (permissions['users.create']) {
+                userItems.push({ name: 'Tambah Pengguna', route: 'users.create', icon: '➕', gradient: 'from-green-500 to-emerald-500' });
+            }
+            sections.push({ title: 'Manajemen User', items: userItems });
         }
 
         // POS
-        if (permissions.module_pos) {
+        if (permissions['pos.access']) {
             sections.push({
                 title: 'Penjualan',
                 items: [
-                    { name: 'Point of Sale', route: 'pos.index', icon: '🛒', gradient: 'from-pink-500 to-rose-500' }
+                    { name: 'Point of Sale', route: 'kasir.pos.index', icon: '🛒', gradient: 'from-pink-500 to-rose-500' }
                 ]
             });
         }
 
         // Laporan
         const reportItems = [];
-        if (permissions.module_reports_sales) {
+        if (permissions['reports.sales']) {
             reportItems.push({ name: 'Laporan Penjualan', route: 'reports.sales', icon: '📊', gradient: 'from-teal-500 to-green-500' });
         }
-        if (permissions.module_reports_inventory) {
+        if (permissions['reports.inventory']) {
             reportItems.push({ name: 'Laporan Inventori', route: 'reports.inventory', icon: '📈', gradient: 'from-blue-500 to-indigo-500' });
         }
-        if (permissions.module_reports_stock_adjustments) {
+        if (permissions['reports.stock_adjustments']) {
             reportItems.push({ name: 'Penyesuaian Stok', route: 'reports.stock-adjustments', icon: '📦', gradient: 'from-orange-500 to-red-500' });
         }
-        if (permissions.module_reports_financial) {
+        if (permissions['reports.financial']) {
             reportItems.push({ name: 'Laporan Keuangan', route: 'reports.financial', icon: '💰', gradient: 'from-green-500 to-teal-500' });
         }
-        if (permissions.module_reports_student_transactions) {
+        if (permissions['reports.student_transactions']) {
             reportItems.push({ name: 'Transaksi Siswa', route: 'reports.student-transactions', icon: '💳', gradient: 'from-purple-500 to-indigo-500' });
         }
         if (reportItems.length > 0) {

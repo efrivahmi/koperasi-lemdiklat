@@ -42,7 +42,7 @@ class StockInController extends Controller
     /**
      * Show the form for creating a new resource.
      */
-    public function create()
+    public function create(Request $request)
     {
         $products = Product::with('category')->get();
 
@@ -137,7 +137,7 @@ class StockInController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(StockIn $stockIn)
+    public function destroy(Request $request, StockIn $stockIn)
     {
         // Revert stock
         $product = Product::find($stockIn->product_id);

@@ -112,52 +112,65 @@ const availableVouchersCount = computed(() => {
     <AuthenticatedLayout>
         <template #mobileTitle>Voucher</template>
         <template #header>
-            <h2 class="font-semibold text-xl text-gray-800 leading-tight">Manajemen Voucher</h2>
+            <h2 class="font-semibold text-xl text-white leading-tight">Voucher Belanja</h2>
         </template>
 
-        <div class="py-6 sm:py-12">
+        <div class="py-6 sm:py-12 bg-gray-100 dark:bg-slate-900 min-h-screen transition-colors duration-200">
             <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
                 <!-- Toolbar Section -->
-                <div class="mb-6 bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-gray-800 dark:to-gray-800 border border-purple-200 dark:border-purple-500/30 rounded-lg shadow-sm p-4">
+                <div class="mb-6 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg shadow-sm p-4 transition-colors">
                     <div class="flex flex-col lg:flex-row gap-4 items-stretch lg:items-center">
-                        <!-- Filter Section -->
-                        <div class="flex-1">
-                            <div class="flex items-center gap-2">
-                                <label for="status-filter" class="text-sm font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">Filter Status:</label>
-                                <select
-                                    id="status-filter"
-                                    v-model="statusFilter"
+                        <!-- Search & Filter -->
+                        <div class="flex-1 flex flex-col sm:flex-row gap-4">
+                            <div class="relative flex-1">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <svg class="h-5 w-5 text-gray-400 dark:text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                    </svg>
+                                </div>
+                                <input
+                                    v-model="search"
+                                    type="text"
+                                    placeholder="Cari kode voucher..."
+                                    class="block w-full pl-10 pr-3 py-2.5 bg-gray-50 dark:bg-slate-900 border-gray-300 dark:border-slate-700 text-slate-900 dark:text-white focus:border-indigo-500 dark:focus:border-indigo-400 focus:ring-indigo-500 dark:focus:ring-indigo-400 rounded-lg shadow-sm text-sm transition-colors"
+                                />
+                            </div>
+                            <div class="sm:w-48">
+                                <select 
+                                    v-model="statusFilter" 
                                     @change="filterByStatus"
-                                    class="flex-1 border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-lg shadow-sm text-sm"
-                                    aria-label="Filter status voucher"
+                                    class="block w-full py-2.5 pl-3 pr-10 bg-gray-50 dark:bg-slate-900 border-gray-300 dark:border-slate-700 text-slate-900 dark:text-white focus:border-indigo-500 dark:focus:border-indigo-400 focus:ring-indigo-500 dark:focus:ring-indigo-400 rounded-lg shadow-sm text-sm transition-colors"
                                 >
                                     <option value="">Semua Status</option>
-                                    <option value="available">Available</option>
-                                    <option value="used">Used</option>
-                                    <option value="expired">Expired</option>
+                                    <option value="available">Tersedia</option>
+                                    <option value="used">Terpakai</option>
+                                    <option value="expired">Kadaluarsa</option>
                                 </select>
                             </div>
                         </div>
+
                         <!-- Action Buttons -->
                         <div class="flex flex-wrap gap-2">
-                            <button
-                                v-if="selectedVouchers.length > 0"
+                            <button 
+                                v-if="can('vouchers.print') && selectedVouchers.length > 0"
                                 @click="printSelectedVouchers"
-                                class="flex-1 sm:flex-initial inline-flex items-center justify-center px-4 py-2.5 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-lg shadow-sm transition"
+                                class="inline-flex items-center justify-center px-4 py-2.5 bg-gray-800 hover:bg-gray-700 dark:bg-slate-700 dark:hover:bg-slate-600 text-white font-semibold rounded-lg shadow-sm transition-colors"
                             >
                                 <svg class="w-5 h-5 sm:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2-4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
                                 </svg>
-                                <span>Cetak {{ selectedVouchers.length }}</span>
+                                <span class="hidden sm:inline">Cetak ({{ selectedVouchers.length }})</span>
                             </button>
-                            <Link :href="route('vouchers.redeem.form')" class="flex-1 sm:flex-initial inline-flex items-center justify-center px-4 py-2.5 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg shadow-sm transition">
+                            
+                            <Link v-if="can('vouchers.redeem')" :href="route('vouchers.redeem.form')" class="inline-flex items-center justify-center px-4 py-2.5 bg-green-600 hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600 text-white font-semibold rounded-lg shadow-sm transition-colors">
                                 <svg class="w-5 h-5 sm:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
                                 </svg>
                                 <span class="hidden sm:inline">Redeem Voucher</span>
                                 <span class="sm:hidden">Redeem</span>
                             </Link>
-                            <Link :href="route('vouchers.create')" class="flex-1 sm:flex-initial inline-flex items-center justify-center px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg shadow-sm transition">
+
+                            <Link v-if="can('vouchers.create')" :href="route('vouchers.create')" class="inline-flex items-center justify-center px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 text-white font-semibold rounded-lg shadow-sm transition-colors">
                                 <svg class="w-5 h-5 sm:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                                 </svg>
@@ -167,19 +180,20 @@ const availableVouchersCount = computed(() => {
                         </div>
                     </div>
                 </div>
+
                 <!-- Empty State -->
                 <EmptyState
-                    v-if="vouchers.data.length === 0 && !statusFilter"
-                    icon="tag"
+                    v-if="vouchers.data.length === 0 && !search && !statusFilter"
+                    icon="ticket"
                     title="Belum Ada Voucher"
-                    description="Generate voucher pertama untuk top-up saldo siswa."
+                    description="Generate voucher belanja pertama Anda untuk siswa."
                     :action-url="route('vouchers.create')"
-                    action-text="Generate Voucher Pertama"
+                    action-text="Generate Voucher"
                 />
 
-                <!-- Table with Data or Filter Results -->
-                <div v-else class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
-                    <div class="p-6 text-gray-900 dark:text-gray-100">
+                <!-- Table with Data -->
+                <div v-else class="bg-white dark:bg-slate-800 overflow-hidden shadow-sm sm:rounded-lg border border-gray-200 dark:border-slate-700 transition-colors">
+                    <div class="p-6 text-slate-900 dark:text-white">
                         <div v-if="availableVouchersCount > 0" class="mb-4 flex justify-end items-center">
                             <div class="text-sm text-gray-600 dark:text-gray-400">
                                 <button

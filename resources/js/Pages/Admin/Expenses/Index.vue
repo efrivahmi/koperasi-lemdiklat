@@ -18,20 +18,20 @@ const formatDate = (date) => new Date(date).toLocaleDateString('id-ID');
     <AuthenticatedLayout>
         <template #mobileTitle>Pengeluaran</template>
         <template #header>
-            <h2 class="font-semibold text-xl text-gray-800 leading-tight">Biaya Operasional</h2>
+            <h2 class="font-semibold text-xl text-white leading-tight">Biaya Operasional</h2>
         </template>
-        <div class="py-6 sm:py-12">
+        <div class="py-6 sm:py-12 bg-gray-100 dark:bg-slate-900 min-h-screen transition-colors duration-200">
             <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
                 <!-- Toolbar Section -->
-                <div class="mb-6 bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-gray-800 dark:to-gray-800 border border-purple-200 dark:border-purple-500/30 rounded-lg shadow-sm p-4">
+                <div class="mb-6 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg shadow-sm p-4 transition-colors">
                     <div class="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
                         <div class="flex items-center gap-2">
                             <svg class="w-5 h-5 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
                             </svg>
-                            <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Catat dan kelola pengeluaran operasional</span>
+                            <span class="text-sm font-medium text-slate-700 dark:text-slate-300">Catat dan kelola pengeluaran operasional</span>
                         </div>
-                        <Link v-if="can('expenses.create')" :href="route('expenses.create')" class="w-full sm:w-auto inline-flex items-center justify-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg shadow-sm transition">
+                        <Link v-if="can('expenses.create')" :href="route('expenses.create')" class="w-full sm:w-auto inline-flex items-center justify-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 text-white font-semibold rounded-lg shadow-sm transition-colors">
                             <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                             </svg>
@@ -50,7 +50,7 @@ const formatDate = (date) => new Date(date).toLocaleDateString('id-ID');
                 />
 
                 <!-- Table with Data -->
-                <div v-else class="bg-white dark:bg-gray-800 shadow-sm sm:rounded-lg p-6 text-gray-900 dark:text-gray-100">
+                <div v-else class="bg-white dark:bg-slate-800 shadow-sm sm:rounded-lg p-6 border border-gray-200 dark:border-slate-700 text-slate-900 dark:text-white transition-colors">
                     <div class="overflow-x-auto">
                         <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                             <thead class="bg-gray-50 dark:bg-gray-800">

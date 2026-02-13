@@ -62,7 +62,7 @@ const formatDateTime = (dateString) => {
             </div>
 
             <!-- Name (truncated on mobile) -->
-            <span class="text-sm font-medium text-white max-w-[100px] truncate">
+            <span class="text-sm font-medium text-slate-900 dark:text-white max-w-[100px] truncate">
                 {{ user.name }}
             </span>
         </div>

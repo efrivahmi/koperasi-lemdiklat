@@ -104,43 +104,53 @@ const printBatchCards = () => {
     <AuthenticatedLayout>
         <template #mobileTitle>Siswa</template>
         <template #header>
-            <h2 class="font-semibold text-xl text-gray-800 leading-tight">Data Siswa</h2>
+            <h2 class="font-semibold text-xl text-white leading-tight">Data Siswa</h2>
         </template>
 
-        <div class="py-6 sm:py-12">
+        <div class="py-6 sm:py-12 bg-gray-100 dark:bg-slate-900 min-h-screen transition-colors duration-200">
             <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
                 <!-- Toolbar Section -->
-                <div class="mb-6 bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-gray-800 dark:to-gray-800 border border-purple-200 dark:border-purple-500/30 rounded-lg shadow-sm p-4">
+                <div class="mb-6 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg shadow-sm p-4 transition-colors">
                     <div class="flex flex-col lg:flex-row gap-4 items-stretch lg:items-center">
                         <!-- Search Bar -->
                         <div class="flex-1">
                             <div class="relative">
                                 <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                    <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <svg class="h-5 w-5 text-gray-400 dark:text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                                     </svg>
                                 </div>
                                 <input
                                     v-model="search"
                                     type="text"
-                                    placeholder="Cari siswa (NISN, nama, email, kelas)..."
-                                    class="block w-full pl-10 pr-3 py-2.5 border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-lg shadow-sm text-sm"
+                                    placeholder="Cari siswa (NIS, NISN, nama, kelas, jurusan, email)..."
+                                    class="block w-full pl-10 pr-3 py-2.5 bg-gray-50 dark:bg-slate-900 border-gray-300 dark:border-slate-700 text-slate-900 dark:text-white focus:border-indigo-500 dark:focus:border-indigo-400 focus:ring-indigo-500 dark:focus:ring-indigo-400 rounded-lg shadow-sm text-sm transition-colors"
                                 />
                             </div>
                         </div>
                         <!-- Action Buttons -->
                         <div class="flex flex-wrap gap-2">
-                            <button
-                                v-if="can('students.view') && selectedStudents.size > 0"
+                             <button 
+                                v-if="can('students.cards') && selectedStudents.size > 0"
                                 @click="printBatchCards"
-                                class="flex-1 sm:flex-initial inline-flex items-center justify-center px-4 py-2.5 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-lg shadow-sm transition"
+                                class="flex-1 sm:flex-initial inline-flex items-center justify-center px-4 py-2.5 bg-teal-600 hover:bg-teal-700 dark:bg-teal-500 dark:hover:bg-teal-600 text-white font-semibold rounded-lg shadow-sm transition-colors"
                             >
                                 <svg class="w-5 h-5 sm:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2" />
                                 </svg>
-                                <span>Cetak {{ selectedStudents.size }} Kartu</span>
+                                <span class="hidden sm:inline">Cetak Kartu ({{ selectedStudents.size }})</span>
+                                <span class="sm:hidden">Cetak ({{ selectedStudents.size }})</span>
                             </button>
-                            <Link v-if="can('students.create')" :href="route('students.create')" class="flex-1 sm:flex-initial inline-flex items-center justify-center px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg shadow-sm transition">
+
+                            <Link v-if="can('students.import')" :href="route('students.import')" class="flex-1 sm:flex-initial inline-flex items-center justify-center px-4 py-2.5 bg-green-600 hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600 text-white font-semibold rounded-lg shadow-sm transition-colors">
+                                <svg class="w-5 h-5 sm:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                                </svg>
+                                <span class="hidden sm:inline">Import Excel</span>
+                                <span class="sm:hidden">Import</span>
+                            </Link>
+
+                            <Link v-if="can('students.create')" :href="route('students.create')" class="flex-1 sm:flex-initial inline-flex items-center justify-center px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 text-white font-semibold rounded-lg shadow-sm transition-colors">
                                 <svg class="w-5 h-5 sm:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                                 </svg>
@@ -155,29 +165,38 @@ const printBatchCards = () => {
                     v-if="students.data.length === 0 && !search"
                     icon="users"
                     title="Belum Ada Siswa"
-                    description="Tambahkan siswa pertama untuk mulai mengelola data siswa koperasi. Siswa yang terdaftar dapat melakukan transaksi menggunakan RFID atau manual."
+                    description="Tambahkan siswa pertama untuk mulai mengelola data anggota koperasi. Siswa yang terdaftar dapat melakukan transaksi menggunakan RFID atau manual."
                     :action-url="route('students.create')"
                     action-text="Tambah Siswa Pertama"
                 />
 
                 <!-- Table with Data or Search Results -->
-                <div v-else class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
-                    <div class="p-6 text-gray-900 dark:text-gray-100">
+                <div v-else class="bg-white dark:bg-slate-800 overflow-hidden shadow-sm sm:rounded-lg border border-gray-200 dark:border-slate-700 transition-colors">
+                    <div class="p-6 text-slate-900 dark:text-white">
+                        <div class="mb-4 flex justify-between items-center">
+                            <div class="flex items-center gap-2">
+                                <input 
+                                    type="checkbox" 
+                                    :checked="selectAll"
+                                    @change="toggleSelectAll = !toggleSelectAll; toggleSelectAll()"
+                                    class="rounded border-gray-300 dark:border-slate-600 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+                                >
+                                <span class="text-sm text-slate-600 dark:text-slate-400">Pilih Semua</span>
+                            </div>
+                            <span class="text-xs text-slate-500 dark:text-slate-400">
+                                Menampilkan {{ students.from }}-{{ students.to }} dari {{ students.total }} siswa
+                            </span>
+                        </div>
+
                         <div class="overflow-x-auto">
-                            <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                                <thead class="bg-gray-50 dark:bg-gray-800">
+                            <table class="min-w-full divide-y divide-gray-200 dark:divide-slate-700">
+                                <thead class="bg-gray-50 dark:bg-slate-700">
                                     <tr>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                                            <input
-                                                v-model="selectAll"
-                                                @change="toggleSelectAll"
-                                                type="checkbox"
-                                                class="w-4 h-4 rounded border-gray-300 text-purple-600 focus:ring-purple-500"
-                                            />
+                                        <th class="px-6 py-3 text-left">
+                                            <span class="sr-only">Select</span>
                                         </th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Foto</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">NISN</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Nama</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-300 uppercase tracking-wider">Foto</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-300 uppercase tracking-wider">NIS</th>
                                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Email</th>
                                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Kelas</th>
                                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Saldo</th>

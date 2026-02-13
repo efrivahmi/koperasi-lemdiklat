@@ -1,6 +1,7 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { Link, usePage, router } from '@inertiajs/vue3';
+import ThemeToggle from '@/Components/ThemeToggle.vue';
 
 const props = defineProps({
     mobileTitle: {
@@ -341,18 +342,21 @@ page.props.isLoading = isLoading;
                         <span class="text-xs font-medium text-purple-200 leading-tight drop-shadow-md">Indonesia</span>
                     </div>
                 </Link>
-                <button
-                    @click="toggleSidebar"
-                    class="p-2 rounded-lg bg-gradient-to-br from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white transition-all duration-300 hover:scale-110 shadow-lg shadow-purple-500/50"
-                    :title="isMobile ? 'Close menu' : (sidebarOpen ? 'Collapse sidebar' : 'Expand sidebar')"
-                >
-                    <svg v-if="!isMobile" class="w-5 h-5 transition-transform duration-300" :class="{ 'rotate-180': !sidebarOpen }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
-                    </svg>
-                    <svg v-else class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                </button>
+                <div class="flex items-center gap-2">
+                    <!-- ThemeToggle removed from here -->
+                    <button
+                        @click="toggleSidebar"
+                        class="p-2 rounded-lg bg-gradient-to-br from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white transition-all duration-300 hover:scale-110 shadow-lg shadow-purple-500/50"
+                        :title="isMobile ? 'Close menu' : (sidebarOpen ? 'Collapse sidebar' : 'Expand sidebar')"
+                    >
+                        <svg v-if="!isMobile" class="w-5 h-5 transition-transform duration-300" :class="{ 'rotate-180': !sidebarOpen }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
+                        </svg>
+                        <svg v-else class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
             </div>
 
             <!-- User Info -->
@@ -377,6 +381,7 @@ page.props.isLoading = isLoading;
                         {{ userRoleLabel }}
                     </span>
                 </div>
+                <!-- ... closed in next block ... -->
                 <div v-else class="flex justify-center">
                     <div class="relative">
                         <div v-if="user.photo" class="w-10 h-10 rounded-full overflow-hidden shadow-md border-2 border-purple-400">
@@ -473,22 +478,30 @@ page.props.isLoading = isLoading;
                         </h1>
                     </div>
                 </div>
-                <button
-                    @click="toggleSidebar"
-                    class="p-2 rounded-lg bg-gradient-to-br from-purple-600 to-pink-600 text-white shadow-lg shadow-purple-500/50 flex-shrink-0 ml-2"
-                    title="Open menu"
-                >
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
-                    </svg>
-                </button>
+                <div class="flex items-center gap-2">
+                    <ThemeToggle />
+                    <button
+                        @click="toggleSidebar"
+                        class="p-2 rounded-lg bg-gradient-to-br from-purple-600 to-pink-600 text-white shadow-lg shadow-purple-500/50 flex-shrink-0"
+                        title="Open menu"
+                    >
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                        </svg>
+                    </button>
+                </div>
             </div>
         </div>
 
         <!-- Header -->
         <header v-if="$slots.header" class="sticky top-0 z-20 bg-gradient-to-r from-purple-900/95 via-indigo-900/95 to-blue-900/95 border-b border-purple-500/30 shadow-lg shadow-purple-500/10 backdrop-blur-md hidden lg:block">
-            <div class="px-4 lg:px-8 py-6 text-white">
-                <slot name="header" />
+            <div class="px-4 lg:px-8 py-6 text-white flex justify-between items-center">
+                <div>
+                   <slot name="header" />
+                </div>
+                 <div class="flex items-center gap-3">
+                    <ThemeToggle />
+                </div>
             </div>
         </header>
 

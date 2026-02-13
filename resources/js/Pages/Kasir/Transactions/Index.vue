@@ -160,7 +160,7 @@ const summary = computed(() => {
         <template #mobileTitle>Transaksi</template>
         <template #header>
             <div class="flex justify-between items-center">
-                <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
+                <h2 class="font-semibold text-xl text-white leading-tight">
                     Riwayat Transaksi Siswa
                 </h2>
                 <Link
@@ -176,7 +176,7 @@ const summary = computed(() => {
             </div>
         </template>
 
-        <div class="py-12">
+        <div class="py-12 bg-gray-100 dark:bg-slate-900 min-h-screen transition-colors duration-200">
             <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
                 <!-- Statistics Cards -->
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
@@ -217,14 +217,12 @@ const summary = computed(() => {
                     </div>
                 </div>
 
-                <!-- Check if any filter is active -->
-                <template v-if="searchForm.search || searchForm.type || searchForm.transaction_method || searchForm.date_from || searchForm.date_to || transactions.data.length > 0">
                 <!-- Summary Cards -->
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg p-6">
+                <div v-if="transactions.data.length > 0 || searchForm.search || searchForm.type || searchForm.transaction_method || searchForm.date_from || searchForm.date_to" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="bg-white dark:bg-slate-800 overflow-hidden shadow-sm sm:rounded-lg p-6 border border-gray-100 dark:border-slate-700 transition-colors">
                         <div class="flex items-center justify-between">
                             <div>
-                                <p class="text-sm text-gray-600 dark:text-gray-400">Total Masuk (Credit)</p>
+                                <p class="text-sm text-slate-600 dark:text-slate-400">Total Masuk (Credit)</p>
                                 <p class="text-2xl font-bold text-green-600 dark:text-green-400">
                                     {{ formatCurrency(summary.totalCredit) }}
                                 </p>
@@ -233,10 +231,10 @@ const summary = computed(() => {
                         </div>
                     </div>
 
-                    <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg p-6">
+                    <div class="bg-white dark:bg-slate-800 overflow-hidden shadow-sm sm:rounded-lg p-6 border border-gray-100 dark:border-slate-700 transition-colors">
                         <div class="flex items-center justify-between">
                             <div>
-                                <p class="text-sm text-gray-600 dark:text-gray-400">Total Keluar (Debit)</p>
+                                <p class="text-sm text-slate-600 dark:text-slate-400">Total Keluar (Debit)</p>
                                 <p class="text-2xl font-bold text-red-600 dark:text-red-400">
                                     {{ formatCurrency(summary.totalDebit) }}
                                 </p>
@@ -245,10 +243,10 @@ const summary = computed(() => {
                         </div>
                     </div>
 
-                    <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg p-6">
+                    <div class="bg-white dark:bg-slate-800 overflow-hidden shadow-sm sm:rounded-lg p-6 border border-gray-100 dark:border-slate-700 transition-colors">
                         <div class="flex items-center justify-between">
                             <div>
-                                <p class="text-sm text-gray-600 dark:text-gray-400">Net Flow (Halaman Ini)</p>
+                                <p class="text-sm text-slate-600 dark:text-slate-400">Net Flow (Halaman Ini)</p>
                                 <p class="text-2xl font-bold" :class="summary.netFlow >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'">
                                     {{ formatCurrency(summary.netFlow) }}
                                 </p>
@@ -259,13 +257,13 @@ const summary = computed(() => {
                 </div>
 
                 <!-- Filters -->
-                <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
+                <div class="bg-white dark:bg-slate-800 overflow-hidden shadow-sm sm:rounded-lg border border-gray-200 dark:border-slate-700 transition-colors">
                     <div class="p-6">
-                        <h3 class="font-semibold text-lg mb-4 text-gray-900 dark:text-gray-100">Filter & Pencarian</h3>
+                        <h3 class="font-semibold text-lg mb-4 text-slate-900 dark:text-white">Filter & Pencarian</h3>
                         <form @submit.prevent="search" class="grid grid-cols-1 md:grid-cols-5 gap-4">
                             <!-- Search -->
                             <div>
-                                <label for="transaction-search" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                <label for="transaction-search" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                                     Cari Siswa
                                 </label>
                                 <input
@@ -274,21 +272,21 @@ const summary = computed(() => {
                                     type="text"
                                     v-model="searchForm.search"
                                     placeholder="Nama atau NIS siswa..."
-                                    class="w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm"
+                                    class="w-full bg-gray-50 dark:bg-slate-900 border-gray-300 dark:border-slate-700 text-slate-900 dark:text-white focus:border-indigo-500 dark:focus:border-indigo-400 focus:ring-indigo-500 dark:focus:ring-indigo-400 rounded-md shadow-sm transition-colors"
                                     aria-label="Cari siswa berdasarkan nama atau NIS"
                                 />
                             </div>
 
                             <!-- Type Filter -->
                             <div>
-                                <label for="transaction-type" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                <label for="transaction-type" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                                     Tipe Transaksi
                                 </label>
                                 <select
                                     id="transaction-type"
                                     name="type"
                                     v-model="searchForm.type"
-                                    class="w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm"
+                                    class="w-full bg-gray-50 dark:bg-slate-900 border-gray-300 dark:border-slate-700 text-slate-900 dark:text-white focus:border-indigo-500 dark:focus:border-indigo-400 focus:ring-indigo-500 dark:focus:ring-indigo-400 rounded-md shadow-sm transition-colors"
                                     aria-label="Filter berdasarkan tipe transaksi"
                                 >
                                     <option value="">Semua Tipe</option>
@@ -302,14 +300,14 @@ const summary = computed(() => {
 
                             <!-- Transaction Method Filter -->
                             <div>
-                                <label for="transaction-method" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                <label for="transaction-method" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                                     Metode Transaksi
                                 </label>
                                 <select
                                     id="transaction-method"
                                     name="transaction_method"
                                     v-model="searchForm.transaction_method"
-                                    class="w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm"
+                                    class="w-full bg-gray-50 dark:bg-slate-900 border-gray-300 dark:border-slate-700 text-slate-900 dark:text-white focus:border-indigo-500 dark:focus:border-indigo-400 focus:ring-indigo-500 dark:focus:ring-indigo-400 rounded-md shadow-sm transition-colors"
                                     aria-label="Filter berdasarkan metode transaksi"
                                 >
                                     <option value="">Semua Metode</option>
@@ -323,7 +321,7 @@ const summary = computed(() => {
 
                             <!-- Date From -->
                             <div>
-                                <label for="transaction-date-from" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                <label for="transaction-date-from" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                                     Dari Tanggal
                                 </label>
                                 <input
@@ -331,14 +329,14 @@ const summary = computed(() => {
                                     name="date_from"
                                     type="date"
                                     v-model="searchForm.date_from"
-                                    class="w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm"
+                                    class="w-full bg-gray-50 dark:bg-slate-900 border-gray-300 dark:border-slate-700 text-slate-900 dark:text-white focus:border-indigo-500 dark:focus:border-indigo-400 focus:ring-indigo-500 dark:focus:ring-indigo-400 rounded-md shadow-sm transition-colors"
                                     aria-label="Filter dari tanggal"
                                 />
                             </div>
 
                             <!-- Date To -->
                             <div>
-                                <label for="transaction-date-to" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                <label for="transaction-date-to" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                                     Sampai Tanggal
                                 </label>
                                 <input
@@ -346,7 +344,7 @@ const summary = computed(() => {
                                     name="date_to"
                                     type="date"
                                     v-model="searchForm.date_to"
-                                    class="w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm"
+                                    class="w-full bg-gray-50 dark:bg-slate-900 border-gray-300 dark:border-slate-700 text-slate-900 dark:text-white focus:border-indigo-500 dark:focus:border-indigo-400 focus:ring-indigo-500 dark:focus:ring-indigo-400 rounded-md shadow-sm transition-colors"
                                     aria-label="Filter sampai tanggal"
                                 />
                             </div>
@@ -355,14 +353,14 @@ const summary = computed(() => {
                             <div class="md:col-span-4 flex gap-2">
                                 <button
                                     type="submit"
-                                    class="inline-flex items-center px-4 py-2 bg-indigo-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-700 focus:bg-indigo-700 active:bg-indigo-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150"
+                                    class="inline-flex items-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 focus:ring-offset-2 transition ease-in-out duration-150"
                                 >
                                     🔍 Cari
                                 </button>
                                 <button
                                     type="button"
                                     @click="resetFilters"
-                                    class="inline-flex items-center px-4 py-2 bg-gray-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700 focus:bg-gray-700 active:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition ease-in-out duration-150"
+                                    class="inline-flex items-center px-4 py-2 bg-slate-600 hover:bg-slate-700 dark:bg-slate-700 dark:hover:bg-slate-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest focus:outline-none focus:ring-2 focus:ring-slate-500 dark:focus:ring-slate-400 focus:ring-offset-2 transition ease-in-out duration-150"
                                 >
                                     ↺ Reset
                                 </button>
@@ -372,48 +370,48 @@ const summary = computed(() => {
                 </div>
 
                 <!-- Transactions Table -->
-                <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
-                    <div class="p-6 text-gray-900 dark:text-gray-100">
+                <div class="bg-white dark:bg-slate-800 overflow-hidden shadow-sm sm:rounded-lg border border-gray-200 dark:border-slate-700 transition-colors">
+                    <div class="p-6 text-slate-900 dark:text-white">
                         <div class="overflow-x-auto">
-                            <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                                <thead class="bg-gray-50 dark:bg-gray-700">
+                            <table class="min-w-full divide-y divide-gray-200 dark:divide-slate-700">
+                                <thead class="bg-gray-50 dark:bg-slate-700">
                                     <tr>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-300 uppercase tracking-wider">
                                             Tanggal
                                         </th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-300 uppercase tracking-wider">
                                             Siswa
                                         </th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-300 uppercase tracking-wider">
                                             Tipe
                                         </th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-300 uppercase tracking-wider">
                                             Metode
                                         </th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-300 uppercase tracking-wider">
                                             Referensi
                                         </th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-300 uppercase tracking-wider">
                                             Deskripsi
                                         </th>
-                                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                        <th class="px-6 py-3 text-right text-xs font-medium text-slate-500 dark:text-slate-300 uppercase tracking-wider">
                                             Nominal
                                         </th>
-                                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                        <th class="px-6 py-3 text-right text-xs font-medium text-slate-500 dark:text-slate-300 uppercase tracking-wider">
                                             Saldo Akhir
                                         </th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-900 dark:text-gray-100 uppercase tracking-wider">
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-300 uppercase tracking-wider">
                                             Dibuat
                                         </th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-900 dark:text-gray-100 uppercase tracking-wider">
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-300 uppercase tracking-wider">
                                             Diubah
                                         </th>
                                     </tr>
                                 </thead>
-                                <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                                    <tr v-for="transaction in transactions.data" :key="transaction.id" class="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition">
+                                <tbody class="bg-white dark:bg-slate-800 divide-y divide-gray-200 dark:divide-slate-700">
+                                    <tr v-for="transaction in transactions.data" :key="transaction.id" class="hover:bg-gray-50 dark:hover:bg-slate-700/50 transition">
                                         <!-- Date -->
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-900 dark:text-white">
                                             <div>
                                                 {{ new Date(transaction.created_at).toLocaleDateString('id-ID', {
                                                     day: '2-digit',
@@ -421,7 +419,7 @@ const summary = computed(() => {
                                                     year: 'numeric'
                                                 }) }}
                                             </div>
-                                            <div class="text-xs text-gray-500 dark:text-gray-400">
+                                            <div class="text-xs text-slate-500 dark:text-slate-400">
                                                 {{ new Date(transaction.created_at).toLocaleTimeString('id-ID', {
                                                     hour: '2-digit',
                                                     minute: '2-digit'
@@ -433,10 +431,10 @@ const summary = computed(() => {
                                         <td class="px-6 py-4 whitespace-nowrap">
                                             <div class="flex items-center">
                                                 <div>
-                                                    <div class="text-sm font-medium text-gray-900 dark:text-gray-100">
+                                                    <div class="text-sm font-medium text-slate-900 dark:text-white">
                                                         {{ transaction.student.user.name }}
                                                     </div>
-                                                    <div class="text-xs text-gray-500 dark:text-gray-400">
+                                                    <div class="text-xs text-slate-500 dark:text-slate-400">
                                                         NIS: {{ transaction.student.nis }}
                                                     </div>
                                                 </div>
@@ -464,7 +462,7 @@ const summary = computed(() => {
                                         </td>
 
                                         <!-- Reference -->
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-900 dark:text-white">
                                             <div class="flex items-center gap-1">
                                                 <span>{{ getReferenceIcon(transaction.reference_type) }}</span>
                                                 <span>{{ getReferenceText(transaction.reference_type) }}</span>
@@ -472,7 +470,7 @@ const summary = computed(() => {
                                         </td>
 
                                         <!-- Description -->
-                                        <td class="px-6 py-4 text-sm text-gray-900 dark:text-gray-100">
+                                        <td class="px-6 py-4 text-sm text-slate-900 dark:text-white">
                                             <div class="max-w-xs truncate" :title="transaction.description">
                                                 {{ transaction.description }}
                                             </div>
@@ -487,32 +485,32 @@ const summary = computed(() => {
 
                                         <!-- Ending Balance -->
                                         <td class="px-6 py-4 whitespace-nowrap text-right">
-                                            <div class="text-sm font-bold text-gray-900 dark:text-gray-100">
+                                            <div class="text-sm font-bold text-slate-900 dark:text-white">
                                                 {{ formatCurrency(transaction.ending_balance) }}
                                             </div>
                                         </td>
 
                                         <!-- Audit Info: Created -->
-                                        <td class="px-6 py-4 whitespace-nowrap text-xs text-gray-500 dark:text-gray-400">
+                                        <td class="px-6 py-4 whitespace-nowrap text-xs text-slate-500 dark:text-slate-400">
                                             <AuditInfo :user="transaction.creator" :timestamp="transaction.created_at" label="Dibuat" />
                                         </td>
 
                                         <!-- Audit Info: Updated -->
-                                        <td class="px-6 py-4 whitespace-nowrap text-xs text-gray-500 dark:text-gray-400">
+                                        <td class="px-6 py-4 whitespace-nowrap text-xs text-slate-500 dark:text-slate-400">
                                             <AuditInfo :user="transaction.updater" :timestamp="transaction.updated_at" label="Diubah" />
                                         </td>
                                     </tr>
                                     <tr v-if="transactions.data.length === 0 && (searchForm.search || searchForm.type || searchForm.transaction_method || searchForm.date_from || searchForm.date_to)">
                                         <td colspan="10" class="px-6 py-12 text-center">
-                                            <div class="text-gray-400 dark:text-gray-500">
-                                                <svg class="mx-auto h-12 w-12 text-gray-300 dark:text-gray-600 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <div class="text-slate-400 dark:text-slate-500">
+                                                <svg class="mx-auto h-12 w-12 text-slate-300 dark:text-slate-600 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                                                 </svg>
-                                                <h3 class="text-sm font-medium text-gray-900 dark:text-gray-100 mb-1">Tidak ada hasil pencarian</h3>
-                                                <p class="text-sm text-gray-500 dark:text-gray-400">Tidak ditemukan transaksi dengan filter yang dipilih.</p>
+                                                <h3 class="text-sm font-medium text-slate-900 dark:text-white mb-1">Tidak ada hasil pencarian</h3>
+                                                <p class="text-sm text-slate-500 dark:text-slate-400">Tidak ditemukan transaksi dengan filter yang dipilih.</p>
                                                 <button
                                                     @click="resetFilters"
-                                                    class="mt-4 inline-flex items-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-md transition-colors"
+                                                    class="mt-4 inline-flex items-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 text-white text-sm font-medium rounded-md transition-colors"
                                                 >
                                                     ↺ Reset Filter
                                                 </button>
@@ -525,7 +523,7 @@ const summary = computed(() => {
 
                         <!-- Pagination -->
                         <div v-if="transactions.data.length > 0" class="mt-6 flex justify-between items-center">
-                            <div class="text-sm text-gray-600 dark:text-gray-400">
+                            <div class="text-sm text-slate-600 dark:text-slate-400">
                                 Menampilkan {{ transactions.from }} - {{ transactions.to }} dari {{ transactions.total }} transaksi
                             </div>
                             <div class="flex gap-2">
@@ -537,7 +535,7 @@ const summary = computed(() => {
                                             'px-3 py-2 text-sm rounded-md',
                                             link.active
                                                 ? 'bg-indigo-600 text-white'
-                                                : 'bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600'
+                                                : 'bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-600 border border-gray-300 dark:border-slate-600'
                                         ]"
                                         v-html="link.label"
                                         :preserve-scroll="true"
@@ -546,7 +544,7 @@ const summary = computed(() => {
                                         v-else
                                         :class="[
                                             'px-3 py-2 text-sm rounded-md',
-                                            'bg-white dark:bg-gray-700 text-gray-400 dark:text-gray-500 opacity-50 cursor-not-allowed'
+                                            'bg-white dark:bg-slate-700 text-slate-400 dark:text-slate-500 opacity-50 cursor-not-allowed border border-gray-300 dark:border-slate-600'
                                         ]"
                                         v-html="link.label"
                                     />
@@ -555,11 +553,10 @@ const summary = computed(() => {
                         </div>
                     </div>
                 </div>
-                </template>
 
                 <!-- Empty State - No transactions and no filters -->
                 <EmptyState
-                    v-else
+                    v-if="transactions.data.length === 0 && !(searchForm.search || searchForm.type || searchForm.transaction_method || searchForm.date_from || searchForm.date_to)"
                     icon="cash"
                     title="Belum Ada Transaksi"
                     description="Transaksi akan tercatat otomatis saat siswa melakukan top-up atau pembelian."

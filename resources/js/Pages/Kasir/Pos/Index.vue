@@ -58,35 +58,47 @@ const changeAmount = computed(() => {
     return 0;
 });
 
+const formatCurrency = (value) => {
+    return new Intl.NumberFormat('id-ID', {
+        style: 'currency',
+        currency: 'IDR',
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0
+    }).format(value);
+};
+
 // Methods
 const loadProducts = async () => {
+    loading.value = true;
     try {
-        const response = await axios.get('/kasir/api/products');
+        const response = await axios.get(route('kasir.pos.api.products'));
         products.value = response.data.products;
     } catch (error) {
         showNotification('Gagal memuat produk. Silakan refresh halaman.', 'error');
         console.error('Load products error:', error);
+    } finally {
+        loading.value = false;
     }
 };
 
 const addToCart = (product) => {
-    const existingItem = cart.value.find(item => item.product_id === product.id);
-
-    if (existingItem) {
-        if (existingItem.quantity < product.stock) {
-            existingItem.quantity++;
+    const existing = cart.value.find(item => item.id === product.id);
+    if (existing) {
+        if (existing.quantity < product.stock) {
+            existing.quantity++;
         } else {
-            showNotification(`Stok ${product.name} tidak mencukupi`, 'error');
+            showNotification(`Stok tidak cukup for ${product.name}`, 'error');
         }
     } else {
-        cart.value.push({
-            product_id: product.id,
-            name: product.name,
-            price: product.harga_jual,
-            quantity: 1,
-            stock: product.stock,
-            image_path: product.image_path,
-        });
+        if (product.stock > 0) {
+            cart.value.push({
+                ...product,
+                price: parseFloat(product.harga_jual),
+                quantity: 1
+            });
+        } else {
+            showNotification(`Stok habis for ${product.name}`, 'error');
+        }
     }
 };
 
@@ -94,79 +106,78 @@ const removeFromCart = (index) => {
     cart.value.splice(index, 1);
 };
 
-const updateQuantity = (index, newQuantity) => {
+const updateQuantity = (index, quantity) => {
     const item = cart.value[index];
-    if (newQuantity > 0 && newQuantity <= item.stock) {
-        item.quantity = newQuantity;
-    } else if (newQuantity > item.stock) {
-        showNotification('Jumlah melebihi stok tersedia', 'error');
+    if (quantity < 1) return;
+    if (quantity > item.stock) {
+        showNotification(`Stok hanya tersedia ${item.stock}`, 'error');
+        return;
     }
+    item.quantity = quantity;
 };
 
 const clearCart = () => {
-    if (confirm('Hapus semua item dari keranjang?')) {
-        cart.value = [];
-        selectedStudent.value = null;
-        paymentMethod.value = 'cash';
-        cashAmount.value = 0;
-    }
+    cart.value = [];
+    selectedStudent.value = null;
+    paymentMethod.value = 'cash';
+    cashAmount.value = 0;
 };
 
-const handleBarcodeInput = async () => {
-    if (!barcodeInput.value) return;
-
-    try {
-        const response = await axios.get(`/kasir/api/products/barcode/${barcodeInput.value}`);
-        if (response.data.success) {
-            addToCart(response.data.product);
-            showNotification(`${response.data.product.name} ditambahkan ke keranjang`, 'success');
-        }
-    } catch (error) {
-        showNotification(error.response?.data?.message || 'Produk tidak ditemukan', 'error');
-    } finally {
-        barcodeInput.value = '';
-    }
+const switchMode = (mode) => {
+    posMode.value = mode;
+    setTimeout(() => {
+        const input = document.getElementById('hidden-scanner-input');
+        if (input) input.focus();
+    }, 100);
 };
 
-const handleRfidInput = async () => {
-    if (!rfidInput.value) return;
-
-    try {
-        const response = await axios.get(`/kasir/api/students/rfid/${rfidInput.value}`);
-        if (response.data.success) {
-            selectedStudent.value = response.data.student;
-            paymentMethod.value = 'balance';
-            showNotification(`Siswa: ${response.data.student.user.name} - Saldo: Rp ${formatCurrency(response.data.student.balance)}`, 'success');
-        }
-    } catch (error) {
-        showNotification(error.response?.data?.message || 'Kartu RFID tidak terdaftar', 'error');
-    } finally {
-        rfidInput.value = '';
+const getModeInstructions = () => {
+    switch (posMode.value) {
+        case 'rfid':
+            return {
+                title: 'RFID Scanner Mode',
+                color: 'from-blue-500 to-indigo-600',
+                steps: [
+                    { icon: '💳', text: 'Pastikan kursor aktif di input scanner (otomatis).' },
+                    { icon: '📡', text: 'Tap kartu RFID pada reader.' },
+                    { icon: '✅', text: 'Siswa akan otomatis terdeteksi.' }
+                ]
+            };
+        case 'barcode':
+            return {
+                title: 'Barcode Scanner Mode',
+                color: 'from-purple-500 to-pink-600',
+                steps: [
+                    { icon: '🔫', text: 'Arahkan scanner ke barcode produk.' },
+                    { icon: '📦', text: 'Produk akan otomatis masuk keranjang.' },
+                    { icon: '⌨️', text: 'Gunakan keyboard untuk ubah jumlah.' }
+                ]
+            };
+        default:
+            return {
+                title: 'Manual Entry Mode',
+                color: 'from-green-500 to-emerald-600',
+                steps: [
+                    { icon: '🔍', text: 'Cari produk menggunakan kolom pencarian.' },
+                    { icon: '👆', text: 'Klik produk untuk menambah ke keranjang.' },
+                    { icon: '👤', text: 'Pilih siswa secara manual jika perlu.' }
+                ]
+            };
     }
-};
-
-const openStudentSearch = () => {
-    showStudentModal.value = true;
-    studentSearchQuery.value = '';
-    studentSearchResults.value = [];
 };
 
 const searchStudents = () => {
-    // Clear previous timeout
-    if (searchDebounceTimer.value) {
-        clearTimeout(searchDebounceTimer.value);
-    }
-
-    if (!studentSearchQuery.value || studentSearchQuery.value.length < 2) {
+    if (searchDebounceTimer.value) clearTimeout(searchDebounceTimer.value);
+    
+    if (studentSearchQuery.value.length < 2) {
         studentSearchResults.value = [];
         return;
     }
 
-    // Set new timeout for debounced search
     searchDebounceTimer.value = setTimeout(async () => {
         searchingStudent.value = true;
         try {
-            const response = await axios.get('/kasir/api/students/search', {
+            const response = await axios.get(route('kasir.pos.api.search'), {
                 params: { q: studentSearchQuery.value }
             });
             studentSearchResults.value = response.data.students || [];
@@ -175,81 +186,61 @@ const searchStudents = () => {
         } finally {
             searchingStudent.value = false;
         }
-    }, 300); // 300ms debounce delay
+    }, 300);
 };
 
 const selectStudent = (student) => {
     selectedStudent.value = student;
-    paymentMethod.value = 'balance';
     showStudentModal.value = false;
-    showNotification(`Siswa: ${student.user.name} - Saldo: Rp ${formatCurrency(student.balance)}`, 'success');
+    studentSearchQuery.value = '';
+    studentSearchResults.value = [];
+    showNotification(`Siswa dipilih: ${student.user.name}`, 'success');
+};
+
+const openStudentSearch = () => {
+    showStudentModal.value = true;
+    setTimeout(() => {
+        const input = document.querySelector('input[placeholder*="Cari siswa"]');
+        if (input) input.focus();
+    }, 100);
 };
 
 const openCheckout = () => {
-    if (cart.value.length === 0) {
-        showNotification('Keranjang masih kosong', 'error');
-        return;
-    }
     showCheckoutModal.value = true;
 };
 
 const processCheckout = async () => {
-    // Validasi client-side
-    if (cart.value.length === 0) {
-        showNotification('Keranjang masih kosong', 'error');
-        return;
-    }
-
-    if (paymentMethod.value === 'cash' && cashAmount.value < cartTotal.value) {
-        showNotification('Jumlah uang tunai tidak mencukupi', 'error');
-        return;
-    }
-
-    if (paymentMethod.value === 'balance' && !selectedStudent.value) {
-        showNotification('Silakan scan kartu RFID siswa atau pilih siswa manual terlebih dahulu', 'error');
-        return;
-    }
-
-    if (paymentMethod.value === 'balance' && selectedStudent.value.balance < cartTotal.value) {
-        showNotification('Saldo siswa tidak mencukupi', 'error');
-        return;
-    }
-
+    if (cart.value.length === 0) return;
+    
     loading.value = true;
-
     try {
-        const response = await axios.post('/kasir/api/checkout', {
-            items: cart.value,
+        const payload = {
+            items: cart.value.map(item => ({
+                product_id: item.id,
+                quantity: item.quantity,
+                price: item.price
+            })),
             payment_method: paymentMethod.value,
-            student_id: paymentMethod.value === 'balance' ? selectedStudent.value.id : null,
             cash_amount: paymentMethod.value === 'cash' ? cashAmount.value : null,
-        });
+        };
+
+        if (paymentMethod.value === 'balance') {
+            payload.buyer_type = 'student';
+            payload.buyer_id = selectedStudent.value?.id;
+            payload.student_id = selectedStudent.value?.id;
+        }
+
+        const response = await axios.post(route('kasir.pos.api.checkout'), payload);
 
         if (response.data.success) {
-            showNotification('Transaksi berhasil diproses!', 'success');
-
-            // Reset state
-            cart.value = [];
-            selectedStudent.value = null;
-            paymentMethod.value = 'cash';
-            cashAmount.value = 0;
+            showNotification('Transaksi berhasil!', 'success');
+            clearCart();
             showCheckoutModal.value = false;
-
-            // Reload products to update stock
-            await loadProducts();
-
-            // Optional: Auto-open receipt in new tab
-            if (response.data.receipt_url) {
-                const shouldPrint = confirm('Transaksi berhasil! Cetak struk sekarang?');
-                if (shouldPrint) {
-                    window.open(response.data.receipt_url, '_blank');
-                }
-            }
+            loadRecentSales();
+            loadProducts(); // Refresh stock
         }
     } catch (error) {
-        const errorMessage = error.response?.data?.message || 'Transaksi gagal. Silakan coba lagi.';
-        showNotification(errorMessage, 'error');
-        console.error('Checkout error:', error);
+        showNotification(error.response?.data?.message || 'Gagal memproses transaksi', 'error');
     } finally {
         loading.value = false;
     }
@@ -257,44 +248,74 @@ const processCheckout = async () => {
 
 const loadRecentSales = async () => {
     try {
-        const response = await axios.get('/kasir/api/recent-sales');
+        const response = await axios.get(route('kasir.pos.api.recent-sales'));
         recentSales.value = response.data.sales || [];
     } catch (error) {
         console.error('Gagal memuat transaksi terbaru:', error);
     }
 };
 
-const toggleRecentSales = () => {
-    showRecentSales.value = !showRecentSales.value;
-    if (showRecentSales.value) {
-        loadRecentSales();
-    }
-};
-
 const voidTransaction = async (sale) => {
-    const confirmMessage = `Batalkan transaksi #${sale.id}?\n\n` +
-        `Total: Rp ${formatCurrency(sale.total)}\n` +
-        `Pembayaran: ${sale.payment_method === 'cash' ? 'Tunai' : 'Saldo'}\n` +
-        (sale.student ? `Siswa: ${sale.student.user.name}\n` : '') +
-        `\nStok akan dikembalikan dan ${sale.payment_method === 'balance' ? 'saldo siswa akan dikembalikan' : 'transaksi akan dibatalkan'}.`;
+    if (!confirm(`Batalkan transaksi #${sale.id}? Stok akan dikembalikan.`)) return;
 
-    if (!confirm(confirmMessage)) {
-        return;
-    }
-
+    loading.value = true;
     try {
-        loading.value = true;
-        const response = await axios.post(`/kasir/api/void/${sale.id}`);
+        const response = await axios.post(route('kasir.pos.api.void', sale.id));
 
         if (response.data.success) {
             showNotification('Transaksi berhasil dibatalkan', 'success');
-            loadRecentSales(); // Reload list
-            loadProducts(); // Refresh stock
+            loadRecentSales(); 
+            loadProducts(); 
         }
     } catch (error) {
         showNotification(error.response?.data?.message || 'Gagal membatalkan transaksi', 'error');
     } finally {
         loading.value = false;
+    }
+};
+
+const handleScannerInput = async () => {
+    if (!barcodeInput.value) return;
+    
+    // Determine if it's likely a barcode or RFID based on length/format if possible, 
+    // or just use current mode.
+    // Here we use current mode.
+    
+    const input = barcodeInput.value;
+    barcodeInput.value = ''; // Clear immediately
+
+    if (posMode.value === 'rfid') {
+        await handleRfidScan(input);
+    } else {
+        await handleBarcodeScan(input);
+    }
+    
+    // Refocus
+    document.getElementById('hidden-scanner-input')?.focus();
+};
+
+const handleBarcodeScan = async (code) => {
+    try {
+        const response = await axios.get(route('kasir.pos.api.barcode', code));
+        if (response.data.success) {
+            addToCart(response.data.product);
+            showNotification(`${response.data.product.name} ditambahkan`, 'success');
+        }
+    } catch (error) {
+        showNotification(error.response?.data?.message || 'Produk tidak ditemukan', 'error');
+    }
+};
+
+const handleRfidScan = async (uid) => {
+    try {
+        const response = await axios.get(route('kasir.pos.api.rfid', uid));
+        if (response.data.success) {
+            selectedStudent.value = response.data.student;
+            paymentMethod.value = 'balance';
+            showNotification(`Siswa: ${response.data.student.user.name}`, 'success');
+        }
+    } catch (error) {
+        showNotification(error.response?.data?.message || 'Kartu RFID tidak terdaftar', 'error');
     }
 };
 
@@ -305,131 +326,32 @@ const showNotification = (message, type = 'success') => {
     }, 3000);
 };
 
-const formatCurrency = (value) => {
-    return new Intl.NumberFormat('id-ID', {
-        minimumFractionDigits: 0,
-        maximumFractionDigits: 0
-    }).format(value);
+const toggleRecentSales = () => {
+    showRecentSales.value = !showRecentSales.value;
+    if (showRecentSales.value) {
+        loadRecentSales();
+    }
 };
 
-// POS Mode Methods
-const switchMode = (mode) => {
-    posMode.value = mode;
-    showInstructions.value = true;
-
-    // Reset inputs when switching modes
-    barcodeInput.value = '';
-    rfidInput.value = '';
-
-    // Auto-focus appropriate input based on mode
-    setTimeout(() => {
-        if (mode === 'barcode' || mode === 'rfid') {
-            const hiddenInput = document.getElementById('hidden-scanner-input');
-            if (hiddenInput) {
-                hiddenInput.focus();
-            }
-        }
-    }, 100);
-};
-
-const getModeInstructions = () => {
-    const instructions = {
-        manual: {
-            title: '📝 Mode Entry Manual',
-            color: 'from-green-500 to-emerald-600',
-            steps: [
-                { icon: '👆', text: 'Klik produk dari katalog untuk menambahkan ke keranjang' },
-                { icon: '🔍', text: 'Gunakan pencarian atau filter kategori untuk menemukan produk' },
-                { icon: '👨‍🎓', text: 'Klik tombol "Pilih Siswa Manual" jika pembayaran dengan saldo' },
-                { icon: '💳', text: 'Klik tombol "Bayar" dan pilih metode pembayaran (Tunai/Saldo)' },
-            ]
-        },
-        rfid: {
-            title: '📡 Mode RFID Scanner',
-            color: 'from-blue-500 to-indigo-600',
-            steps: [
-                { icon: '🎴', text: 'Tempelkan kartu RFID siswa pada reader untuk memilih siswa' },
-                { icon: '📦', text: 'Scan barcode produk dengan scanner atau klik manual dari katalog' },
-                { icon: '✅', text: 'Sistem otomatis set pembayaran ke Saldo siswa' },
-                { icon: '💰', text: 'Klik "Bayar" untuk menyelesaikan transaksi' },
-            ]
-        },
-        barcode: {
-            title: '🔲 Mode Barcode Scanner',
-            color: 'from-purple-500 to-pink-600',
-            steps: [
-                { icon: '📷', text: 'Scan barcode produk dengan scanner untuk menambah ke keranjang' },
-                { icon: '🎯', text: 'Scanner akan otomatis mendeteksi dan menambahkan produk' },
-                { icon: '👤', text: 'Pilih siswa manual atau scan kartu RFID untuk pembayaran saldo' },
-                { icon: '💵', text: 'Klik "Bayar" dan pilih metode pembayaran sesuai kebutuhan' },
-            ]
-        }
-    };
-    return instructions[posMode.value];
-};
-
-// Input Focus Handler (untuk barcode & RFID scanner)
 const handleGlobalKeydown = (e) => {
-    // Only auto-focus in scanner modes
-    if (posMode.value === 'manual') return;
-
-    // Jika user sedang mengetik di input field lain, skip
-    if (e.target.tagName === 'INPUT' && e.target.id !== 'hidden-scanner-input') {
-        return;
+    // Shortcuts
+    if (e.ctrlKey && e.key === 'b') {
+        e.preventDefault();
+        openCheckout();
     }
-
-    // Jika bukan Enter key, focus ke hidden input
-    if (e.key !== 'Enter') {
-        const hiddenInput = document.getElementById('hidden-scanner-input');
-        if (hiddenInput) {
-            hiddenInput.focus();
-        }
-    }
-};
-
-const handleScannerInput = async () => {
-    const input = barcodeInput.value.trim();
-    if (!input) return;
-
-    if (posMode.value === 'rfid') {
-        // RFID mode - treat input as RFID UID
-        await handleRfidScan(input);
-    } else {
-        // Barcode mode - treat input as product barcode
-        await handleBarcodeScan(input);
-    }
-
-    barcodeInput.value = '';
-};
-
-const handleBarcodeScan = async (code) => {
-    try {
-        const response = await axios.get(`/kasir/api/products/barcode/${code}`);
-        if (response.data.success) {
-            addToCart(response.data.product);
-            showNotification(`${response.data.product.name} ditambahkan ke keranjang`, 'success');
-        }
-    } catch (error) {
-        showNotification(error.response?.data?.message || 'Produk tidak ditemukan', 'error');
-    }
-};
-
-const handleRfidScan = async (uid) => {
-    try {
-        const response = await axios.get(`/kasir/api/students/rfid/${uid}`);
-        if (response.data.success) {
-            selectedStudent.value = response.data.student;
-            paymentMethod.value = 'balance';
-            showNotification(`Siswa: ${response.data.student.user.name} - Saldo: Rp ${formatCurrency(response.data.student.balance)}`, 'success');
-        }
-    } catch (error) {
-        showNotification(error.response?.data?.message || 'Kartu RFID tidak terdaftar', 'error');
+    // Focus scanner
+    if (posMode.value !== 'manual' && !['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) {
+        document.getElementById('hidden-scanner-input')?.focus();
     }
 };
 
 onMounted(() => {
     loadProducts();
     window.addEventListener('keydown', handleGlobalKeydown);
+    // Auto focus scanner if mode is not manual
+    if (posMode.value !== 'manual') {
+        setTimeout(() => document.getElementById('hidden-scanner-input')?.focus(), 500);
+    }
 });
 
 onUnmounted(() => {
@@ -447,7 +369,7 @@ onUnmounted(() => {
                 <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">POS / Kasir</h2>
                 <div class="flex gap-2">
                     <Link
-                        :href="route('kasir.pos.transactions-history')"
+                        :href="route(route().current('pos.index') ? 'pos.transactions-history' : 'kasir.pos.transactions-history')"
                         class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded-lg shadow transition-colors flex items-center gap-2"
                     >
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -636,9 +558,12 @@ onUnmounted(() => {
                                         :src="`/storage/${product.image_path}`"
                                         :alt="product.name"
                                         class="w-full h-full object-cover"
+                                        @error="$event.target.style.display='none'; $event.target.nextElementSibling.style.display='flex'"
                                     />
-                                    <div v-else class="w-full h-full flex items-center justify-center text-gray-400">
-                                        No Image
+                                    <div class="w-full h-full flex items-center justify-center text-gray-400 bg-gray-100" :style="product.image_path ? 'display:none' : ''">
+                                        <svg class="h-12 w-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                        </svg>
                                     </div>
                                 </div>
                                 <div class="p-3">
@@ -646,7 +571,7 @@ onUnmounted(() => {
                                     <p class="text-xs text-gray-500 mb-2">{{ product.category.name }}</p>
                                     <div class="flex justify-between items-center">
                                         <span class="text-lg font-bold text-blue-600">
-                                            Rp {{ formatCurrency(product.harga_jual) }}
+                                            {{ formatCurrency(product.harga_jual) }}
                                         </span>
                                         <span :class="[
                                             'text-xs px-2 py-1 rounded',
@@ -695,7 +620,7 @@ onUnmounted(() => {
                                         <p class="text-sm font-semibold">{{ selectedStudent.user.name }}</p>
                                         <p class="text-xs text-gray-600">{{ selectedStudent.nis }} - {{ selectedStudent.kelas }}</p>
                                         <p class="text-sm font-bold text-blue-600 mt-1">
-                                            Saldo: Rp {{ formatCurrency(selectedStudent.balance) }}
+                                            Saldo: {{ formatCurrency(selectedStudent.balance) }}
                                         </p>
                                     </div>
                                     <button @click="selectedStudent = null; paymentMethod = 'cash'" class="text-red-500 text-xs">
@@ -726,7 +651,7 @@ onUnmounted(() => {
                                         </div>
                                         <div class="flex-1">
                                             <h4 class="font-semibold text-sm">{{ item.name }}</h4>
-                                            <p class="text-xs text-gray-600">Rp {{ formatCurrency(item.price) }}</p>
+                                            <p class="text-xs text-gray-600">{{ formatCurrency(item.price) }}</p>
                                             <div class="flex items-center gap-2 mt-2">
                                                 <button
                                                     @click="updateQuantity(index, item.quantity - 1)"
@@ -765,7 +690,7 @@ onUnmounted(() => {
                                 <div class="flex justify-between items-center mb-4">
                                     <span class="font-bold text-lg">Total:</span>
                                     <span class="font-bold text-2xl text-blue-600">
-                                        Rp {{ formatCurrency(cartTotal) }}
+                                        {{ formatCurrency(cartTotal) }}
                                     </span>
                                 </div>
                                 <button
@@ -852,7 +777,7 @@ onUnmounted(() => {
                                         <div class="text-right">
                                             <p class="text-xs text-gray-500">Saldo</p>
                                             <p class="font-bold" :class="student.balance > 0 ? 'text-green-600' : 'text-red-600'">
-                                                Rp {{ formatCurrency(student.balance) }}
+                                                {{ formatCurrency(student.balance) }}
                                             </p>
                                         </div>
                                     </div>
@@ -892,7 +817,7 @@ onUnmounted(() => {
                             <div class="flex justify-between items-center">
                                 <span class="text-lg">Total Belanja:</span>
                                 <span class="text-2xl font-bold text-blue-600">
-                                    Rp {{ formatCurrency(cartTotal) }}
+                                    {{ formatCurrency(cartTotal) }}
                                 </span>
                             </div>
                         </div>
@@ -940,7 +865,7 @@ onUnmounted(() => {
                                 <div class="flex justify-between">
                                     <span>Kembalian:</span>
                                     <span class="font-bold text-green-600">
-                                        Rp {{ formatCurrency(changeAmount) }}
+                                        {{ formatCurrency(changeAmount) }}
                                     </span>
                                 </div>
                             </div>
@@ -952,12 +877,12 @@ onUnmounted(() => {
                             <p class="text-xs text-gray-600 mb-2">{{ selectedStudent.kelas }}</p>
                             <div class="flex justify-between text-sm">
                                 <span>Saldo Sekarang:</span>
-                                <span class="font-bold">Rp {{ formatCurrency(selectedStudent.balance) }}</span>
+                                <span class="font-bold">{{ formatCurrency(selectedStudent.balance) }}</span>
                             </div>
                             <div class="flex justify-between text-sm mt-1">
                                 <span>Saldo Setelah:</span>
                                 <span class="font-bold" :class="selectedStudent.balance - cartTotal < 0 ? 'text-red-600' : 'text-green-600'">
-                                    Rp {{ formatCurrency(selectedStudent.balance - cartTotal) }}
+                                    {{ formatCurrency(selectedStudent.balance - cartTotal) }}
                                 </span>
                             </div>
                         </div>
@@ -1046,7 +971,7 @@ onUnmounted(() => {
                                                         class="flex justify-between text-sm"
                                                     >
                                                         <span>{{ item.product.name }} × {{ item.quantity }}</span>
-                                                        <span class="font-semibold">Rp {{ formatCurrency(item.subtotal) }}</span>
+                                                        <span class="font-semibold">{{ formatCurrency(item.subtotal) }}</span>
                                                     </div>
                                                 </div>
                                             </div>
@@ -1063,7 +988,7 @@ onUnmounted(() => {
                                                 </div>
                                                 <div class="text-right">
                                                     <p class="text-xs text-gray-500">Total</p>
-                                                    <p class="text-xl font-bold text-orange-600">Rp {{ formatCurrency(sale.total) }}</p>
+                                                    <p class="text-xl font-bold text-orange-600">{{ formatCurrency(sale.total) }}</p>
                                                 </div>
                                             </div>
                                         </div>

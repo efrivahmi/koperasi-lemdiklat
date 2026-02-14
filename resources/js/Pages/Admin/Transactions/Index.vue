@@ -24,7 +24,6 @@ const searchForm = ref({
 
 const search = () => {
     router.get(route('transactions.index'), searchForm.value, {
-        preserveState: true,
         preserveScroll: true,
     });
 };
@@ -191,30 +190,30 @@ const summary = computed(() => {
                         </div>
                     </div>
 
-                    <!-- Omset Tunai (Manual) -->
+                    <!-- Total Top Up -->
                     <div class="bg-white dark:bg-slate-800 overflow-hidden shadow-sm rounded-lg border border-gray-200 dark:border-slate-700 p-4 transition-colors">
-                        <div class="text-sm font-medium text-slate-500 dark:text-slate-400 truncate">Omset Tunai (Manual)</div>
-                        <div class="mt-1 text-2xl font-semibold text-emerald-600 dark:text-emerald-400">{{ formatCurrency(stats.total_amount_manual) }}</div>
+                        <div class="text-sm font-medium text-slate-500 dark:text-slate-400 truncate">Total Top Up (Masuk)</div>
+                        <div class="mt-1 text-2xl font-semibold text-emerald-600 dark:text-emerald-400">{{ formatCurrency(stats.summary_topup) }}</div>
                         <div class="mt-1 text-xs text-slate-500 dark:text-slate-400">
-                            {{ stats.total_manual }} Transaksi
+                            Cash In
                         </div>
                     </div>
 
-                    <!-- Omset Non-Tunai -->
+                    <!-- Total Purchase -->
                     <div class="bg-white dark:bg-slate-800 overflow-hidden shadow-sm rounded-lg border border-gray-200 dark:border-slate-700 p-4 transition-colors">
-                        <div class="text-sm font-medium text-slate-500 dark:text-slate-400 truncate">Omset Non-Tunai</div>
-                        <div class="mt-1 text-2xl font-semibold text-indigo-600 dark:text-indigo-400">{{ formatCurrency(stats.total_amount_automated) }}</div>
+                        <div class="text-sm font-medium text-slate-500 dark:text-slate-400 truncate">Total Belanja (Keluar)</div>
+                        <div class="mt-1 text-2xl font-semibold text-indigo-600 dark:text-indigo-400">{{ formatCurrency(stats.summary_purchase) }}</div>
                         <div class="mt-1 text-xs text-slate-500 dark:text-slate-400">
-                            {{ stats.total_rfid + stats.total_barcode + stats.total_voucher }} Transaksi
+                            Saldo Users Used
                         </div>
                     </div>
 
-                    <!-- Voucher Terpakai -->
+                    <!-- Total Voucher -->
                     <div class="bg-white dark:bg-slate-800 overflow-hidden shadow-sm rounded-lg border border-gray-200 dark:border-slate-700 p-4 transition-colors">
-                        <div class="text-sm font-medium text-slate-500 dark:text-slate-400 truncate">Voucher Terpakai</div>
-                        <div class="mt-1 text-2xl font-semibold text-amber-600 dark:text-amber-400">{{ stats.total_voucher }}</div>
+                        <div class="text-sm font-medium text-slate-500 dark:text-slate-400 truncate">Total Voucher Redeem</div>
+                        <div class="mt-1 text-2xl font-semibold text-amber-600 dark:text-amber-400">{{ formatCurrency(stats.summary_voucher) }}</div>
                         <div class="mt-1 text-xs text-slate-500 dark:text-slate-400">
-                            Transaksi via Voucher
+                            {{ stats.total_voucher }} Voucher Digunakan
                         </div>
                     </div>
                 </div>

@@ -18,7 +18,6 @@ const selectedVouchers = ref([]);
 
 const filterByStatus = () => {
     router.get(route('kasir.vouchers.index'), { status: statusFilter.value }, {
-        preserveState: true,
         replace: true,
     });
 };

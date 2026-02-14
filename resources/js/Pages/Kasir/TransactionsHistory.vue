@@ -20,7 +20,6 @@ const searchForm = ref({
 
 const applyFilters = () => {
     router.get(route('kasir.pos.transactions-history'), searchForm.value, {
-        preserveState: true,
         preserveScroll: true,
     });
 };
@@ -103,7 +102,7 @@ const printReceipt = (saleId) => {
                     </p>
                 </div>
                 <Link
-                    :href="route('kasir.pos.index')"
+                    :href="route(route().current('pos.transactions-history') ? 'pos.index' : 'kasir.pos.index')"
                     class="inline-flex items-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white rounded-lg font-semibold text-sm transition shadow-sm"
                 >
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -396,7 +395,6 @@ const printReceipt = (saleId) => {
                                                 : 'bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600'
                                         ]"
                                         v-html="link.label"
-                                        :preserve-state="true"
                                         :preserve-scroll="true"
                                     />
                                     <span

@@ -24,7 +24,6 @@ const searchForm = ref({
 
 const search = () => {
     router.get(route('kasir.transactions.index'), searchForm.value, {
-        preserveState: true,
         preserveScroll: true,
     });
 };
@@ -180,39 +179,39 @@ const summary = computed(() => {
             <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
                 <!-- Statistics Cards -->
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-                    <!-- Manual Transactions -->
+                    <!-- Top Up (Tunai) -->
                     <div class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg shadow-lg p-6 text-white">
                         <div class="flex items-center justify-between">
                             <div>
-                                <p class="text-blue-100 text-sm font-medium">Transaksi Manual</p>
-                                <h3 class="text-3xl font-bold mt-2">{{ stats.total_manual }}</h3>
-                                <p class="text-blue-100 text-xs mt-1">{{ formatCurrency(stats.total_amount_manual) }}</p>
+                                <p class="text-blue-100 text-sm font-medium">Total Top Up (Tunai)</p>
+                                <h3 class="text-3xl font-bold mt-2">{{ formatCurrency(stats.summary_topup) }}</h3>
+                                <p class="text-blue-100 text-xs mt-1">Cash In</p>
                             </div>
-                            <div class="text-5xl opacity-50">✍️</div>
+                            <div class="text-5xl opacity-50">💰</div>
                         </div>
                     </div>
 
-                    <!-- RFID Transactions -->
+                    <!-- Pembelian (Saldo) -->
                     <div class="bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg shadow-lg p-6 text-white">
                         <div class="flex items-center justify-between">
                             <div>
-                                <p class="text-purple-100 text-sm font-medium">RFID Scanner</p>
-                                <h3 class="text-3xl font-bold mt-2">{{ stats.total_rfid }}</h3>
-                                <p class="text-purple-100 text-xs mt-1">Otomatis</p>
+                                <p class="text-purple-100 text-sm font-medium">Total Belanja (Saldo)</p>
+                                <h3 class="text-3xl font-bold mt-2">{{ formatCurrency(stats.summary_purchase) }}</h3>
+                                <p class="text-purple-100 text-xs mt-1">Saldo Users Used</p>
                             </div>
-                            <div class="text-5xl opacity-50">📡</div>
+                            <div class="text-5xl opacity-50">🛒</div>
                         </div>
                     </div>
 
-                    <!-- Barcode + Voucher -->
+                    <!-- Voucher -->
                     <div class="bg-gradient-to-br from-orange-500 to-orange-600 rounded-lg shadow-lg p-6 text-white">
                         <div class="flex items-center justify-between">
                             <div>
-                                <p class="text-orange-100 text-sm font-medium">Barcode + Voucher</p>
-                                <h3 class="text-3xl font-bold mt-2">{{ stats.total_barcode + stats.total_voucher }}</h3>
-                                <p class="text-orange-100 text-xs mt-1">{{ formatCurrency(stats.total_amount_automated) }}</p>
+                                <p class="text-orange-100 text-sm font-medium">Total Voucher</p>
+                                <h3 class="text-3xl font-bold mt-2">{{ formatCurrency(stats.summary_voucher) }}</h3>
+                                <p class="text-orange-100 text-xs mt-1">Redeemed</p>
                             </div>
-                            <div class="text-5xl opacity-50">📊</div>
+                            <div class="text-5xl opacity-50">🎫</div>
                         </div>
                     </div>
                 </div>

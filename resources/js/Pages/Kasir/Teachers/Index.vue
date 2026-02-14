@@ -17,7 +17,6 @@ const search = ref(props.filters.search || '');
 
 watch(search, (value) => {
     router.get(route('kasir.teachers.index'), { search: value }, {
-        preserveState: true,
         replace: true,
     });
 });

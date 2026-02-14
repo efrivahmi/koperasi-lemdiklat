@@ -19,7 +19,6 @@ const selectAll = ref(false);
 
 watch(search, (value) => {
     router.get(route('kasir.students.index'), { search: value }, {
-        preserveState: true,
         replace: true,
     });
 });

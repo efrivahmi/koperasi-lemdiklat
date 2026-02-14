@@ -142,13 +142,7 @@ const printBatchCards = () => {
                                 <span class="sm:hidden">Cetak ({{ selectedStudents.size }})</span>
                             </button>
 
-                            <Link v-if="can('students.import')" :href="route('students.import')" class="flex-1 sm:flex-initial inline-flex items-center justify-center px-4 py-2.5 bg-green-600 hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600 text-white font-semibold rounded-lg shadow-sm transition-colors">
-                                <svg class="w-5 h-5 sm:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
-                                </svg>
-                                <span class="hidden sm:inline">Import Excel</span>
-                                <span class="sm:hidden">Import</span>
-                            </Link>
+
 
                             <Link v-if="can('students.create')" :href="route('students.create')" class="flex-1 sm:flex-initial inline-flex items-center justify-center px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 text-white font-semibold rounded-lg shadow-sm transition-colors">
                                 <svg class="w-5 h-5 sm:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">

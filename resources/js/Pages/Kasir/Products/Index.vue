@@ -26,7 +26,6 @@ const adjustmentForm = useForm({
 
 watch(search, (value) => {
     router.get(route('kasir.products.index'), { search: value }, {
-        preserveState: true,
         replace: true,
     });
 });

@@ -18,7 +18,7 @@ const type = ref(props.filters.type || '');
 const saverType = ref(props.filters.saver_type || '');
 
 const applyFilters = () => {
-    router.get(route('kasir.savings.index'), { search: search.value, type: type.value, saver_type: saverType.value }, { preserveState: true, replace: true });
+    router.get(route('kasir.savings.index'), { search: search.value, type: type.value, saver_type: saverType.value }, { replace: true });
 };
 
 watch([search, type, saverType], () => applyFilters());

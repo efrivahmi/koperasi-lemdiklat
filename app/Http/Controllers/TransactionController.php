@@ -49,8 +49,9 @@ class TransactionController extends Controller
                 'total_barcode' => Transaction::where('transaction_method', 'barcode')->count(),
                 'total_voucher' => Transaction::where('transaction_method', 'voucher')->count(),
                 'total_system' => Transaction::where('transaction_method', 'system')->count(),
-                'total_amount_manual' => Transaction::where('transaction_method', 'manual')->whereIn('type', ['topup', 'redeem', 'return'])->sum('amount'),
-                'total_amount_automated' => Transaction::whereIn('transaction_method', ['rfid', 'barcode', 'voucher'])->whereIn('type', ['topup', 'redeem', 'return', 'purchase'])->sum('amount'),
+                'summary_topup' => Transaction::where('type', 'topup')->sum('amount'),
+                'summary_purchase' => Transaction::where('type', 'purchase')->sum('amount'),
+                'summary_voucher' => Transaction::where('type', 'redeem')->sum('amount'),
             ];
 
             \Log::info('Transaction index loaded', [

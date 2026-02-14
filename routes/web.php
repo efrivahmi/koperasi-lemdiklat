@@ -59,9 +59,13 @@ Route::middleware(['auth', 'role:admin,master,kasir'])->prefix('admin')->group(f
     Route::post('vouchers-redeem', [\App\Http\Controllers\VoucherController::class, 'redeem'])->name('vouchers.redeem');
     Route::resource('vouchers', \App\Http\Controllers\VoucherController::class);
 
-    // Transactions - View only for Kasir
+    // Transactions - View only for Kasir (accessed by Admin)
     Route::get('transactions', [\App\Http\Controllers\TransactionController::class, 'index'])->name('transactions.index');
     Route::get('transactions/student/{student}', [\App\Http\Controllers\TransactionController::class, 'studentHistory'])->name('transactions.student');
+
+    // POS for Admin/Master (Alias to keep URL consistent)
+    Route::get('/pos', [\App\Http\Controllers\PosController::class, 'index'])->name('pos.index');
+    Route::get('/pos/history', [\App\Http\Controllers\PosController::class, 'transactionsHistory'])->name('pos.transactions-history');
 });
 
 // Students, Teachers, Savings - Admin, Master & Kasir (with permission)

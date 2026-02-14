@@ -116,7 +116,7 @@ const menuItems = computed(() => {
         sections.push({
             title: 'Penjualan',
             items: [
-                { name: 'Point of Sale', route: 'kasir.pos.index', icon: '🛒', gradient: 'from-pink-500 to-rose-500' }
+                { name: 'Point of Sale', route: 'pos.index', icon: '🛒', gradient: 'from-pink-500 to-rose-500' }
             ]
         });
 

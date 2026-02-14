@@ -45,7 +45,7 @@ class DashboardController extends Controller
                 ->limit(10)
                 ->get();
 
-            $recentSales = Sale::with(['items', 'creator'])
+            $recentSales = Sale::with(['saleItems', 'creator'])
                 ->whereDate('created_at', $today)
                 ->latest()
                 ->limit(10)

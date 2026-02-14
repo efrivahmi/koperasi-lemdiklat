@@ -197,19 +197,19 @@ const menuItems = computed(() => {
         // Laporan
         const reportItems = [];
         if (permissions['reports.sales']) {
-            reportItems.push({ name: 'Laporan Penjualan', route: 'reports.sales', icon: '📊', gradient: 'from-teal-500 to-green-500' });
+            reportItems.push({ name: 'Laporan Penjualan', route: 'kasir.reports.sales', icon: '📊', gradient: 'from-teal-500 to-green-500' });
         }
         if (permissions['reports.inventory']) {
-            reportItems.push({ name: 'Laporan Inventori', route: 'reports.inventory', icon: '📈', gradient: 'from-blue-500 to-indigo-500' });
+            reportItems.push({ name: 'Laporan Inventori', route: 'kasir.reports.inventory', icon: '📈', gradient: 'from-blue-500 to-indigo-500' });
         }
         if (permissions['reports.stock_adjustments']) {
-            reportItems.push({ name: 'Penyesuaian Stok', route: 'reports.stock-adjustments', icon: '📦', gradient: 'from-orange-500 to-red-500' });
+            reportItems.push({ name: 'Penyesuaian Stok', route: 'kasir.reports.stock-adjustments', icon: '📦', gradient: 'from-orange-500 to-red-500' });
         }
         if (permissions['reports.financial']) {
-            reportItems.push({ name: 'Laporan Keuangan', route: 'reports.financial', icon: '💰', gradient: 'from-green-500 to-teal-500' });
+            reportItems.push({ name: 'Laporan Keuangan', route: 'kasir.reports.financial', icon: '💰', gradient: 'from-green-500 to-teal-500' });
         }
         if (permissions['reports.student_transactions']) {
-            reportItems.push({ name: 'Transaksi Siswa', route: 'reports.student-transactions', icon: '💳', gradient: 'from-purple-500 to-indigo-500' });
+            reportItems.push({ name: 'Transaksi Siswa', route: 'kasir.reports.student-transactions', icon: '💳', gradient: 'from-purple-500 to-indigo-500' });
         }
         if (reportItems.length > 0) {
             sections.push({ title: 'Laporan', items: reportItems });

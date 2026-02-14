@@ -18,11 +18,11 @@ const searchForm = ref({
 });
 
 const search = () => {
-    router.get(route('reports.sales'), searchForm.value, { preserveState: true });
+    router.get(route(route().current()), searchForm.value, { preserveState: true });
 };
 
 const exportToExcel = () => {
-    window.location.href = route('reports.sales.export', searchForm.value);
+    window.location.href = route(route().current() + '.export', searchForm.value);
 };
 
 const formatCurrency = (value) => {

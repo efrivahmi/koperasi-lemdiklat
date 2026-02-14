@@ -197,10 +197,22 @@ Route::middleware(['auth', 'role:admin,master,kasir'])->group(function () {
 
             // Stricter rate limiting for write operations
             Route::middleware('throttle:30,1')->group(function () {
-                Route::post('/api/checkout', [\App\Http\Controllers\PosController::class, 'checkout'])->name('pos.api.checkout');
+            Route::post('/api/checkout', [\App\Http\Controllers\PosController::class, 'checkout'])->name('pos.api.checkout');
                 Route::post('/api/void/{sale}', [\App\Http\Controllers\PosController::class, 'voidSale'])->name('pos.api.void');
             });
         });
+
+        // Reports (Kasir Context)
+        Route::get('reports/sales', [\App\Http\Controllers\ReportController::class, 'sales'])->name('reports.sales');
+        Route::get('reports/sales/export', [\App\Http\Controllers\ReportController::class, 'salesExport'])->name('reports.sales.export');
+        Route::get('reports/inventory', [\App\Http\Controllers\ReportController::class, 'inventory'])->name('reports.inventory');
+        Route::get('reports/inventory/export', [\App\Http\Controllers\ReportController::class, 'inventoryExport'])->name('reports.inventory.export');
+        Route::get('reports/stock-adjustments', [\App\Http\Controllers\ReportController::class, 'stockAdjustments'])->name('reports.stock-adjustments');
+        Route::get('reports/stock-adjustments/export', [\App\Http\Controllers\ReportController::class, 'stockAdjustmentsExport'])->name('reports.stock-adjustments.export');
+        Route::get('reports/financial', [\App\Http\Controllers\ReportController::class, 'financial'])->name('reports.financial');
+        Route::get('reports/financial/export', [\App\Http\Controllers\ReportController::class, 'financialExport'])->name('reports.financial.export');
+        Route::get('reports/student-transactions', [\App\Http\Controllers\ReportController::class, 'studentTransactions'])->name('reports.student-transactions');
+        Route::get('reports/student-transactions/export', [\App\Http\Controllers\ReportController::class, 'studentTransactionsExport'])->name('reports.student-transactions.export');
     });
 
     // Top-up Saldo (KASIR BISA AKSES)

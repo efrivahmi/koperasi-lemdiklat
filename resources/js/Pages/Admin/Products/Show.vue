@@ -267,10 +267,10 @@ const totalStockIn = props.product.stockIns?.reduce((sum, item) => sum + item.qu
                                             {{ formatCurrency(item.quantity * item.price) }}
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-xs text-gray-500 dark:text-gray-400 hidden xl:table-cell">
-                                            <AuditInfo :user="item.creator" :timestamp="item.created_at" label="Dibuat" />
+                                            <AuditInfo :user="item.sale?.creator" :timestamp="item.created_at" label="Dibuat" />
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-xs text-gray-500 dark:text-gray-400 hidden xl:table-cell">
-                                            <AuditInfo :user="item.updater" :timestamp="item.updated_at" label="Diubah" />
+                                            <AuditInfo :user="item.sale?.updater" :timestamp="item.updated_at" label="Diubah" />
                                         </td>
                                     </tr>
                                 </tbody>

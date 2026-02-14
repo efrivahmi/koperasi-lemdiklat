@@ -23,7 +23,7 @@ const searchForm = ref({
 });
 
 const applyFilters = () => {
-    router.get(route('reports.stock-adjustments'), searchForm.value, {
+    router.get(route(route().current()), searchForm.value, {
         preserveState: true,
         preserveScroll: true,
     });
@@ -43,7 +43,7 @@ const resetFilters = () => {
 
 const exportToExcel = () => {
     const params = new URLSearchParams(searchForm.value);
-    window.location.href = route('reports.stock-adjustments.export') + '?' + params.toString();
+    window.location.href = route(route().current() + '.export') + '?' + params.toString();
 };
 
 const formatCurrency = (value) => {

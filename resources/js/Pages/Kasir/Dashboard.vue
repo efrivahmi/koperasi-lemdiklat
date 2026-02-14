@@ -136,7 +136,7 @@ const formatDateTime = (date) => {
                                                 {{ sale.student?.user?.name || 'Cash' }}
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-600 dark:text-slate-400">
-                                                {{ sale.items.length }} item
+                                                {{ sale.sale_items.length }} item
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-slate-900 dark:text-white">
                                                 {{ formatCurrency(sale.total) }}

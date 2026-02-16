@@ -15,7 +15,7 @@ class StockAdjustmentController extends Controller
         $request->validate([
             'quantity' => 'required|integer|min:1',
             'type' => 'required|in:deduction,addition',
-            'purpose' => 'required|in:sale,internal_use,personal_use,damage,expired,return_to_supplier,other',
+            'purpose' => 'required|in:sale,internal_use,personal_use,damage,expired,return_to_supplier,restock,correction,return,loss,other',
             'notes' => 'nullable|string|max:500',
         ]);
 

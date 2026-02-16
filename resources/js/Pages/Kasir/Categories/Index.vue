@@ -2,6 +2,7 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import EmptyState from '@/Components/EmptyState.vue';
 import AuditInfo from '@/Components/AuditInfo.vue';
+import TableToolbar from '@/Components/TableToolbar.vue';
 import { Head, Link } from '@inertiajs/vue3';
 import { router } from '@inertiajs/vue3';
 import { usePermissions } from '@/Composables/usePermissions';
@@ -10,6 +11,7 @@ const { can } = usePermissions();
 
 defineProps({
     categories: Object,
+    filters: Object,
 });
 
 const deleteCategory = (id) => {
@@ -31,22 +33,21 @@ const deleteCategory = (id) => {
         <div class="py-6 sm:py-12">
             <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
                 <!-- Toolbar Section -->
-                <div class="mb-6 bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-gray-800 dark:to-gray-800 border border-purple-200 dark:border-purple-500/30 rounded-lg shadow-sm p-4">
-                    <div class="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
-                        <div class="flex items-center gap-2">
-                            <svg class="w-5 h-5 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
-                            </svg>
-                            <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Kelola kategori produk koperasi</span>
-                        </div>
-                        <Link v-if="can('categories.create')" :href="route('kasir.categories.create')" class="w-full sm:w-auto inline-flex items-center justify-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg shadow-sm transition">
+                <TableToolbar
+                    title="Kategori Produk"
+                    description="Kelola kategori produk koperasi"
+                    :search-term="filters.search"
+                    search-route="kasir.categories.index"
+                >
+                    <template #actions>
+                        <Link v-if="can('categories.create')" :href="route('kasir.categories.create')" class="w-full sm:w-auto inline-flex items-center justify-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 text-white font-semibold rounded-lg shadow-sm transition-colors">
                             <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                             </svg>
                             Tambah Kategori
                         </Link>
-                    </div>
-                </div>
+                    </template>
+                </TableToolbar>
                 <!-- Empty State -->
                 <EmptyState
                     v-if="categories.data.length === 0"

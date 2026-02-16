@@ -91,57 +91,100 @@ class StockAdjustmentsExport implements FromCollection, WithHeadings, WithMappin
     {
         $hargaBeli = $adjustment->product->harga_beli ?? 0;
         $hargaJual = $adjustment->product->harga_jual ?? 0;
-        $quantity = $adjustment->quantity_adjusted;
-        $costImpact = $quantity * $hargaBeli;
+        $qty = $adjustment->quantity_adjusted;
+        
+        // Signed Quantity
+        $signedQty = ($adjustment->type === 'deduction') ? -$qty : $qty;
 
         // Translate purpose to Indonesian
         $purposeLabels = [
+            'restock' => 'Restock (Beli)',
             'sale' => 'Penjualan (Transaksi)',
             'internal_use' => 'Keperluan Internal/Kantor',
             'personal_use' => 'Keperluan Pribadi',
             'damage' => 'Kerusakan Barang',
             'expired' => 'Barang Kadaluarsa',
+            'loss' => 'Barang Hilang',
             'return_to_supplier' => 'Retur ke Supplier',
+            'return' => 'Retur dari Pelanggan',
+            'correction' => 'Koreksi Stok',
             'other' => 'Lainnya'
         ];
-        $purposeLabel = $purposeLabels[$adjustment->purpose] ?? 'Tidak Diketahui';
+        $purposeLabel = $purposeLabels[$adjustment->purpose] ?? 'Lainnya';
 
-        // Calculate revenue and profit/loss based on purpose
+        // Calculate Revenue and Profit/Loss
         $revenue = 0;
-        $profitLossImpact = 0;
+        $profit = 0;
 
-        if ($adjustment->purpose === 'sale') {
-            // Sales: Revenue - COGS = Gross Profit
-            $revenue = $quantity * $hargaJual;
-            $profitLossImpact = $revenue - $costImpact;
-        } else if (in_array($adjustment->purpose, ['internal_use', 'personal_use', 'damage', 'expired'])) {
-            // Non-revenue: Pure loss
-            $revenue = 0;
-            $profitLossImpact = -$costImpact;
-        } else if ($adjustment->purpose === 'return_to_supplier') {
-            // Return: Refund at purchase price (break-even)
-            $revenue = $costImpact;
-            $profitLossImpact = 0;
-        } else {
-            // Other: Potential margin
-            $profitMarginPerUnit = $hargaJual - $hargaBeli;
-            $profitLossImpact = $quantity * $profitMarginPerUnit;
+        switch ($adjustment->purpose) {
+            case 'sale': // Deduction
+                $revenue = $qty * $hargaJual;
+                $profit = ($qty * $hargaJual) - ($qty * $hargaBeli);
+                break;
+
+            case 'return_to_supplier': // Deduction
+                $revenue = $qty * $hargaBeli; // Cash In
+                $profit = 0;
+                break;
+
+            case 'damage':
+            case 'expired':
+            case 'loss': 
+            case 'internal_use':
+            case 'personal_use':
+                // Deduction (Loss)
+                $revenue = 0;
+                $profit = -1 * ($qty * $hargaBeli);
+                break;
+
+            case 'restock': // Addition
+                $revenue = 0;
+                $profit = 0;
+                break;
+
+            case 'return': // Addition (Customer Return)
+                // Reverse of sale
+                $revenue = -1 * ($qty * $hargaJual);
+                $profit = -1 * (($qty * $hargaJual) - ($qty * $hargaBeli));
+                break;
+
+            case 'correction':
+                if ($adjustment->type === 'addition') {
+                    // Found stock (Gain)
+                    $revenue = 0;
+                    $profit = $qty * $hargaBeli;
+                } else {
+                    // Lost stock (Loss)
+                    $revenue = 0;
+                    $profit = -1 * ($qty * $hargaBeli);
+                }
+                break;
+
+            default: // other
+                if ($adjustment->type === 'deduction') {
+                    $revenue = 0;
+                    $profit = -1 * ($qty * $hargaBeli);
+                } else {
+                    $revenue = 0;
+                    $profit = 0;
+                }
+                break;
         }
 
         return [
             Carbon::parse($adjustment->created_at)->format('d/m/Y'),
             Carbon::parse($adjustment->created_at)->format('H:i:s'),
             $adjustment->product->name ?? '-',
-            $adjustment->product->barcode ?? '-',
+            $adjustment->product->barcode ?? '-', // Ensure this is just the value
             $adjustment->type === 'addition' ? 'Penambahan' : 'Pengurangan',
             $purposeLabel,
             $adjustment->quantity_before,
-            $adjustment->quantity_adjusted,
+            $signedQty, // Use signed quantity
             $adjustment->quantity_after,
             number_format($hargaBeli, 0, ',', '.'),
             number_format($hargaJual, 0, ',', '.'),
             number_format($revenue, 0, ',', '.'),
-            ($profitLossImpact >= 0 ? '+' : '') . number_format($profitLossImpact, 0, ',', '.'),
+            number_format($profit, 0, ',', '.'), // Allow negative formatting
             $adjustment->adjustedBy->name ?? '-',
             $adjustment->notes ?? '-',
             $adjustment->creator->name ?? '-',

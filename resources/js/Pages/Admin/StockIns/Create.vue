@@ -2,10 +2,9 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
 import InputError from '@/Components/InputError.vue';
+import SearchableSelect from '@/Components/SearchableSelect.vue';
 
-const props = defineProps({
-    products: Array,
-});
+const props = defineProps({});
 
 const form = useForm({
     product_id: '',
@@ -49,17 +48,12 @@ const submit = () => {
                         <form @submit.prevent="submit" class="space-y-6">
                             <div>
                                 <label for="product_id" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Produk</label>
-                                <select
-                                    id="product_id"
+                                <SearchableSelect
                                     v-model="form.product_id"
-                                    class="w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm text-sm sm:text-base py-2"
-                                    required
-                                >
-                                    <option value="">Pilih Produk</option>
-                                    <option v-for="product in products" :key="product.id" :value="product.id">
-                                        {{ product.name }} - {{ product.category.name }}
-                                    </option>
-                                </select>
+                                    :api-url="route('api.products.search')"
+                                    placeholder="Cari Produk..."
+                                    search-placeholder="Ketik nama atau barcode..."
+                                />
                                 <InputError :message="form.errors.product_id" class="mt-2" />
                             </div>
 

@@ -44,17 +44,11 @@ class StockInController extends Controller
      */
     public function create(Request $request)
     {
-        $products = Product::with('category')->get();
-
         if ($request->routeIs('kasir.*')) {
-            return Inertia::render('Kasir/StockIns/Create', [
-                'products' => $products
-            ]);
+            return Inertia::render('Kasir/StockIns/Create');
         }
 
-        return Inertia::render('Admin/StockIns/Create', [
-            'products' => $products
-        ]);
+        return Inertia::render('Admin/StockIns/Create');
     }
 
     /**
@@ -98,11 +92,14 @@ class StockInController extends Controller
      */
     public function edit(StockIn $stockIn)
     {
-        $products = Product::with('category')->get();
+        if (request()->routeIs('kasir.*')) {
+            return Inertia::render('Kasir/StockIns/Edit', [
+                'stockIn' => $stockIn->load(['product', 'user', 'creator', 'updater']),
+            ]);
+        }
 
         return Inertia::render('Admin/StockIns/Edit', [
             'stockIn' => $stockIn->load(['product', 'user', 'creator', 'updater']),
-            'products' => $products
         ]);
     }
 

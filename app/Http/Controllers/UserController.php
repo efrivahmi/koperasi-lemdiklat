@@ -19,6 +19,7 @@ class UserController extends Controller
         return [
             'Master Data: Produk' => [
                 ['key' => 'products.view',   'label' => 'Lihat Daftar Produk'],
+                ['key' => 'products.show',   'label' => 'Lihat Detail Produk'],
                 ['key' => 'products.create', 'label' => 'Tambah Produk Baru'],
                 ['key' => 'products.edit',   'label' => 'Edit Produk'],
                 ['key' => 'products.delete', 'label' => 'Hapus Produk'],
@@ -43,6 +44,7 @@ class UserController extends Controller
             ],
             'Inventori (Stok Masuk)' => [
                 ['key' => 'stock_ins.view',   'label' => 'Lihat Riwayat Stok Masuk'],
+                ['key' => 'stock_ins.show',   'label' => 'Lihat Detail Stok Masuk'],
                 ['key' => 'stock_ins.create', 'label' => 'Catat Stok Masuk'],
                 ['key' => 'stock_ins.delete', 'label' => 'Hapus Data Stok Masuk'],
             ],

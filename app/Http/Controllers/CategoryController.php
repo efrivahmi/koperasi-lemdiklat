@@ -13,16 +13,25 @@ class CategoryController extends Controller
      */
     public function index(Request $request)
     {
-        $categories = Category::with(['creator', 'updater'])->oldest()->paginate(10);
+        $query = Category::with(['creator', 'updater']);
+
+        if ($request->has('search')) {
+            $query->where('name', 'like', '%' . $request->search . '%')
+                  ->orWhere('description', 'like', '%' . $request->search . '%');
+        }
+
+        $categories = $query->oldest()->paginate(10);
 
         if ($request->routeIs('kasir.*')) {
             return Inertia::render('Kasir/Categories/Index', [
-                'categories' => $categories
+                'categories' => $categories,
+                'filters' => $request->only(['search'])
             ]);
         }
 
         return Inertia::render('Admin/Categories/Index', [
-            'categories' => $categories
+            'categories' => $categories,
+            'filters' => $request->only(['search'])
         ]);
     }
 

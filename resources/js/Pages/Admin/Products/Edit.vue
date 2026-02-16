@@ -2,6 +2,7 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
 import InputError from '@/Components/InputError.vue';
+import SearchableSelect from '@/Components/SearchableSelect.vue';
 import { ref } from 'vue';
 
 const props = defineProps({
@@ -78,17 +79,12 @@ const submit = () => {
                         <form @submit.prevent="submit" class="space-y-6">
                             <div>
                                 <label for="category_id" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Kategori</label>
-                                <select
-                                    id="category_id"
+                                <SearchableSelect
                                     v-model="form.category_id"
-                                    class="w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm text-sm sm:text-base py-2"
-                                    required
-                                >
-                                    <option value="">Pilih Kategori</option>
-                                    <option v-for="category in categories" :key="category.id" :value="category.id">
-                                        {{ category.name }}
-                                    </option>
-                                </select>
+                                    :options="categories"
+                                    placeholder="Pilih Kategori"
+                                    search-placeholder="Cari kategori..."
+                                />
                                 <InputError :message="form.errors.category_id" class="mt-2" />
                             </div>
 

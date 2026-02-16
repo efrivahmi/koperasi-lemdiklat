@@ -1,5 +1,5 @@
 <script setup>
-import { computed } from 'vue';
+import { ref, onUnmounted } from 'vue';
 
 const props = defineProps({
     user: {
@@ -14,6 +14,40 @@ const props = defineProps({
         type: String,
         default: 'Data'
     }
+});
+
+const isHovered = ref(false);
+const triggerRef = ref(null);
+const tooltipStyle = ref({ top: '0px', left: '0px' });
+
+const updatePosition = () => {
+    if (triggerRef.value) {
+        const rect = triggerRef.value.getBoundingClientRect();
+        // Position above the element (viewport coordinates for fixed)
+        tooltipStyle.value = {
+            top: `${rect.top - 10}px`,
+            left: `${rect.left + (rect.width / 2)}px`
+        };
+    }
+};
+
+const showTooltip = () => {
+    isHovered.value = true;
+    updatePosition();
+    // Add scroll listener to update position or hide
+    window.addEventListener('scroll', updatePosition, true);
+    window.addEventListener('resize', updatePosition);
+};
+
+const hideTooltip = () => {
+    isHovered.value = false;
+    window.removeEventListener('scroll', updatePosition, true);
+    window.removeEventListener('resize', updatePosition);
+};
+
+onUnmounted(() => {
+    window.removeEventListener('scroll', updatePosition, true);
+    window.removeEventListener('resize', updatePosition);
 });
 
 const getRoleLabel = (role) => {
@@ -50,7 +84,13 @@ const formatDateTime = (dateString) => {
 </script>
 
 <template>
-    <div v-if="user" class="group relative inline-block">
+    <div 
+        v-if="user" 
+        class="inline-block"
+        ref="triggerRef"
+        @mouseenter="showTooltip" 
+        @mouseleave="hideTooltip"
+    >
         <!-- Compact View -->
         <div class="flex items-center gap-2 cursor-help">
             <!-- Avatar/Photo -->
@@ -67,44 +107,48 @@ const formatDateTime = (dateString) => {
             </span>
         </div>
 
-        <!-- Tooltip/Hover Card -->
-        <div class="invisible group-hover:visible opacity-0 group-hover:opacity-100 absolute z-50 bottom-full left-1/2 -translate-x-1/2 mb-2 transition-all duration-200">
-            <div class="bg-gray-900 text-white text-xs rounded-lg shadow-xl p-3 min-w-[200px]">
-                <!-- Tooltip Arrow -->
-                <div class="absolute top-full left-1/2 -translate-x-1/2 -mt-px">
-                    <div class="border-8 border-transparent border-t-gray-900"></div>
-                </div>
+        <!-- Tooltip/Hover Card via Teleport -->
+        <Teleport to="body">
+            <div 
+                v-if="isHovered"
+                class="fixed z-[9999] transform -translate-x-1/2 -translate-y-full mb-2 transition-all duration-200"
+                :style="tooltipStyle"
+            >
+                <div class="bg-gray-900 text-white text-xs rounded-lg shadow-xl p-3 min-w-[200px] mb-2">
+                    <!-- Tooltip Arrow (Visual only, simpler to just have the box) -->
+                    <div class="absolute top-full left-1/2 -translate-x-1/2 -mt-px w-0 h-0 border-8 border-transparent border-t-gray-900"></div>
 
-                <!-- Content -->
-                <div class="space-y-2">
-                    <div class="flex items-center gap-2 pb-2 border-b border-gray-700">
-                        <div v-if="user.photo" class="w-10 h-10 rounded-full overflow-hidden shadow-sm border-2 border-gray-600">
-                            <img :src="`/storage/${user.photo}`" :alt="user.name" class="w-full h-full object-cover">
+                    <!-- Content -->
+                    <div class="space-y-2">
+                        <div class="flex items-center gap-2 pb-2 border-b border-gray-700">
+                            <div v-if="user.photo" class="w-10 h-10 rounded-full overflow-hidden shadow-sm border-2 border-gray-600">
+                                <img :src="`/storage/${user.photo}`" :alt="user.name" class="w-full h-full object-cover">
+                            </div>
+                            <div v-else class="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center text-white font-bold shadow-sm border-2 border-gray-600">
+                                {{ user.name?.charAt(0).toUpperCase() }}
+                            </div>
+                            <div class="flex-1">
+                                <div class="font-semibold">{{ user.name }}</div>
+                                <div class="text-xs text-gray-400">{{ user.email }}</div>
+                            </div>
                         </div>
-                        <div v-else class="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center text-white font-bold shadow-sm border-2 border-gray-600">
-                            {{ user.name?.charAt(0).toUpperCase() }}
-                        </div>
-                        <div class="flex-1">
-                            <div class="font-semibold">{{ user.name }}</div>
-                            <div class="text-xs text-gray-400">{{ user.email }}</div>
-                        </div>
-                    </div>
 
-                    <div>
-                        <div class="text-gray-400 text-xs mb-1">Role:</div>
-                        <div class="inline-flex items-center px-2 py-1 rounded text-xs font-semibold"
-                             :class="getRoleBadgeClass(user.role)">
-                            {{ getRoleLabel(user.role) }}
+                        <div>
+                            <div class="text-gray-400 text-xs mb-1">Role:</div>
+                            <div class="inline-flex items-center px-2 py-1 rounded text-xs font-semibold"
+                                 :class="getRoleBadgeClass(user.role)">
+                                {{ getRoleLabel(user.role) }}
+                            </div>
                         </div>
-                    </div>
 
-                    <div v-if="timestamp">
-                        <div class="text-gray-400 text-xs mb-1">{{ label }} pada:</div>
-                        <div class="text-xs font-mono">{{ formatDateTime(timestamp) }}</div>
+                        <div v-if="timestamp">
+                            <div class="text-gray-400 text-xs mb-1">{{ label }} pada:</div>
+                            <div class="text-xs font-mono">{{ formatDateTime(timestamp) }}</div>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
+        </Teleport>
     </div>
     <div v-else class="text-xs text-gray-400">
         -
@@ -112,8 +156,5 @@ const formatDateTime = (dateString) => {
 </template>
 
 <style scoped>
-/* Ensure tooltip appears above table */
-.group:hover .group-hover\:visible {
-    z-index: 9999;
-}
+/* No specific styles needed for positioning as we use inline styles with Teleport */
 </style>

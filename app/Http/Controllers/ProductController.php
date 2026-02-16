@@ -281,4 +281,28 @@ class ProductController extends Controller
             'message' => 'Barcode berhasil digenerate (EAN-13 format)'
         ]);
     }
+
+    /**
+     * API Search for Lazy Loading
+     */
+    public function apiSearch(Request $request)
+    {
+        // Start query with necessary relationships
+        $query = Product::with('category');
+        
+        // Apply search if provided
+        if ($request->has('search') && $request->search) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('barcode', 'like', "%{$search}%");
+            });
+        }
+        
+        // Paginate results (default 20 items per page)
+        // Using simplePaginate for better performance on infinite scroll
+        return response()->json(
+            $query->latest()->paginate(20)
+        );
+    }
 }

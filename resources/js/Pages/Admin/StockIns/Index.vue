@@ -133,8 +133,8 @@ const formatDate = (date) => {
                                             <AuditInfo :user="stock.updater" :timestamp="stock.updated_at" label="Diubah" />
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                            <Link :href="route('stock-ins.show', stock.id)" class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300 mr-3">Detail</Link>
-                                            <button v-if="can('products.delete')" @click="deleteStockIn(stock.id)" class="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300">Hapus</button>
+                                            <Link v-if="can('stock_ins.show')" :href="route('stock-ins.show', stock.id)" class="text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300 mr-3">Detail</Link>
+                                            <button v-if="can('stock_ins.delete')" @click="deleteStockIn(stock.id)" class="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300">Hapus</button>
                                         </td>
                                     </tr>
                                     <tr v-if="stock_ins.data.length === 0 && search">

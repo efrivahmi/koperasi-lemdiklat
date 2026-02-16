@@ -16,7 +16,7 @@ const form = useForm({
 });
 
 const submit = () => {
-    form.put(route('stock-ins.update', props.stockIn.id));
+    form.put(route('kasir.stock-ins.update', props.stockIn.id));
 };
 </script>
 
@@ -149,7 +149,7 @@ const submit = () => {
                                     <span v-if="form.processing">Menyimpan...</span>
                                     <span v-else>Simpan Perubahan</span>
                                 </button>
-                                <Link :href="route('stock-ins.index')" class="inline-flex items-center justify-center px-6 py-3 bg-gray-500 hover:bg-gray-600 text-white rounded-lg font-semibold text-sm transition shadow-sm w-full sm:w-auto">
+                                <Link :href="route('kasir.stock-ins.index')" class="inline-flex items-center justify-center px-6 py-3 bg-gray-500 hover:bg-gray-600 text-white rounded-lg font-semibold text-sm transition shadow-sm w-full sm:w-auto">
                                     <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                                     </svg>

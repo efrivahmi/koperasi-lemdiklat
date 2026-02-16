@@ -184,6 +184,7 @@ const formatCurrency = (value) => {
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                             <div class="flex items-center space-x-3">
+                                                <Link v-if="can('products.show')" :href="route('products.show', product.id)" class="text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300">Detail</Link>
                                                 <Link :href="route('products.edit', product.id)" class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300">Edit</Link>
                                                 <button v-if="can('products.delete')" @click="deleteProduct(product.id)" class="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300">Hapus</button>
                                             </div>

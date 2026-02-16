@@ -42,6 +42,7 @@ Route::middleware(['auth', 'role:admin,master,kasir'])->prefix('admin')->group(f
     Route::get('products-barcode/print', [\App\Http\Controllers\ProductController::class, 'printBarcodes'])->name('products.print-barcodes');
     Route::get('products/{product}/print-barcode', [\App\Http\Controllers\ProductController::class, 'printBarcode'])->name('products.print-barcode');
     Route::get('api/generate-barcode', [\App\Http\Controllers\ProductController::class, 'generateBarcodeApi'])->name('api.generate-barcode');
+    Route::get('api/products/search', [\App\Http\Controllers\ProductController::class, 'apiSearch'])->name('api.products.search');
     Route::post('products/{product}/adjust-stock', [\App\Http\Controllers\StockAdjustmentController::class, 'store'])->name('products.adjust-stock');
     Route::get('products/{product}/adjustment-history', [\App\Http\Controllers\StockAdjustmentController::class, 'history'])->name('products.adjustment-history');
 

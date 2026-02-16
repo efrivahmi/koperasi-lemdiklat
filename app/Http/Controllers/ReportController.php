@@ -546,25 +546,59 @@ class ReportController extends Controller
                     $profitLossImpact = 0;
                     $revenue = 0;
 
-                    if ($adjustment->purpose === 'sale') {
-                        // Sales transaction: Revenue - COGS
-                        $revenue = $quantity * $hargaJual;
-                        $profitLossImpact = $revenue - $costImpact;
-                        $salesRevenue += $revenue;
-                        $salesProfit += $profitLossImpact;
-                    } else if (in_array($adjustment->purpose, ['internal_use', 'personal_use', 'damage', 'expired'])) {
-                        // Non-revenue purposes: Pure loss
-                        $profitLossImpact = -$costImpact;
-                        $nonRevenueLoss += $costImpact;
-                    } else if ($adjustment->purpose === 'return_to_supplier') {
-                        // Returns: Refund at purchase price (break-even)
-                        $revenue = $costImpact;
-                        $profitLossImpact = 0;
-                        $returnRefund += $revenue;
-                    } else {
-                        // Other: Potential margin calculation
-                        $profitMargin = $hargaJual - $hargaBeli;
-                        $profitLossImpact = $quantity * $profitMargin;
+                    switch ($adjustment->purpose) {
+                        case 'sale':
+                            $revenue = $quantity * $hargaJual;
+                            $profitLossImpact = ($quantity * $hargaJual) - ($quantity * $hargaBeli);
+                            $salesRevenue += $revenue;
+                            $salesProfit += $profitLossImpact;
+                            break;
+                        
+                        case 'return_to_supplier':
+                            $revenue = $quantity * $hargaBeli;
+                            $profitLossImpact = 0;
+                            $returnRefund += $revenue;
+                            break;
+
+                        case 'damage':
+                        case 'expired':
+                        case 'loss':
+                        case 'internal_use':
+                        case 'personal_use':
+                            $revenue = 0;
+                            $profitLossImpact = -($quantity * $hargaBeli);
+                            $nonRevenueLoss += $costImpact;
+                            break;
+
+                        case 'return': // Customer return
+                            $revenue = -($quantity * $hargaJual);
+                            $profitLossImpact = -(($quantity * $hargaJual) - ($quantity * $hargaBeli));
+                            break;
+                        
+                        case 'correction':
+                            if ($adjustment->type === 'addition') {
+                                $revenue = 0;
+                                $profitLossImpact = $quantity * $hargaBeli; // Gain
+                            } else {
+                                $revenue = 0;
+                                $profitLossImpact = -($quantity * $hargaBeli); // Loss
+                            }
+                            break;
+
+                        case 'restock':
+                            $revenue = 0;
+                            $profitLossImpact = 0;
+                            break;
+
+                        default:
+                            if ($adjustment->type === 'deduction') {
+                                $revenue = 0;
+                                $profitLossImpact = -($quantity * $hargaBeli);
+                            } else {
+                                $revenue = 0;
+                                $profitLossImpact = 0;
+                            }
+                            break;
                     }
 
                     if ($adjustment->type === 'addition') {
@@ -573,11 +607,14 @@ class ReportController extends Controller
                         $totalCostImpact += $costImpact;
                     } else {
                         $deductionsCostImpact += $costImpact;
-                        $deductionsLossImpact += $profitLossImpact;
+                        // For losses, profitLossImpact is negative. We want to track the magnitude of loss.
+                        if ($profitLossImpact < 0) {
+                            $deductionsLossImpact += $profitLossImpact;
+                        }
                         $totalCostImpact -= $costImpact;
                     }
 
-                    $totalProfitLossImpact += ($adjustment->type === 'addition' ? $profitLossImpact : -abs($profitLossImpact));
+                    $totalProfitLossImpact += $profitLossImpact;
                     $totalRevenue += $revenue;
                 }
             }

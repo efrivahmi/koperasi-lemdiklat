@@ -4,6 +4,7 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import EmptyState from '@/Components/EmptyState.vue';
 import AuditInfo from '@/Components/AuditInfo.vue';
 import TableToolbar from '@/Components/TableToolbar.vue';
+import SearchableSelect from '@/Components/SearchableSelect.vue';
 import { Head, Link } from '@inertiajs/vue3';
 import { router } from '@inertiajs/vue3';
 import { usePermissions } from '@/Composables/usePermissions';
@@ -14,6 +15,7 @@ const { can } = usePermissions();
 
 defineProps({
     categories: Object,
+    allCategories: Array,
     filters: Object,
 });
 
@@ -48,7 +50,7 @@ const toggleRow = (id) => {
         <div class="min-h-screen">
             <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
                 <!-- Toolbar Section -->
-                <div class="mb-6 bg-slate-800/50 backdrop-blur-md border border-white/10 rounded-xl shadow-2xl p-4">
+                <div class="relative z-30 mb-6 bg-slate-800/50 backdrop-blur-md border border-white/10 rounded-xl shadow-2xl p-4">
                     <TableToolbar
                         title="Kategori Produk"
                         description="Kelola kategori produk koperasi"
@@ -56,6 +58,18 @@ const toggleRow = (id) => {
                         search-route="categories.index"
                         class="text-white"
                     >
+                        <template #search-input>
+                             <SearchableSelect
+                                :model-value="filters.search"
+                                :options="allCategories"
+                                placeholder="Cari kategori..."
+                                search-placeholder="Ketik nama kategori..."
+                                label-key="name"
+                                value-key="name"
+                                @update:model-value="val => router.get(route('categories.index'), { search: val }, { preserveState: true, replace: true })"
+                                class="w-full"
+                            />
+                        </template>
                         <template #actions>
                             <Link v-if="can('categories.create')" :href="route('categories.create')" class="w-full sm:w-auto inline-flex items-center justify-center px-5 py-2.5 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-semibold rounded-lg shadow-lg shadow-indigo-500/20 hover:shadow-indigo-500/40 transition-all duration-200 transform hover:-translate-y-0.5">
                                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">

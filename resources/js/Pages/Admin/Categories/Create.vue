@@ -5,6 +5,7 @@ import InputLabel from '@/Components/InputLabel.vue';
 import TextInput from '@/Components/TextInput.vue';
 import InputError from '@/Components/InputError.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
+import SearchableSelect from '@/Components/SearchableSelect.vue';
 
 import { UNIT_CATEGORIES } from '@/Constants/Units';
 
@@ -56,21 +57,17 @@ const submit = () => {
                     <div class="p-6 sm:p-8">
                         <form @submit.prevent="submit" class="space-y-6">
                             <div>
-                                <label for="parent_id" class="block text-sm font-medium text-slate-300 mb-2">
-                                    Kategori Induk (Parent)
-                                </label>
-                                <select
+                                <InputLabel for="parent_id" value="Kategori Induk (Parent)" />
+                                <SearchableSelect
                                     id="parent_id"
                                     v-model="form.parent_id"
-                                    class="w-full bg-slate-900/50 border border-slate-600/50 text-white rounded-lg focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-400 block p-2.5 transition-all"
-                                >
-                                    <option value="">Tanpa Induk (Main Category)</option>
-                                    <option v-for="parent in parents" :key="parent.id" :value="parent.id">
-                                        {{ parent.name }}
-                                    </option>
-                                </select>
-                                <p class="text-xs text-slate-400 mt-2">Kosongkan jika ini adalah Kategori Utama.</p>
-                                <InputError :message="form.errors.parent_id" class="mt-2" />
+                                    :options="parents"
+                                    placeholder="Pilih Kategori Induk (Opsional)"
+                                    search-placeholder="Cari kategori..."
+                                    label-key="name"
+                                    value-key="id"
+                                />
+                                <InputError class="mt-2" :message="form.errors.parent_id" />
                             </div>
 
                             <div>

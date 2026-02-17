@@ -32,6 +32,9 @@ class CategoryController extends Controller
 
         // 3. Paginate
         $categories = $query->orderBy('name')->paginate(10);
+        
+        // 4. Get all categories for SearchableSelect filter
+        $allCategories = Category::select('id', 'name')->orderBy('name')->get();
 
         if ($request->routeIs('kasir.*')) {
             return Inertia::render('Kasir/Categories/Index', [
@@ -42,7 +45,8 @@ class CategoryController extends Controller
 
         return Inertia::render('Admin/Categories/Index', [
             'categories' => $categories,
-            'filters' => $request->only(['search'])
+            'allCategories' => $allCategories,
+            'filters' => $request->only(['search']),
         ]);
     }
 

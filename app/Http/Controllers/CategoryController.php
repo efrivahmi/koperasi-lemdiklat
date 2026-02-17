@@ -81,8 +81,34 @@ class CategoryController extends Controller
      */
     public function show(Category $category)
     {
+        // Check if it's a parent category (has children)
+        if ($category->children()->exists()) {
+            $category->load(['children.products' => function ($query) {
+                // Ensure we load creator/updater for the products in children
+                $query->with(['creator', 'updater']);
+            }]);
+
+            // Aggregate products for stats only
+            $allProducts = $category->children->flatMap(function ($child) {
+                return $child->products;
+            });
+            
+            // We do NOT override the relationship here, so the view can access children and their products
+        } else {
+             // It's a subcategory or standalone, load its own products
+            $category->load(['products' => function ($query) {
+                $query->with(['creator', 'updater']);
+            }]);
+            $allProducts = $category->products;
+        }
+
         return Inertia::render('Admin/Categories/Show', [
-            'category' => $category->load(['products.creator', 'products.updater'])
+            'category' => $category,
+            'totalProducts' => $allProducts->count(),
+            'totalStock' => $allProducts->sum('stock'),
+            'totalValue' => $allProducts->sum(function ($product) {
+                return $product->stock * $product->harga_beli;
+            }),
         ]);
     }
 

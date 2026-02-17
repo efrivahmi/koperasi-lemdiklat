@@ -15,6 +15,8 @@ class Product extends Model
         'description',
         'image_path',
         'stock',
+        'unit',
+        'netto',
         'harga_beli',
         'harga_jual',
         'barcode',

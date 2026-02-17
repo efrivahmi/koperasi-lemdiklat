@@ -71,6 +71,12 @@ const getPurposeLabel = (purpose) => {
     };
     return labels[purpose] || 'Tidak Diketahui';
 };
+
+import ThermalPrintLayout from '@/Components/ThermalPrintLayout.vue';
+
+const printThermal = () => {
+    window.print();
+};
 </script>
 
 <template>
@@ -137,6 +143,12 @@ const getPurposeLabel = (purpose) => {
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                             </svg>
                             Tampilkan
+                        </button>
+                        <button @click="printThermal" class="inline-flex items-center justify-center px-6 py-2.5 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white rounded-lg font-semibold text-sm transition shadow-sm w-full sm:w-auto">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                            </svg>
+                            Print Thermal
                         </button>
                         <button @click="exportToExcel" class="inline-flex items-center justify-center px-6 py-2.5 bg-green-600 hover:bg-green-700 active:bg-green-800 text-white rounded-lg font-semibold text-sm transition shadow-sm w-full sm:w-auto">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -320,5 +332,58 @@ const getPurposeLabel = (purpose) => {
                 </div>
             </div>
         </div>
+
+        <!-- Thermal Print Layout -->
+        <ThermalPrintLayout
+            title="LAPORAN INVENTARIS"
+            subtitle="Ringkasan Stok"
+            :user="$page.props.auth.user"
+        >
+            <!-- Summary -->
+            <div style="margin-bottom: 10px; border-bottom: 1px dashed black; padding-bottom: 5px;">
+                <div style="font-weight: bold; font-size: 11px;">RINGKASAN</div>
+                <div style="display: flex; justify-content: space-between;">
+                    <span>Total Produk:</span>
+                    <span>{{ summary.total_products }}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between;">
+                    <span>Nilai Stok:</span>
+                    <span>{{ formatCurrency(summary.total_stock_value) }}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; font-size: 9px; margin-top: 2px;">
+                    <span>Habis: {{ summary.out_of_stock }}</span>
+                    <span>Rendah: {{ summary.low_stock }}</span>
+                </div>
+            </div>
+
+            <!-- List -->
+            <div v-for="product in products.data" :key="product.id" style="margin-bottom: 8px; border-bottom: 1px dashed #ccc; padding-bottom: 4px;">
+                <div style="font-weight: bold;">{{ product.name }}</div>
+                <div style="font-size: 9px; margin-bottom: 1px;">{{ product.barcode || '-' }}</div>
+                <div style="display: flex; justify-content: space-between;">
+                    <span>Stok: {{ product.stock }}</span>
+                    <span>{{ formatCurrency(product.stock * product.harga_beli) }}</span>
+                </div>
+                <div style="font-size: 9px; color: #555;">
+                    @ {{ formatCurrency(product.harga_beli) }}
+                </div>
+            </div>
+        </ThermalPrintLayout>
     </AuthenticatedLayout>
 </template>
+
+<style scoped>
+@media print {
+    body * {
+        visibility: hidden;
+    }
+    .thermal-print-container, .thermal-print-container * {
+        visibility: visible;
+    }
+    .thermal-print-container {
+        position: absolute;
+        left: 0;
+        top: 0;
+    }
+}
+</style>

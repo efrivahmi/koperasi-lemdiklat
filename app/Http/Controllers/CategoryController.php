@@ -13,14 +13,25 @@ class CategoryController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Category::with(['creator', 'updater']);
+        // 1. Start with parents only
+        $query = Category::whereNull('parent_id')
+            ->with(['creator', 'updater', 'children.creator', 'children.updater']);
 
+        // 2. Search logic: Search parent OR children
         if ($request->has('search')) {
-            $query->where('name', 'like', '%' . $request->search . '%')
-                  ->orWhere('description', 'like', '%' . $request->search . '%');
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', '%' . $search . '%')
+                  ->orWhere('description', 'like', '%' . $search . '%')
+                  ->orWhereHas('children', function ($cq) use ($search) {
+                      $cq->where('name', 'like', '%' . $search . '%')
+                         ->orWhere('description', 'like', '%' . $search . '%');
+                  });
+            });
         }
 
-        $categories = $query->oldest()->paginate(10);
+        // 3. Paginate
+        $categories = $query->orderBy('name')->paginate(10);
 
         if ($request->routeIs('kasir.*')) {
             return Inertia::render('Kasir/Categories/Index', [
@@ -40,7 +51,10 @@ class CategoryController extends Controller
      */
     public function create()
     {
-        return Inertia::render('Admin/Categories/Create');
+        $parents = Category::whereNull('parent_id')->select('id', 'name')->orderBy('name')->get();
+        return Inertia::render('Admin/Categories/Create', [
+            'parents' => $parents
+        ]);
     }
 
     /**
@@ -50,6 +64,8 @@ class CategoryController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
+            'parent_id' => 'nullable|exists:categories,id,parent_id,NULL',
+            'unit_group' => 'nullable|string|max:50',
             'description' => 'nullable|string',
         ]);
 
@@ -75,8 +91,15 @@ class CategoryController extends Controller
      */
     public function edit(Category $category)
     {
+        $parents = Category::whereNull('parent_id')
+            ->where('id', '!=', $category->id)
+            ->select('id', 'name')
+            ->orderBy('name')
+            ->get();
+
         return Inertia::render('Admin/Categories/Edit', [
-            'category' => $category
+            'category' => $category,
+            'parents' => $parents
         ]);
     }
 
@@ -87,6 +110,8 @@ class CategoryController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
+            'parent_id' => 'nullable|exists:categories,id,parent_id,NULL',
+            'unit_group' => 'nullable|string|max:50',
             'description' => 'nullable|string',
         ]);
 

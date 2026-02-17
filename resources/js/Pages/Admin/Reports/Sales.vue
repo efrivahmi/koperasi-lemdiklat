@@ -28,6 +28,12 @@ const exportToExcel = () => {
 const formatCurrency = (value) => {
     return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(value);
 };
+
+import ThermalPrintLayout from '@/Components/ThermalPrintLayout.vue';
+
+const printThermal = () => {
+    window.print();
+};
 </script>
 
 <template>
@@ -91,6 +97,12 @@ const formatCurrency = (value) => {
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                             </svg>
                             Tampilkan
+                        </button>
+                        <button @click="printThermal" class="inline-flex items-center justify-center px-6 py-2.5 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white rounded-lg font-semibold text-sm transition shadow-sm w-full sm:w-auto">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                            </svg>
+                            Print Thermal
                         </button>
                         <button @click="exportToExcel" class="inline-flex items-center justify-center px-6 py-2.5 bg-green-600 hover:bg-green-700 active:bg-green-800 text-white rounded-lg font-semibold text-sm transition shadow-sm w-full sm:w-auto">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -156,5 +168,65 @@ const formatCurrency = (value) => {
                 </div>
             </div>
         </div>
+
+        <!-- Thermal Print Layout -->
+        <ThermalPrintLayout
+            title="LAPORAN PENJUALAN"
+            subtitle="Periode: Hari Ini"
+            :user="$page.props.auth.user"
+        >
+            <!-- Summary -->
+            <div style="margin-bottom: 10px; border-bottom: 1px dashed black; padding-bottom: 5px;">
+                <div style="font-weight: bold; font-size: 11px;">RINGKASAN</div>
+                <div style="display: flex; justify-content: space-between;">
+                    <span>Total Transaksi:</span>
+                    <span>{{ summary.total_sales }}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between;">
+                    <span>Total Pendapatan:</span>
+                    <span>{{ formatCurrency(summary.total_revenue) }}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; font-size: 9px; margin-top: 2px;">
+                    <span>Tunai: {{ formatCurrency(summary.cash_sales) }}</span>
+                    <span>Saldo: {{ formatCurrency(summary.balance_sales) }}</span>
+                </div>
+            </div>
+
+            <!-- List -->
+            <div v-for="sale in sales.data" :key="sale.id" style="margin-bottom: 8px; border-bottom: 1px dashed #ccc; padding-bottom: 4px;">
+                <div style="display: flex; justify-content: space-between; font-weight: bold;">
+                    <span>#{{ sale.id }}</span>
+                    <span>{{ formatCurrency(sale.total) }}</span>
+                </div>
+                <div style="font-size: 9px;">
+                    {{ new Date(sale.created_at).toLocaleString('id-ID') }}
+                </div>
+                <div v-if="sale.student" style="font-size: 9px;">
+                    Siswa: {{ sale.student.user.name }}
+                </div>
+                <div v-else style="font-size: 9px;">
+                    Pelanggan: Umum
+                </div>
+                <div style="font-size: 9px;">
+                    {{ sale.sale_items.length }} Item ({{ sale.sale_items.reduce((sum, i) => sum + i.quantity, 0) }} Pcs)
+                </div>
+            </div>
+        </ThermalPrintLayout>
     </AuthenticatedLayout>
 </template>
+
+<style scoped>
+@media print {
+    body * {
+        visibility: hidden;
+    }
+    .thermal-print-container, .thermal-print-container * {
+        visibility: visible;
+    }
+    .thermal-print-container {
+        position: absolute;
+        left: 0;
+        top: 0;
+    }
+}
+</style>

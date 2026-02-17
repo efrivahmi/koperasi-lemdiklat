@@ -8,13 +8,14 @@ use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithMapping;
 use Maatwebsite\Excel\Concerns\WithStyles;
 use Maatwebsite\Excel\Concerns\WithColumnWidths;
+use Maatwebsite\Excel\Concerns\WithColumnFormatting;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
 use PhpOffice\PhpSpreadsheet\Style\Color;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use Carbon\Carbon;
 
-class StockAdjustmentsExport implements FromCollection, WithHeadings, WithMapping, WithStyles, WithColumnWidths
+class StockAdjustmentsExport implements FromCollection, WithHeadings, WithMapping, WithStyles, WithColumnWidths, WithColumnFormatting
 {
     protected $dateFrom;
     protected $dateTo;
@@ -237,6 +238,12 @@ class StockAdjustmentsExport implements FromCollection, WithHeadings, WithMappin
             'Q' => 18,  // Dibuat Pada
             'R' => 20,  // Diubah Oleh
             'S' => 18,  // Diubah Pada
+        ];
+    }
+    public function columnFormats(): array
+    {
+        return [
+            'D' => \PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_TEXT,
         ];
     }
 }

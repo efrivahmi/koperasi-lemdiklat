@@ -1,6 +1,6 @@
 <script setup>
 import { ref, computed } from 'vue';
-import { Head, Link, router } from '@inertiajs/vue3';
+import { Head, Link, router, useForm } from '@inertiajs/vue3';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import AuditInfo from '@/Components/AuditInfo.vue';
 
@@ -66,9 +66,9 @@ const formatDate = (dateString) => {
 
 const getTypeBadge = (type) => {
     if (type === 'addition') {
-        return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400';
+        return 'bg-emerald-900/50 text-emerald-200 border border-emerald-700/50';
     }
-    return 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400';
+    return 'bg-rose-900/50 text-rose-200 border border-rose-700/50';
 };
 
 const getTypeText = (type) => {
@@ -100,15 +100,61 @@ const getPurposeLabel = (purpose) => {
 
 const getPurposeBadge = (purpose) => {
     const badges = {
-        'sale': 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400',
-        'internal_use': 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400',
-        'personal_use': 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400',
-        'damage': 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400',
-        'expired': 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400',
-        'return_to_supplier': 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400',
-        'other': 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400'
+        'sale': 'bg-emerald-900/50 text-emerald-200 border border-emerald-700/50',
+        'internal_use': 'bg-amber-900/50 text-amber-200 border border-amber-700/50',
+        'personal_use': 'bg-purple-900/50 text-purple-200 border border-purple-700/50',
+        'damage': 'bg-rose-900/50 text-rose-200 border border-rose-700/50',
+        'expired': 'bg-red-900/50 text-red-200 border border-red-700/50',
+        'return_to_supplier': 'bg-blue-900/50 text-blue-200 border border-blue-700/50',
+        'other': 'bg-slate-700/50 text-slate-200 border border-slate-600/50'
     };
-    return badges[purpose] || 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400';
+    return badges[purpose] || 'bg-slate-700/50 text-slate-200 border border-slate-600/50';
+};
+
+import ThermalPrintLayout from '@/Components/ThermalPrintLayout.vue';
+
+const showEditModal = ref(false);
+const editingAdjustment = ref(null);
+const editForm = useForm({
+    id: null,
+    quantity: 1,
+    type: 'deduction',
+    purpose: 'other',
+    notes: '',
+});
+
+const openEditModal = (adjustment) => {
+    editingAdjustment.value = adjustment;
+    editForm.id = adjustment.id;
+    editForm.quantity = adjustment.quantity_adjusted;
+    editForm.type = adjustment.type;
+    editForm.purpose = adjustment.purpose;
+    editForm.notes = adjustment.notes || '';
+    showEditModal.value = true;
+};
+
+const closeEditModal = () => {
+    showEditModal.value = false;
+    editingAdjustment.value = null;
+    editForm.reset();
+};
+
+const updateAdjustment = () => {
+    editForm.put(route('stock-adjustments.update', editForm.id), {
+        onSuccess: () => closeEditModal(),
+    });
+};
+
+const deleteAdjustment = (id) => {
+    if (confirm('Apakah Anda yakin ingin menghapus data penyesuaian ini? Stok akan dikembalikan ke kondisi sebelum penyesuaian.')) {
+        router.delete(route('stock-adjustments.destroy', id), {
+             preserveScroll: true,
+        });
+    }
+};
+
+const printThermal = () => {
+    window.print();
 };
 </script>
 
@@ -118,383 +164,407 @@ const getPurposeBadge = (purpose) => {
     <AuthenticatedLayout>
         <template #mobileTitle>Laporan</template>
         <template #header>
-            <div>
-                <h2 class="font-semibold text-lg sm:text-xl text-gray-800 dark:text-gray-200 leading-tight">Laporan Penyesuaian Stok</h2>
-                <p class="mt-1 text-xs sm:text-sm text-gray-600 dark:text-gray-400">
-                    Riwayat penyesuaian stok manual produk
-                </p>
-            </div>
+            <h2 class="font-semibold text-xl text-white leading-tight">Laporan Penyesuaian Stok</h2>
         </template>
 
-        <div class="py-6 sm:py-12">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- Galaxy Theme Container -->
+        <!-- Removed conflicting background to use AuthenticatedLayout's theme -->
+        <div class="min-h-screen">
+            <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
 
                 <!-- Error Message -->
-                <div v-if="error" class="mb-4 sm:mb-6 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative dark:bg-red-900/30 dark:border-red-700 dark:text-red-400">
+                <div v-if="error" class="mb-6 bg-rose-900/30 border border-rose-500/30 text-rose-200 px-4 py-3 rounded-lg relative backdrop-blur-sm">
                     <strong class="font-bold">Error!</strong>
                     <span class="block sm:inline"> {{ error }}</span>
                 </div>
 
                 <!-- Statistics Cards -->
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 lg:gap-6 mb-4 sm:mb-6">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
                     <!-- Total Adjustments -->
-                    <div class="bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-lg shadow-lg p-4 sm:p-6 text-white">
-                        <div class="flex items-center justify-between">
+                    <div class="bg-slate-800/50 backdrop-blur-md border border-white/10 rounded-xl shadow-lg p-6 relative overflow-hidden group hover:bg-slate-800/60 transition-all">
+                        <div class="absolute -right-6 -top-6 rounded-full w-24 h-24 bg-indigo-500/20 blur-xl group-hover:bg-indigo-500/30 transition-all"></div>
+                        <div class="relative flex items-center justify-between z-10">
                             <div>
-                                <p class="text-indigo-100 text-xs sm:text-sm font-medium">Total Penyesuaian</p>
-                                <h3 class="text-xl sm:text-3xl font-bold mt-1 sm:mt-2">{{ summary.total_adjustments }}</h3>
-                                <p class="text-indigo-100 text-xs mt-1">Periode ini</p>
+                                <p class="text-indigo-300 text-sm font-medium">Total Penyesuaian</p>
+                                <h3 class="text-3xl font-bold text-white mt-1">{{ summary.total_adjustments }}</h3>
+                                <p class="text-slate-400 text-xs mt-1">Periode ini</p>
                             </div>
-                            <div class="text-3xl sm:text-5xl opacity-50">📦</div>
+                            <div class="text-4xl">📦</div>
                         </div>
                     </div>
 
                     <!-- Total Additions -->
-                    <div class="bg-gradient-to-br from-green-500 to-green-600 rounded-lg shadow-lg p-4 sm:p-6 text-white">
-                        <div class="flex items-center justify-between">
+                    <div class="bg-slate-800/50 backdrop-blur-md border border-white/10 rounded-xl shadow-lg p-6 relative overflow-hidden group hover:bg-slate-800/60 transition-all">
+                        <div class="absolute -right-6 -top-6 rounded-full w-24 h-24 bg-emerald-500/20 blur-xl group-hover:bg-emerald-500/30 transition-all"></div>
+                        <div class="relative flex items-center justify-between z-10">
                             <div>
-                                <p class="text-green-100 text-xs sm:text-sm font-medium">Total Penambahan</p>
-                                <h3 class="text-xl sm:text-3xl font-bold mt-1 sm:mt-2">{{ summary.total_additions }}</h3>
-                                <p class="text-green-100 text-xs mt-1">{{ summary.additions_count }} transaksi</p>
+                                <p class="text-emerald-300 text-sm font-medium">Total Penambahan</p>
+                                <h3 class="text-3xl font-bold text-white mt-1">{{ summary.total_additions }}</h3>
+                                <p class="text-slate-400 text-xs mt-1">{{ summary.additions_count }} transaksi</p>
                             </div>
-                            <div class="text-3xl sm:text-5xl opacity-50">➕</div>
+                            <div class="text-4xl text-emerald-400">➕</div>
                         </div>
                     </div>
 
                     <!-- Total Deductions -->
-                    <div class="bg-gradient-to-br from-red-500 to-red-600 rounded-lg shadow-lg p-4 sm:p-6 text-white">
-                        <div class="flex items-center justify-between">
+                    <div class="bg-slate-800/50 backdrop-blur-md border border-white/10 rounded-xl shadow-lg p-6 relative overflow-hidden group hover:bg-slate-800/60 transition-all">
+                        <div class="absolute -right-6 -top-6 rounded-full w-24 h-24 bg-rose-500/20 blur-xl group-hover:bg-rose-500/30 transition-all"></div>
+                        <div class="relative flex items-center justify-between z-10">
                             <div>
-                                <p class="text-red-100 text-xs sm:text-sm font-medium">Total Pengurangan</p>
-                                <h3 class="text-xl sm:text-3xl font-bold mt-1 sm:mt-2">{{ summary.total_deductions }}</h3>
-                                <p class="text-red-100 text-xs mt-1">{{ summary.deductions_count }} transaksi</p>
+                                <p class="text-rose-300 text-sm font-medium">Total Pengurangan</p>
+                                <h3 class="text-3xl font-bold text-white mt-1">{{ summary.total_deductions }}</h3>
+                                <p class="text-slate-400 text-xs mt-1">{{ summary.deductions_count }} transaksi</p>
                             </div>
-                            <div class="text-3xl sm:text-5xl opacity-50">➖</div>
+                            <div class="text-4xl text-rose-400">➖</div>
                         </div>
                     </div>
                 </div>
 
-
                 <!-- Filters -->
-                <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg mb-4 sm:mb-6">
-                    <div class="p-4 sm:p-6 text-gray-900 dark:text-gray-100">
-                        <h3 class="font-semibold text-base sm:text-lg mb-4">Filter Laporan</h3>
+                <div class="bg-slate-800/50 backdrop-blur-md border border-white/10 rounded-xl shadow-xl mb-6 p-4 sm:p-6">
+                    <h3 class="font-semibold text-lg text-white mb-4 flex items-center">
+                        <svg class="w-5 h-5 mr-2 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" /></svg>
+                        Filter Laporan
+                    </h3>
 
-                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 mb-4">
-                            <!-- Date From -->
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                    Dari Tanggal
-                                </label>
-                                <input
-                                    type="date"
-                                    v-model="searchForm.date_from"
-                                    class="w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm text-sm sm:text-base py-2"
-                                />
-                            </div>
-
-                            <!-- Date To -->
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                    Sampai Tanggal
-                                </label>
-                                <input
-                                    type="date"
-                                    v-model="searchForm.date_to"
-                                    class="w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm text-sm sm:text-base py-2"
-                                />
-                            </div>
-
-                            <!-- Product -->
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                    Produk
-                                </label>
-                                <select
-                                    v-model="searchForm.product_id"
-                                    class="w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm text-sm sm:text-base py-2"
-                                >
-                                    <option value="">Semua Produk</option>
-                                    <option v-for="product in products" :key="product.id" :value="product.id">
-                                        {{ product.name }} ({{ product.barcode }})
-                                    </option>
-                                </select>
-                            </div>
-
-                            <!-- Type -->
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                    Tipe Penyesuaian
-                                </label>
-                                <select
-                                    v-model="searchForm.type"
-                                    class="w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm text-sm sm:text-base py-2"
-                                >
-                                    <option value="">Semua Tipe</option>
-                                    <option value="addition">➕ Penambahan</option>
-                                    <option value="deduction">➖ Pengurangan</option>
-                                </select>
-                            </div>
-
-                            <!-- Adjusted By -->
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                    Disesuaikan Oleh
-                                </label>
-                                <select
-                                    v-model="searchForm.adjusted_by"
-                                    class="w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm text-sm sm:text-base py-2"
-                                >
-                                    <option value="">Semua User</option>
-                                    <option v-for="adjuster in adjusters" :key="adjuster.id" :value="adjuster.id">
-                                        {{ adjuster.name }}
-                                    </option>
-                                </select>
-                            </div>
-
-                            <!-- Search -->
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                    Cari Produk
-                                </label>
-                                <input
-                                    type="text"
-                                    v-model="searchForm.search"
-                                    placeholder="Nama atau barcode produk..."
-                                    class="w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm text-sm sm:text-base py-2"
-                                    @keyup.enter="applyFilters"
-                                />
-                            </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
+                        <!-- Date From -->
+                        <div>
+                            <label class="block text-sm font-medium text-slate-300 mb-1">Dari Tanggal</label>
+                            <input type="date" v-model="searchForm.date_from" class="w-full bg-slate-900/60 border-slate-600 text-white rounded-lg focus:ring-indigo-500 focus:border-indigo-500 text-sm transition-all" />
                         </div>
 
-                        <!-- Filter Buttons -->
-                        <div class="flex flex-col sm:flex-row gap-2">
-                            <button
-                                @click="applyFilters"
-                                class="inline-flex items-center justify-center px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white rounded-lg font-semibold text-sm transition shadow-sm w-full sm:w-auto"
-                            >
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
-                                    <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
-                                </svg>
-                                Tampilkan
-                            </button>
-
-                            <button
-                                @click="resetFilters"
-                                class="inline-flex items-center justify-center px-6 py-2.5 bg-gray-500 hover:bg-gray-600 active:bg-gray-700 text-white rounded-lg font-semibold text-sm transition shadow-sm w-full sm:w-auto"
-                            >
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                                    <path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd" />
-                                </svg>
-                                Reset
-                            </button>
-
-                            <button
-                                @click="exportToExcel"
-                                class="inline-flex items-center justify-center px-6 py-2.5 bg-green-600 hover:bg-green-700 active:bg-green-800 text-white rounded-lg font-semibold text-sm transition shadow-sm w-full sm:w-auto"
-                            >
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                                </svg>
-                                Export Excel
-                            </button>
+                        <!-- Date To -->
+                        <div>
+                            <label class="block text-sm font-medium text-slate-300 mb-1">Sampai Tanggal</label>
+                            <input type="date" v-model="searchForm.date_to" class="w-full bg-slate-900/60 border-slate-600 text-white rounded-lg focus:ring-indigo-500 focus:border-indigo-500 text-sm transition-all" />
                         </div>
+
+                        <!-- Product -->
+                        <div>
+                            <label class="block text-sm font-medium text-slate-300 mb-1">Produk</label>
+                            <select v-model="searchForm.product_id" class="w-full bg-slate-900/60 border-slate-600 text-white rounded-lg focus:ring-indigo-500 focus:border-indigo-500 text-sm transition-all">
+                                <option value="">Semua Produk</option>
+                                <option v-for="product in products" :key="product.id" :value="product.id">
+                                    {{ product.name }}
+                                </option>
+                            </select>
+                        </div>
+
+                        <!-- Type -->
+                        <div>
+                            <label class="block text-sm font-medium text-slate-300 mb-1">Tipe Penyesuaian</label>
+                            <select v-model="searchForm.type" class="w-full bg-slate-900/60 border-slate-600 text-white rounded-lg focus:ring-indigo-500 focus:border-indigo-500 text-sm transition-all">
+                                <option value="">Semua Tipe</option>
+                                <option value="addition">➕ Penambahan</option>
+                                <option value="deduction">➖ Pengurangan</option>
+                            </select>
+                        </div>
+
+                        <!-- Adjusted By -->
+                        <div>
+                            <label class="block text-sm font-medium text-slate-300 mb-1">Disesuaikan Oleh</label>
+                            <select v-model="searchForm.adjusted_by" class="w-full bg-slate-900/60 border-slate-600 text-white rounded-lg focus:ring-indigo-500 focus:border-indigo-500 text-sm transition-all">
+                                <option value="">Semua User</option>
+                                <option v-for="adjuster in adjusters" :key="adjuster.id" :value="adjuster.id">
+                                    {{ adjuster.name }}
+                                </option>
+                            </select>
+                        </div>
+
+                        <!-- Search -->
+                        <div>
+                            <label class="block text-sm font-medium text-slate-300 mb-1">Cari Produk</label>
+                            <input type="text" v-model="searchForm.search" placeholder="Nama atau barcode..." class="w-full bg-slate-900/60 border-slate-600 text-white rounded-lg focus:ring-indigo-500 focus:border-indigo-500 text-sm transition-all" @keyup.enter="applyFilters" />
+                        </div>
+                    </div>
+
+                    <!-- Filter Buttons -->
+                    <div class="flex flex-col sm:flex-row gap-2 mt-4 pt-4 border-t border-white/5">
+                        <button @click="applyFilters" class="inline-flex items-center justify-center px-5 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg font-medium text-sm transition-all shadow-lg hover:shadow-indigo-500/50">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" /></svg>
+                            Tampilkan
+                        </button>
+                        <button @click="resetFilters" class="inline-flex items-center justify-center px-5 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg font-medium text-sm transition-all border border-slate-600">
+                            Reset
+                        </button>
+                        <div class="flex-1"></div>
+                        <button @click="printThermal" class="inline-flex items-center justify-center px-5 py-2 bg-sky-600 hover:bg-sky-500 text-white rounded-lg font-medium text-sm transition-all shadow-lg hover:shadow-sky-500/50">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" /></svg>
+                            Print Thermal
+                        </button>
+                        <button @click="exportToExcel" class="inline-flex items-center justify-center px-5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg font-medium text-sm transition-all shadow-lg hover:shadow-emerald-500/50">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                            Export Excel
+                        </button>
                     </div>
                 </div>
 
                 <!-- Table -->
-                <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
-                    <div class="p-6 text-gray-900 dark:text-gray-100">
-                        <div class="overflow-x-auto">
-                            <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                                <thead class="bg-gray-50 dark:bg-gray-900">
-                                    <tr>
-                                        <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                                            Tanggal
-                                        </th>
-                                        <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                                            Produk
-                                        </th>
-                                        <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                                            Tipe
-                                        </th>
-                                        <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                                            Tujuan
-                                        </th>
-                                        <th class="px-3 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                                            Qty
-                                        </th>
-                                        <th class="px-3 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                                            Stok Awal
-                                        </th>
-                                        <th class="px-3 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                                            Stok Akhir
-                                        </th>
-                                        <th class="px-3 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                                            Harga Beli
-                                        </th>
-                                        <th class="px-3 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                                            Harga Jual
-                                        </th>
-                                        <th class="px-3 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                                            Pendapatan
-                                        </th>
-                                        <th class="px-3 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                                            Laba/Rugi
-                                        </th>
-                                        <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                                            Disesuaikan Oleh
-                                        </th>
-                                        <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                                            Catatan
-                                        </th>
-                                        <th class="px-3 py-3 text-left text-xs font-medium text-gray-900 dark:text-gray-100 uppercase tracking-wider hidden xl:table-cell">
-                                            Dibuat
-                                        </th>
-                                        <th class="px-3 py-3 text-left text-xs font-medium text-gray-900 dark:text-gray-100 uppercase tracking-wider hidden xl:table-cell">
-                                            Diubah
-                                        </th>
-                                    </tr>
-                                </thead>
-                                <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                                    <tr v-if="adjustments.data.length === 0">
-                                        <td colspan="15" class="px-6 py-12 text-center text-gray-500 dark:text-gray-400">
-                                            <div class="flex flex-col items-center justify-center">
-                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 text-gray-400 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                                </svg>
-                                                <p class="text-lg font-medium">Tidak ada data penyesuaian stok</p>
-                                                <p class="text-sm">Coba ubah filter atau periode waktu</p>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                    <tr v-for="adjustment in adjustments.data" :key="adjustment.id" class="hover:bg-gray-50 dark:hover:bg-gray-700">
-                                        <!-- Tanggal -->
-                                        <td class="px-3 py-3 whitespace-nowrap text-xs text-gray-900 dark:text-gray-100">
-                                            {{ formatDate(adjustment.created_at) }}
-                                        </td>
-                                        <!-- Produk -->
-                                        <td class="px-3 py-3">
-                                            <div class="text-sm font-medium text-gray-900 dark:text-gray-100 max-w-[180px] truncate" :title="adjustment.product?.name || '-'">
-                                                {{ adjustment.product?.name || '-' }}
-                                            </div>
-                                        </td>
-                                        <!-- Tipe -->
-                                        <td class="px-3 py-3 whitespace-nowrap">
-                                            <span :class="getTypeBadge(adjustment.type)" class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium">
+                <div class="bg-slate-800/40 backdrop-blur-md border border-white/10 rounded-xl shadow-xl overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-white/10">
+                            <thead class="bg-slate-900/50">
+                                <tr>
+                                    <th class="px-4 py-3 text-left text-xs font-semibold text-indigo-300 uppercase tracking-wider">Tanggal</th>
+                                    <th class="px-4 py-3 text-left text-xs font-semibold text-indigo-300 uppercase tracking-wider">Produk</th>
+                                    <th class="px-4 py-3 text-left text-xs font-semibold text-indigo-300 uppercase tracking-wider">Tipe/Tujuan</th>
+                                    <th class="px-4 py-3 text-center text-xs font-semibold text-indigo-300 uppercase tracking-wider">Qty</th>
+                                    <th class="px-4 py-3 text-right text-xs font-semibold text-indigo-300 uppercase tracking-wider">Finansial</th>
+                                    <th class="px-4 py-3 text-left text-xs font-semibold text-indigo-300 uppercase tracking-wider">Oleh</th>
+                                    <th class="px-4 py-3 text-left text-xs font-semibold text-indigo-300 uppercase tracking-wider">Catatan</th>
+                                    <th class="px-4 py-3 text-center text-xs font-semibold text-indigo-300 uppercase tracking-wider">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-white/5 bg-transparent">
+                                <tr v-if="adjustments.data.length === 0">
+                                    <td colspan="7" class="px-6 py-12 text-center text-slate-500">
+                                        <div class="flex flex-col items-center justify-center">
+                                            <svg class="h-12 w-12 text-slate-600 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                                            <p class="text-base font-medium text-slate-400">Tidak ada data penyesuaian stok</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr v-for="adjustment in adjustments.data" :key="adjustment.id" class="hover:bg-white/5 transition-colors">
+                                    <td class="px-4 py-3 text-sm text-slate-300 whitespace-nowrap">
+                                        {{ formatDate(adjustment.created_at) }}
+                                    </td>
+                                    <td class="px-4 py-3">
+                                        <div class="text-sm font-bold text-white">{{ adjustment.product?.name || '-' }}</div>
+                                        <div class="text-xs text-slate-500 font-mono">{{ adjustment.product?.barcode }}</div>
+                                    </td>
+                                    <td class="px-4 py-3">
+                                        <div class="flex flex-col gap-1">
+                                            <span :class="getTypeBadge(adjustment.type)" class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium w-fit">
                                                 <span class="mr-1">{{ getTypeIcon(adjustment.type) }}</span>
                                                 {{ getTypeText(adjustment.type) }}
                                             </span>
-                                        </td>
-                                        <!-- Tujuan -->
-                                        <td class="px-3 py-3 whitespace-nowrap">
-                                            <span :class="getPurposeBadge(adjustment.purpose)" class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium max-w-[160px] truncate" :title="getPurposeLabel(adjustment.purpose)">
+                                            <span :class="getPurposeBadge(adjustment.purpose)" class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium w-fit">
                                                 {{ getPurposeLabel(adjustment.purpose) }}
                                             </span>
-                                        </td>
-                                        <!-- Qty -->
-                                        <td class="px-3 py-3 whitespace-nowrap text-center">
-                                            <span :class="adjustment.type === 'addition' ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'" class="text-sm font-bold">
-                                                {{ adjustment.type === 'addition' ? '+' : '-' }}{{ adjustment.quantity_adjusted }}
-                                            </span>
-                                        </td>
-                                        <!-- Stok Awal -->
-                                        <td class="px-3 py-3 whitespace-nowrap text-center text-sm text-gray-900 dark:text-gray-100">
-                                            {{ adjustment.quantity_before }}
-                                        </td>
-                                        <!-- Stok Akhir -->
-                                        <td class="px-3 py-3 whitespace-nowrap text-center text-sm font-semibold text-gray-900 dark:text-gray-100">
-                                            {{ adjustment.quantity_after }}
-                                        </td>
-                                        <!-- Harga Beli -->
-                                        <td class="px-3 py-3 whitespace-nowrap text-right text-sm text-gray-900 dark:text-gray-100">
-                                            {{ formatCurrency(adjustment.product?.harga_beli || 0) }}
-                                        </td>
-                                        <!-- Harga Jual -->
-                                        <td class="px-3 py-3 whitespace-nowrap text-right text-sm text-gray-900 dark:text-gray-100">
-                                            {{ formatCurrency(adjustment.product?.harga_jual || 0) }}
-                                        </td>
-                                        <!-- Pendapatan -->
-                                        <td class="px-3 py-3 whitespace-nowrap text-right">
-                                            <div class="text-sm font-semibold text-blue-600 dark:text-blue-400">
-                                                {{ formatCurrency(adjustment.revenue || 0) }}
+                                        </div>
+                                    </td>
+                                    <td class="px-4 py-3 text-center">
+                                        <div class="text-sm font-bold" :class="adjustment.type === 'addition' ? 'text-emerald-400' : 'text-rose-400'">
+                                            {{ adjustment.type === 'addition' ? '+' : '-' }}{{ adjustment.quantity_adjusted }}
+                                        </div>
+                                        <div class="text-xs text-slate-500">Stok: {{ adjustment.quantity_before }} -> {{ adjustment.quantity_after }}</div>
+                                    </td>
+                                    <td class="px-4 py-3 text-right">
+                                        <div v-if="adjustment.revenue > 0" class="text-xs text-blue-400 mb-0.5">Rev: {{ formatCurrency(adjustment.revenue) }}</div>
+                                        <div class="text-sm font-semibold" :class="(adjustment.profit_loss_impact || 0) >= 0 ? 'text-emerald-400' : 'text-rose-400'">
+                                            {{ (adjustment.profit_loss_impact || 0) >= 0 ? '+' : '' }}{{ formatCurrency(adjustment.profit_loss_impact || 0) }}
+                                        </div>
+                                        <div class="text-xs text-slate-600">Laba/Rugi</div>
+                                    </td>
+                                    <td class="px-4 py-3 text-sm text-slate-300">
+                                        <div class="flex items-center gap-2">
+                                            <div class="w-6 h-6 rounded-full bg-indigo-500/50 flex items-center justify-center text-xs font-bold text-white border border-white/10">
+                                                {{ adjustment.adjusted_by?.name ? adjustment.adjusted_by.name.charAt(0).toUpperCase() : '?' }}
                                             </div>
-                                        </td>
-                                        <!-- Laba/Rugi -->
-                                        <td class="px-3 py-3 whitespace-nowrap text-right">
-                                            <div class="text-sm font-semibold" :class="(adjustment.profit_loss_impact || 0) >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'">
-                                                {{ (adjustment.profit_loss_impact || 0) >= 0 ? '+' : '' }}{{ formatCurrency(adjustment.profit_loss_impact || 0) }}
-                                            </div>
-                                        </td>
-                                        <!-- Disesuaikan Oleh -->
-                                        <td class="px-3 py-3 whitespace-nowrap text-xs">
-                                            <div v-if="adjustment.adjusted_by" class="flex items-center gap-2">
-                                                <img
-                                                    v-if="adjustment.adjusted_by.photo_url"
-                                                    :src="adjustment.adjusted_by.photo_url"
-                                                    :alt="adjustment.adjusted_by.name"
-                                                    class="w-8 h-8 rounded-full object-cover border-2 border-gray-200 dark:border-gray-700"
-                                                />
-                                                <div v-else class="w-8 h-8 rounded-full bg-indigo-500 flex items-center justify-center text-white font-semibold text-xs border-2 border-gray-200 dark:border-gray-700">
-                                                    {{ adjustment.adjusted_by.name.charAt(0).toUpperCase() }}
-                                                </div>
-                                                <div>
-                                                    <div class="text-gray-900 dark:text-gray-100 font-medium">{{ adjustment.adjusted_by.name }}</div>
-                                                    <div class="text-gray-500 dark:text-gray-400 text-xs">{{ adjustment.adjusted_by.role }}</div>
-                                                </div>
-                                            </div>
-                                            <div v-else class="text-gray-500 dark:text-gray-400">-</div>
-                                        </td>
-                                        <!-- Catatan -->
-                                        <td class="px-3 py-3 text-xs text-gray-500 dark:text-gray-400 max-w-[120px]">
-                                            <div class="line-clamp-2" :title="adjustment.notes || '-'">
-                                                {{ adjustment.notes || '-' }}
-                                            </div>
-                                        </td>
-                                        <!-- Dibuat -->
-                                        <td class="px-3 py-3 whitespace-nowrap text-xs text-gray-500 dark:text-gray-400 hidden xl:table-cell">
-                                            <AuditInfo :user="adjustment.creator" :timestamp="adjustment.created_at" label="Dibuat" />
-                                        </td>
-                                        <!-- Diubah -->
-                                        <td class="px-3 py-3 whitespace-nowrap text-xs text-gray-500 dark:text-gray-400 hidden xl:table-cell">
-                                            <AuditInfo :user="adjustment.updater" :timestamp="adjustment.updated_at" label="Diubah" />
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
+                                            <span class="truncate max-w-[100px]">{{ adjustment.adjusted_by?.name || '-' }}</span>
+                                        </div>
+                                    </td>
+                                    <td class="px-4 py-3 text-xs text-slate-400 max-w-[150px] truncate" :title="adjustment.notes">
+                                        {{ adjustment.notes || '-' }}
+                                    </td>
+                                    <td class="px-4 py-3 text-center">
+                                        <div class="flex items-center justify-center gap-2">
+                                            <button @click="openEditModal(adjustment)" class="text-indigo-400 hover:text-white transition-colors" title="Edit">
+                                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
+                                            </button>
+                                            <button @click="deleteAdjustment(adjustment.id)" class="text-rose-400 hover:text-rose-300 transition-colors" title="Hapus">
+                                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
 
-                        <!-- Pagination -->
-                        <div v-if="adjustments.data.length > 0" class="mt-6 flex items-center justify-between border-t border-gray-200 dark:border-gray-700 pt-4">
-                            <div class="text-sm text-gray-700 dark:text-gray-300">
-                                Menampilkan <span class="font-medium">{{ adjustments.from }}</span> sampai <span class="font-medium">{{ adjustments.to }}</span> dari <span class="font-medium">{{ adjustments.total }}</span> data
-                            </div>
-                            <div class="flex gap-2">
-                                <template v-for="(link, index) in adjustments.links" :key="index">
-                                    <Link
-                                        v-if="link.url"
-                                        :href="link.url"
-                                        :class="[
-                                            'px-3 py-2 text-sm rounded',
-                                            link.active
-                                                ? 'bg-indigo-500 text-white font-semibold'
-                                                : 'bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600'
-                                        ]"
-                                        v-html="link.label"
-                                        :preserve-state="true"
-                                        :preserve-scroll="true"
-                                    />
-                                    <span
-                                        v-else
-                                        :class="'px-3 py-2 text-sm rounded bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 opacity-50 cursor-not-allowed'"
-                                        v-html="link.label"
-                                    />
-                                </template>
+                    <!-- Pagination -->
+                    <div v-if="adjustments.data.length > 0" class="px-6 py-4 border-t border-white/5 bg-slate-900/30 flex items-center justify-between">
+                        <div class="text-sm text-slate-500">
+                            Showing <span class="font-medium text-white">{{ adjustments.from }}</span> to <span class="font-medium text-white">{{ adjustments.to }}</span> of <span class="font-medium text-white">{{ adjustments.total }}</span>
+                        </div>
+                        <div class="flex gap-1">
+                            <template v-for="(link, index) in adjustments.links" :key="index">
+                                <Link
+                                    v-if="link.url"
+                                    :href="link.url"
+                                    :class="[
+                                        'px-3 py-1.5 rounded-md text-sm font-medium transition-all',
+                                        link.active ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/30' : 'bg-slate-800 text-slate-400 hover:bg-slate-700 hover:text-white border border-white/5'
+                                    ]"
+                                    v-html="link.label"
+                                    preserve-state
+                                    preserve-scroll
+                                />
+                                <span v-else :class="'px-3 py-1.5 rounded-md text-sm font-medium bg-slate-900/50 text-slate-600 border border-white/5 cursor-not-allowed'" v-html="link.label" />
+                            </template>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Edit Adjustment Modal -->
+        <div v-if="showEditModal" class="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+            <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+                <div class="fixed inset-0 bg-black/80 backdrop-blur-sm transition-opacity" aria-hidden="true" @click="closeEditModal"></div>
+
+                <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+
+                <div class="inline-block align-bottom bg-slate-800 rounded-xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full border border-white/10 ring-1 ring-white/5">
+                    <div class="px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                        <div class="sm:flex sm:items-start">
+                            <div class="w-full">
+                                <h3 class="text-xl leading-6 font-bold text-white mb-1" id="modal-title">
+                                    Edit Penyesuaian Stok
+                                </h3>
+                                <p class="text-sm text-slate-400 mb-6">Produk: <span class="text-indigo-400 font-semibold">{{ editingAdjustment?.product?.name }}</span></p>
+
+                                <form @submit.prevent="updateAdjustment">
+                                    
+                                    <!-- Purpose Selection -->
+                                    <div class="mb-5">
+                                        <label class="block text-sm font-medium text-slate-300 mb-2">Alasan Penyesuaian</label>
+                                        <select v-model="editForm.purpose" class="block w-full pl-3 pr-10 py-2.5 text-base bg-slate-900/70 border-slate-600 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-lg text-white">
+                                            <option value="damage">Kerusakan Barang</option>
+                                            <option value="expired">Barang Kadaluarsa</option>
+                                            <option value="internal_use">Keperluan Internal/Kantor</option>
+                                            <option value="personal_use">Keperluan Pribadi</option>
+                                            <option value="return_to_supplier">Retur ke Supplier</option>
+                                            <option value="sale">Penjualan Manual</option>
+                                            <option value="other">Lainnya</option>
+                                        </select>
+                                    </div>
+
+                                    <!-- Type Selection -->
+                                    <div class="mb-5">
+                                        <label class="block text-sm font-medium text-slate-300 mb-2">Jenis Penyesuaian</label>
+                                        <div class="grid grid-cols-2 gap-3">
+                                            <label 
+                                                class="cursor-pointer border rounded-lg p-3 text-center transition-all"
+                                                :class="editForm.type === 'deduction' ? 'bg-rose-900/30 border-rose-500/50 text-rose-200' : 'bg-slate-900/50 border-slate-700 text-slate-400 hover:bg-slate-800'"
+                                            >
+                                                <input type="radio" v-model="editForm.type" value="deduction" class="sr-only">
+                                                <span class="block font-semibold">Pengurangan (-)</span>
+                                            </label>
+                                            <label 
+                                                class="cursor-pointer border rounded-lg p-3 text-center transition-all"
+                                                :class="editForm.type === 'addition' ? 'bg-emerald-900/30 border-emerald-500/50 text-emerald-200' : 'bg-slate-900/50 border-slate-700 text-slate-400 hover:bg-slate-800'"
+                                            >
+                                                <input type="radio" v-model="editForm.type" value="addition" class="sr-only">
+                                                <span class="block font-semibold">Penambahan (+)</span>
+                                            </label>
+                                        </div>
+                                    </div>
+
+                                    <!-- Quantity Input -->
+                                    <div class="mb-5">
+                                        <label class="block text-sm font-medium text-slate-300 mb-2">Jumlah Unit</label>
+                                        <div class="relative rounded-md shadow-sm">
+                                            <input 
+                                                type="number" 
+                                                v-model="editForm.quantity" 
+                                                min="1" 
+                                                class="block w-full py-2.5 pr-12 bg-slate-900/70 border-slate-600 rounded-lg text-white focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm text-lg font-bold" 
+                                                required
+                                            >
+                                            <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                                <span class="text-slate-400 sm:text-sm">{{ editingAdjustment?.product?.unit || 'Pcs' }}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Notes -->
+                                    <div class="mb-4">
+                                        <label class="block text-sm font-medium text-slate-300 mb-2">Catatan Tambahan</label>
+                                        <textarea 
+                                            v-model="editForm.notes" 
+                                            rows="2" 
+                                            class="block w-full py-2 bg-slate-900/70 border-slate-600 rounded-lg text-white focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm placeholder-slate-500"
+                                            placeholder="Detail tambahan..."
+                                        ></textarea>
+                                    </div>
+
+                                    <div class="mt-6 sm:flex sm:flex-row-reverse gap-3">
+                                        <button 
+                                            type="submit" 
+                                            :disabled="editForm.processing"
+                                            class="w-full inline-flex justify-center rounded-lg border border-transparent shadow-lg px-4 py-2.5 bg-gradient-to-r from-indigo-600 to-purple-600 text-base font-medium text-white hover:from-indigo-500 hover:to-purple-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:w-auto sm:text-sm disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                                        >
+                                            {{ editForm.processing ? 'Menyimpan...' : 'Simpan Perubahan' }}
+                                        </button>
+                                        <button 
+                                            type="button" 
+                                            @click="closeEditModal" 
+                                            class="mt-3 w-full inline-flex justify-center rounded-lg border border-slate-600 shadow-sm px-4 py-2.5 bg-slate-700 text-base font-medium text-slate-200 hover:bg-slate-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500 sm:mt-0 sm:w-auto sm:text-sm transition-all"
+                                        >
+                                            Batal
+                                        </button>
+                                    </div>
+                                </form>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
+
+        <!-- Thermal Print Layout (Hidden on Screen) -->
+        <ThermalPrintLayout
+            title="LAPORAN PENYESUAIAN STOK"
+            subtitle="Periode: Hari Ini"
+            :user="$page.props.auth.user"
+        >
+             <!-- Summary -->
+             <div style="margin-bottom: 10px; border-bottom: 1px dashed black; padding-bottom: 5px;">
+                <div style="font-weight: bold; font-size: 11px;">RINGKASAN</div>
+                <div style="display: flex; justify-content: space-between;">
+                    <span>Total Item:</span>
+                    <span>{{ summary.total_adjustments }}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between;">
+                    <span>Profit/Loss:</span>
+                    <span>{{ formatCurrency(adjustments.data.reduce((sum, item) => sum + (item.profit_loss_impact || 0), 0)) }}</span>
+                </div>
+            </div>
+
+            <!-- List -->
+            <div v-for="item in adjustments.data" :key="item.id" style="margin-bottom: 8px; border-bottom: 1px dashed #ccc; padding-bottom: 4px;">
+                <div style="font-weight: bold;">{{ item.product?.name }}</div>
+                <div style="font-size: 9px; margin-bottom: 2px;">{{ item.product?.barcode }}</div>
+                <div style="display: flex; justify-content: space-between;">
+                    <span>{{ getPurposeLabel(item.purpose) }}</span>
+                    <span :style="{ fontWeight: 'bold', color: item.type === 'addition' ? 'black' : 'black' }">
+                        {{ item.type === 'addition' ? '+' : '-' }}{{ item.quantity_adjusted }}
+                    </span>
+                </div>
+                <div style="display: flex; justify-content: space-between; font-size: 9px;">
+                    <span>{{ formatDate(item.created_at) }}</span>
+                    <span>{{ formatCurrency(item.profit_loss_impact || 0) }}</span>
+                </div>
+            </div>
+        </ThermalPrintLayout>
     </AuthenticatedLayout>
 </template>
+
+<style scoped>
+/* Print Styles for Stock Adjustments specifically */
+@media print {
+    body * {
+        visibility: hidden;
+    }
+    .thermal-print-container, .thermal-print-container * {
+        visibility: visible;
+    }
+    .thermal-print-container {
+        position: absolute;
+        left: 0;
+        top: 0;
+    }
+}
+</style>

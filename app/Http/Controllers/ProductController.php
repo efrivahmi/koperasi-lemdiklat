@@ -46,7 +46,7 @@ class ProductController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Product::with(['category', 'creator', 'updater']);
+        $query = Product::with(['category', 'creator', 'updater'])->withCount('stockIns');
 
         if ($request->has('search')) {
             $query->where('name', 'like', '%' . $request->search . '%')
@@ -96,6 +96,8 @@ class ProductController extends Controller
             'harga_beli' => 'required|numeric|min:0',
             'harga_jual' => 'required|numeric|min:0',
             'barcode' => 'nullable|string|unique:products,barcode',
+            'unit' => 'nullable|string|max:50',
+            'netto' => 'nullable|string|max:100',
             'auto_generate_barcode' => 'nullable|boolean',
         ]);
 
@@ -158,6 +160,8 @@ class ProductController extends Controller
             'description' => 'nullable|string',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'stock' => 'required|integer|min:0',
+            'unit' => 'nullable|string|max:50',
+            'netto' => 'nullable|string|max:100',
             'harga_beli' => 'required|numeric|min:0',
             'harga_jual' => 'required|numeric|min:0',
             'barcode' => 'nullable|string|unique:products,barcode,' . $product->id,

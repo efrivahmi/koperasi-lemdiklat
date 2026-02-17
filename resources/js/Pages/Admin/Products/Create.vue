@@ -3,7 +3,8 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
 import InputError from '@/Components/InputError.vue';
 import SearchableSelect from '@/Components/SearchableSelect.vue';
-import { ref } from 'vue';
+import { ref, computed, watch } from 'vue';
+import { FLAT_UNITS, getUnitsByGroup } from '@/Constants/Units';
 
 const props = defineProps({
     categories: Array,
@@ -17,6 +18,43 @@ const form = useForm({
     harga_beli: 0,
     harga_jual: 0,
     barcode: '',
+    unit: 'Pcs', // Default UOM
+    netto: '',
+});
+
+const selectedMainCategoryId = ref('');
+
+const mainCategories = computed(() => {
+    return props.categories.filter(c => !c.parent_id).sort((a, b) => a.name.localeCompare(b.name));
+});
+
+const subCategories = computed(() => {
+    if (!selectedMainCategoryId.value) return [];
+    return props.categories
+        .filter(c => c.parent_id === selectedMainCategoryId.value)
+        .sort((a, b) => a.name.localeCompare(b.name));
+});
+
+// Watch for main category change to clear sub-category
+watch(selectedMainCategoryId, (newVal) => {
+    form.category_id = '';
+});
+
+const availableUnits = computed(() => {
+    if (!form.category_id) return FLAT_UNITS;
+    
+    const selectedCategory = props.categories.find(c => c.id === form.category_id);
+    if (selectedCategory && selectedCategory.unit_group) {
+        return getUnitsByGroup(selectedCategory.unit_group);
+    }
+    
+    return FLAT_UNITS;
+});
+
+// Reset unit only if current unit is not in new list (optional, but good UX)
+watch(() => form.category_id, (newVal) => {
+    // If we wanted to enforce unit change, we could do it here
+    // For now, let's keep the user selection or default unless they change it
 });
 
 const imagePreview = ref(null);
@@ -66,15 +104,39 @@ const submit = () => {
                 <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-xl rounded-lg border-2 border-purple-200 dark:border-purple-500/30">
                     <div class="p-6 sm:p-8 text-gray-900 dark:text-gray-100">
                         <form @submit.prevent="submit" class="space-y-6">
-                            <div>
-                                <label for="category_id" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Kategori</label>
-                                <SearchableSelect
-                                    v-model="form.category_id"
-                                    :options="categories"
-                                    placeholder="Pilih Kategori"
-                                    search-placeholder="Cari kategori..."
-                                />
-                                <InputError :message="form.errors.category_id" class="mt-2" />
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label for="main_category" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Kategori Utama</label>
+                                    <select
+                                        id="main_category"
+                                        v-model="selectedMainCategoryId"
+                                        class="w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm text-sm sm:text-base py-2"
+                                    >
+                                        <option value="" disabled>Pilih Kategori Utama</option>
+                                        <option v-for="category in mainCategories" :key="category.id" :value="category.id">
+                                            {{ category.name }}
+                                        </option>
+                                    </select>
+                                </div>
+
+                                <div>
+                                    <label for="category_id" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Sub Kategori</label>
+                                    <select
+                                        id="category_id"
+                                        v-model="form.category_id"
+                                        class="w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm text-sm sm:text-base py-2"
+                                        :disabled="!selectedMainCategoryId"
+                                    >
+                                        <option value="" disabled>Pilih Sub Kategori</option>
+                                        <option v-for="category in subCategories" :key="category.id" :value="category.id">
+                                            {{ category.name }}
+                                        </option>
+                                        <option v-if="subCategories.length === 0 && selectedMainCategoryId" :value="selectedMainCategoryId">
+                                            {{ mainCategories.find(c => c.id === selectedMainCategoryId)?.name }} (Tanpa Sub Kategori)
+                                        </option>
+                                    </select>
+                                    <InputError :message="form.errors.category_id" class="mt-2" />
+                                </div>
                             </div>
 
                             <div>
@@ -121,17 +183,43 @@ const submit = () => {
                                 </div>
                             </div>
 
-                            <div>
-                                <label for="barcode" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Barcode</label>
-                                <input
-                                    id="barcode"
-                                    type="text"
-                                    v-model="form.barcode"
-                                    class="w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm text-sm sm:text-base py-2"
-                                />
-                                <InputError :message="form.errors.barcode" class="mt-2" />
-                                <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Stok akan dikelola di menu "Barang Masuk"</p>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label for="barcode" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Barcode</label>
+                                    <input
+                                        id="barcode"
+                                        type="text"
+                                        v-model="form.barcode"
+                                        class="w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm text-sm sm:text-base py-2"
+                                        placeholder="Scan atau biarkan kosong untuk auto-generate"
+                                    />
+                                    <InputError :message="form.errors.barcode" class="mt-2" />
+                                </div>
+
+                                <div>
+                                    <label for="unit" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Satuan Unit (UOM)</label>
+                                    <SearchableSelect
+                                        v-model="form.unit"
+                                        :options="availableUnits"
+                                        placeholder="Pilih Satuan"
+                                        search-placeholder="Cari satuan..."
+                                    />
+                                    <InputError :message="form.errors.unit" class="mt-2" />
+                                </div>
                             </div>
+
+                            <div>
+                                <label for="netto" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Isi / Netto (Opsional)</label>
+                                <input
+                                    id="netto"
+                                    type="text"
+                                    v-model="form.netto"
+                                    class="w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm text-sm sm:text-base py-2"
+                                    placeholder="Contoh: 1 Strip / 10 Tablet"
+                                />
+                                <InputError :message="form.errors.netto" class="mt-2" />
+                            </div>
+                            <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Stok awal otomatis 0. Kelola stok melalui menu "Barang Masuk".</p>
 
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div>

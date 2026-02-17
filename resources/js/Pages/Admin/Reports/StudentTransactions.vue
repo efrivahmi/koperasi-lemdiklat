@@ -45,6 +45,12 @@ const formatDate = (date) => {
         minute: '2-digit'
     });
 };
+
+import ThermalPrintLayout from '@/Components/ThermalPrintLayout.vue';
+
+const printThermal = () => {
+    window.print();
+};
 </script>
 
 <template>
@@ -124,6 +130,15 @@ const formatDate = (date) => {
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                             </svg>
                             Tampilkan
+                        </button>
+                        <button
+                            @click="printThermal"
+                            class="inline-flex items-center justify-center px-6 py-2.5 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white rounded-lg font-semibold text-sm transition shadow-sm w-full sm:w-auto"
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                            </svg>
+                            Print Thermal
                         </button>
                         <button
                             @click="searchForm = { date_from: '', date_to: '', class: '', student_id: '', search: '' }; search();"
@@ -237,5 +252,47 @@ const formatDate = (date) => {
                 </div>
             </div>
         </div>
+
+        <!-- Thermal Print Layout -->
+        <ThermalPrintLayout
+            title="LAPORAN TRANSAKSI SISWA"
+            subtitle="Ringkasan Transaksi"
+            :user="$page.props.auth.user"
+        >
+            <div style="margin-bottom: 10px; font-size: 10px; font-weight: bold; border-bottom: 1px dashed black; padding-bottom: 5px;">
+                Total Transaksi: {{ transactions.total }} Data
+            </div>
+
+            <div v-for="transaction in transactions.data" :key="transaction.id" style="margin-bottom: 8px; border-bottom: 1px dashed #ccc; padding-bottom: 4px;">
+                <div style="font-weight: bold; font-size: 11px; margin-bottom: 2px;">
+                    #{{ transaction.id }} - {{ formatCurrency(transaction.total) }}
+                </div>
+                <div style="font-size: 9px; margin-bottom: 2px;">
+                    {{ formatDate(transaction.created_at) }}
+                </div>
+                <div style="font-size: 9px;">
+                    Siswa: {{ transaction.student?.user?.name || '-' }}
+                </div>
+                <div style="font-size: 9px;">
+                    Kelas: {{ transaction.student?.kelas || '-' }} ({{ transaction.student?.nis || '-' }})
+                </div>
+            </div>
+        </ThermalPrintLayout>
     </AuthenticatedLayout>
 </template>
+
+<style scoped>
+@media print {
+    body * {
+        visibility: hidden;
+    }
+    .thermal-print-container, .thermal-print-container * {
+        visibility: visible;
+    }
+    .thermal-print-container {
+        position: absolute;
+        left: 0;
+        top: 0;
+    }
+}
+</style>

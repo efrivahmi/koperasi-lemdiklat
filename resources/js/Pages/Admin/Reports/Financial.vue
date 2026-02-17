@@ -31,6 +31,12 @@ const formatCurrency = (value) => {
 const formatPercent = (value) => {
     return value.toFixed(2) + '%';
 };
+
+import ThermalPrintLayout from '@/Components/ThermalPrintLayout.vue';
+
+const printThermal = () => {
+    window.print();
+};
 </script>
 
 <template>
@@ -62,6 +68,12 @@ const formatPercent = (value) => {
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                                     </svg>
                                     Tampilkan
+                                </button>
+                                <button @click="printThermal" class="inline-flex items-center justify-center px-6 py-2.5 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white rounded-lg font-semibold text-sm transition shadow-sm w-full sm:w-auto">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                                    </svg>
+                                    Print Thermal
                                 </button>
                                 <button @click="exportToExcel" class="inline-flex items-center justify-center px-6 py-2.5 bg-green-600 hover:bg-green-700 active:bg-green-800 text-white rounded-lg font-semibold text-sm transition shadow-sm w-full sm:w-auto">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -228,5 +240,67 @@ const formatPercent = (value) => {
                 </div>
             </div>
         </div>
+
+        <!-- Thermal Print Layout -->
+        <ThermalPrintLayout
+            title="LAPORAN KEUANGAN"
+            subtitle="Ringkasan Profit/Loss"
+            :user="$page.props.auth.user"
+        >
+            <div style="border-bottom: 1px dashed black; padding-bottom: 10px; margin-bottom: 10px;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                    <span style="font-weight: bold;">Pendapatan</span>
+                    <span style="font-weight: bold;">{{ formatCurrency(data.total_revenue) }}</span>
+                </div>
+                <div style="font-size: 9px; color: #555; margin-bottom: 8px;">
+                    Total Transaksi: {{ data.total_transactions }}
+                </div>
+
+                <div style="display: flex; justify-content: space-between; margin-bottom: 2px;">
+                    <span>COGS</span>
+                    <span>- {{ formatCurrency(data.total_cogs) }}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-weight: bold; border-top: 1px solid #ddd; padding-top: 2px;">
+                    <span>Laba Kotor</span>
+                    <span>{{ formatCurrency(data.gross_profit) }}</span>
+                </div>
+
+                <div style="display: flex; justify-content: space-between; margin-bottom: 2px;">
+                    <span>Biaya Ops.</span>
+                    <span>- {{ formatCurrency(data.total_expenses) }}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-top: 4px; border-top: 2px solid black; padding-top: 4px; font-weight: bold; font-size: 13px;">
+                    <span>LABA BERSIH</span>
+                    <span>{{ formatCurrency(data.net_profit) }}</span>
+                </div>
+                 <div style="font-size: 9px; text-align: right; margin-top: 2px;">
+                    Margin: {{ formatPercent(data.profit_margin) }}
+                </div>
+            </div>
+
+            <div v-if="expensesByCategory.length > 0">
+                 <div style="font-weight: bold; font-size: 11px; margin-bottom: 4px; text-align: center;">PENGELUARAN PER KATEGORI</div>
+                 <div v-for="cat in expensesByCategory" :key="cat.category" style="display: flex; justify-content: space-between; font-size: 9px; margin-bottom: 2px;">
+                    <span>{{ cat.category }}</span>
+                    <span>{{ formatCurrency(cat.total) }}</span>
+                 </div>
+            </div>
+        </ThermalPrintLayout>
     </AuthenticatedLayout>
 </template>
+
+<style scoped>
+@media print {
+    body * {
+        visibility: hidden;
+    }
+    .thermal-print-container, .thermal-print-container * {
+        visibility: visible;
+    }
+    .thermal-print-container {
+        position: absolute;
+        left: 0;
+        top: 0;
+    }
+}
+</style>

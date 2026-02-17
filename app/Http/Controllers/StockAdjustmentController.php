@@ -15,9 +15,13 @@ class StockAdjustmentController extends Controller
         $request->validate([
             'quantity' => 'required|integer|min:1',
             'type' => 'required|in:deduction,addition',
-            'purpose' => 'required|in:sale,internal_use,personal_use,damage,expired,return_to_supplier,restock,correction,return,loss,other',
+            'purpose' => 'required|in:sale,internal_use,personal_use,damage,expired,return_to_supplier,other',
             'notes' => 'nullable|string|max:500',
         ]);
+
+        if ($request->purpose === 'other' && empty($request->notes)) {
+             return back()->withErrors(['notes' => 'Catatan wajib diisi untuk alasan Lainnya.']);
+        }
 
         if ($request->type === 'deduction' && $request->quantity > $product->stock) {
             return back()->withErrors([
@@ -89,5 +93,109 @@ class StockAdjustmentController extends Controller
             ->get();
 
         return response()->json($adjustments);
+    }
+    public function update(Request $request, StockAdjustment $stockAdjustment)
+    {
+        $request->validate([
+            'quantity' => 'required|integer|min:1',
+            'type' => 'required|in:deduction,addition',
+            'purpose' => 'required|in:sale,internal_use,personal_use,damage,expired,return_to_supplier,other',
+            'notes' => 'nullable|string|max:500',
+        ]);
+
+        if ($request->purpose === 'other' && empty($request->notes)) {
+             return back()->withErrors(['notes' => 'Catatan wajib diisi untuk alasan Lainnya.']);
+        }
+
+        try {
+            DB::beginTransaction();
+
+            $product = $stockAdjustment->product;
+
+            // 1. Revert old adjustment
+            if ($stockAdjustment->type === 'deduction') {
+                $product->stock += $stockAdjustment->quantity_adjusted;
+            } else {
+                $product->stock -= $stockAdjustment->quantity_adjusted;
+            }
+
+            // 2. Apply new adjustment
+            // Check stock availability if deduction
+            if ($request->type === 'deduction') {
+                 // Note: We use the reverted stock to check
+                 if ($request->quantity > $product->stock) {
+                    DB::rollBack();
+                    return back()->withErrors(['quantity' => 'Jumlah pemotongan melebihi stok tersedia.']);
+                 }
+                 $product->stock -= $request->quantity;
+            } else {
+                $product->stock += $request->quantity;
+            }
+
+            $product->save();
+
+            // 3. Update Adjustment Record
+            $stockAdjustment->update([
+                'quantity_before' => $stockAdjustment->quantity_before, // Technically 'before' refers to the state at THAT time, so we keep it? 
+                // Actually, if we edit, the 'quantity_before' is historical context. 
+                // However, to keep it consistent with the *result*, maybe we shouldn't change quantity_before unless we're strictly re-playing history.
+                // For simplicity and audit, we just update the adjusted amount and type. 
+                // The 'quantity_after' needs to be updated relative to the 'quantity_before' stored? 
+                // No, that makes numbers inconsistent if other tx happened in between.
+                // Let's just update the *Impact* and the *Current Stock*. 
+                // BUT, 'quantity_after' in the record is supposed to be the stock AFTER that specific transaction.
+                // If we edit it later, that historical 'after' value might be misleading if we don't propagate changes to all subsequent transactions (which is too complex).
+                // DECISION: We will update 'quantity_adjusted', 'type', 'purpose', 'notes'. 
+                // We will NOT try to shift 'quantity_after' of subsequent records. 
+                // We will just update this record's 'quantity_after' based on its own 'quantity_before' + new change?
+                // Or better, just update the Product stock and trust the logs.
+                // Let's update quantity_after based on the stored quantity_before for consistency of THIS record.
+                 'quantity_adjusted' => $request->quantity,
+                 'quantity_after' => ($request->type === 'addition') 
+                        ? $stockAdjustment->quantity_before + $request->quantity 
+                        : $stockAdjustment->quantity_before - $request->quantity,
+                'type' => $request->type,
+                'purpose' => $request->purpose,
+                'notes' => $request->notes,
+                'adjusted_by' => auth()->id(), // Update who modified it last
+            ]);
+
+            DB::commit();
+
+            return back()->with('success', 'Penyesuaian stok berhasil diperbarui.');
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Failed to update stock adjustment', ['error' => $e->getMessage()]);
+            return back()->withErrors(['error' => 'Gagal memperbarui penyesuaian stok.']);
+        }
+    }
+
+    public function destroy(StockAdjustment $stockAdjustment)
+    {
+        try {
+            DB::beginTransaction();
+
+            $product = $stockAdjustment->product;
+
+            // Revert stock change
+            if ($stockAdjustment->type === 'deduction') {
+                $product->stock += $stockAdjustment->quantity_adjusted;
+            } else {
+                $product->stock -= $stockAdjustment->quantity_adjusted;
+            }
+            $product->save();
+
+            $stockAdjustment->delete();
+
+            DB::commit();
+
+            return back()->with('success', 'Penyesuaian stok berhasil dihapus dan stok dikembalikan.');
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Failed to delete stock adjustment', ['error' => $e->getMessage()]);
+            return back()->withErrors(['error' => 'Gagal menghapus penyesuaian stok.']);
+        }
     }
 }

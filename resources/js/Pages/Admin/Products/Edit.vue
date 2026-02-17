@@ -3,7 +3,8 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
 import InputError from '@/Components/InputError.vue';
 import SearchableSelect from '@/Components/SearchableSelect.vue';
-import { ref } from 'vue';
+import { ref, computed, watch } from 'vue';
+import { FLAT_UNITS, getUnitsByGroup } from '@/Constants/Units';
 
 const props = defineProps({
     product: Object,
@@ -16,9 +17,69 @@ const form = useForm({
     description: props.product.description,
     image: null,
     stock: props.product.stock,
+    unit: props.product.unit || 'Pcs', // Default if null
+    netto: props.product.netto || '',
     harga_beli: props.product.harga_beli,
     harga_jual: props.product.harga_jual,
     barcode: props.product.barcode,
+});
+
+// Logic for dependent dropdowns
+const selectedMainCategoryId = ref('');
+
+// Initialize Main Category based on current product category
+const initMainCategory = () => {
+    const currentCategory = props.categories.find(c => c.id === props.product.category_id);
+    if (currentCategory) {
+        // If it has a parent, the parent is the Main Category
+        if (currentCategory.parent_id) {
+            return currentCategory.parent_id;
+        }
+        // If it has no parent, it IS the Main Category
+        return currentCategory.id;
+    }
+    return '';
+};
+
+selectedMainCategoryId.value = initMainCategory();
+
+const mainCategories = computed(() => {
+    return props.categories.filter(c => !c.parent_id).sort((a, b) => a.name.localeCompare(b.name));
+});
+
+const subCategories = computed(() => {
+    if (!selectedMainCategoryId.value) return [];
+    return props.categories
+        .filter(c => c.parent_id === selectedMainCategoryId.value)
+        .sort((a, b) => a.name.localeCompare(b.name));
+});
+
+// Watch for main category change to clear sub-category
+watch(selectedMainCategoryId, (newVal, oldVal) => {
+    // Check if the current form category is still valid under new main category
+    const currentCategory = props.categories.find(c => c.id === form.category_id);
+    const isChild = currentCategory && currentCategory.parent_id === newVal;
+    const isSelf = currentCategory && currentCategory.id === newVal;
+    
+    if (!isChild && !isSelf) {
+        form.category_id = '';
+    }
+});
+
+const availableUnits = computed(() => {
+    if (!form.category_id) return FLAT_UNITS;
+    
+    const selectedCategory = props.categories.find(c => c.id === form.category_id);
+    if (selectedCategory && selectedCategory.unit_group) {
+        return getUnitsByGroup(selectedCategory.unit_group);
+    }
+    
+    return FLAT_UNITS;
+});
+
+// Watch category changes (optional if you want to reset unit when category changes)
+watch(() => form.category_id, (newVal) => {
+    // Logic to handle unit change if needed
 });
 
 const imagePreview = ref(null);
@@ -77,15 +138,39 @@ const submit = () => {
                 <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-xl rounded-lg border-2 border-purple-200 dark:border-purple-500/30">
                     <div class="p-6 sm:p-8 text-gray-900 dark:text-gray-100">
                         <form @submit.prevent="submit" class="space-y-6">
-                            <div>
-                                <label for="category_id" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Kategori</label>
-                                <SearchableSelect
-                                    v-model="form.category_id"
-                                    :options="categories"
-                                    placeholder="Pilih Kategori"
-                                    search-placeholder="Cari kategori..."
-                                />
-                                <InputError :message="form.errors.category_id" class="mt-2" />
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label for="main_category" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Kategori Utama</label>
+                                    <select
+                                        id="main_category"
+                                        v-model="selectedMainCategoryId"
+                                        class="w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm text-sm sm:text-base py-2"
+                                    >
+                                        <option value="" disabled>Pilih Kategori Utama</option>
+                                        <option v-for="category in mainCategories" :key="category.id" :value="category.id">
+                                            {{ category.name }}
+                                        </option>
+                                    </select>
+                                </div>
+
+                                <div>
+                                    <label for="category_id" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Sub Kategori</label>
+                                    <select
+                                        id="category_id"
+                                        v-model="form.category_id"
+                                        class="w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm text-sm sm:text-base py-2"
+                                        :disabled="!selectedMainCategoryId"
+                                    >
+                                        <option value="" disabled>Pilih Sub Kategori</option>
+                                        <option v-for="category in subCategories" :key="category.id" :value="category.id">
+                                            {{ category.name }}
+                                        </option>
+                                        <option v-if="subCategories.length === 0 && selectedMainCategoryId" :value="selectedMainCategoryId">
+                                            {{ mainCategories.find(c => c.id === selectedMainCategoryId)?.name }} (Tanpa Sub Kategori)
+                                        </option>
+                                    </select>
+                                    <InputError :message="form.errors.category_id" class="mt-2" />
+                                </div>
                             </div>
 
                             <div>
@@ -138,7 +223,7 @@ const submit = () => {
                                 </div>
                             </div>
 
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                                 <div>
                                     <label for="stock" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Stok</label>
                                     <input
@@ -150,6 +235,29 @@ const submit = () => {
                                         required
                                     />
                                     <InputError :message="form.errors.stock" class="mt-2" />
+                                </div>
+
+                                <div>
+                                    <label for="unit" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Satuan Unit (UOM)</label>
+                                    <SearchableSelect
+                                        v-model="form.unit"
+                                        :options="availableUnits"
+                                        placeholder="Pilih Satuan"
+                                        search-placeholder="Cari satuan..."
+                                    />
+                                    <InputError :message="form.errors.unit" class="mt-2" />
+                                </div>
+
+                                <div>
+                                    <label for="netto" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Isi / Netto (Opsional)</label>
+                                    <input
+                                        id="netto"
+                                        type="text"
+                                        v-model="form.netto"
+                                        class="w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm text-sm sm:text-base py-2"
+                                        placeholder="Contoh: 1 Strip / 10 Tablet"
+                                    />
+                                    <InputError :message="form.errors.netto" class="mt-2" />
                                 </div>
 
                                 <div>

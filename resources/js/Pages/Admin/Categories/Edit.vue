@@ -6,12 +6,17 @@ import TextInput from '@/Components/TextInput.vue';
 import InputError from '@/Components/InputError.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 
+import { UNIT_CATEGORIES } from '@/Constants/Units';
+
 const props = defineProps({
     category: Object,
+    parents: Array,
 });
 
 const form = useForm({
     name: props.category.name,
+    parent_id: props.category.parent_id || '',
+    unit_group: props.category.unit_group || '',
     description: props.category.description,
 });
 
@@ -48,6 +53,24 @@ const submit = () => {
                 <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-xl rounded-lg border-2 border-purple-200 dark:border-purple-500/30">
                     <div class="p-6 sm:p-8 text-gray-900 dark:text-gray-100">
                         <form @submit.prevent="submit" class="space-y-6">
+                            <div>
+                                <label for="parent_id" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                    Kategori Induk (Parent)
+                                </label>
+                                <select
+                                    id="parent_id"
+                                    v-model="form.parent_id"
+                                    class="w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm text-sm sm:text-base py-2"
+                                >
+                                    <option value="">Tanpa Induk (Main Category)</option>
+                                    <option v-for="parent in parents" :key="parent.id" :value="parent.id">
+                                        {{ parent.name }}
+                                    </option>
+                                </select>
+                                <p class="text-xs text-gray-500 mt-1">Kosongkan jika ini adalah Kategori Utama.</p>
+                                <InputError :message="form.errors.parent_id" class="mt-2" />
+                            </div>
+
                             <div>
                                 <label for="name" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                                     Nama Kategori

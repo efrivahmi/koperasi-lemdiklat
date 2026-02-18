@@ -292,14 +292,21 @@
     </div>
 
     <script>
-        // Auto print on load (opsional - uncomment untuk auto print)
-        // window.onload = function() {
-        //     setTimeout(function(){
-        //         window.print();
-        //         // Auto close after print (opsional)
-        //         // setTimeout(function(){ window.close(); }, 1000);
-        //     }, 500);
-        // };
+        // Auto print on load
+        window.onload = function() {
+            try {
+                setTimeout(function(){
+                    window.print();
+                    // For iframe printing, we don't need to close the window
+                    // But if opened in new tab, we might want to close it
+                    if (window.opener && window.opener !== window) {
+                         // Optional: window.close();
+                    }
+                }, 500);
+            } catch (e) {
+                console.error("Auto print failed", e);
+            }
+        };
     </script>
 </body>
 </html>

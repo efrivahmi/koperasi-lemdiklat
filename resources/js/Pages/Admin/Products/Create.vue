@@ -77,201 +77,239 @@ const submit = () => {
 </script>
 
 <template>
-    <Head title="Produk" />
+    <Head title="Tambah Produk" />
 
     <AuthenticatedLayout>
-        <template #mobileTitle>Produk</template>
+        <template #mobileTitle>Tambah Produk</template>
         <template #header>
-            <h2 class="font-semibold text-xl text-gray-800 leading-tight">Produk</h2>
+            <h2 class="font-semibold text-xl text-white leading-tight">Tambah Produk</h2>
         </template>
 
-        <div class="py-6 sm:py-12">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="min-h-screen">
+            <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
                 <!-- Header Card -->
-                <div class="mb-6 bg-gradient-to-r from-purple-600 via-indigo-600 to-blue-600 rounded-lg shadow-lg p-6 text-white">
-                    <div class="flex items-center gap-3">
-                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-                        </svg>
+                <div class="mb-8 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-2xl shadow-xl p-8 text-white relative overflow-hidden">
+                    <div class="absolute inset-0 bg-white/10 opacity-20 pattern-grid-lg"></div>
+                     <div class="relative z-10 flex items-center gap-6">
+                        <div class="p-3 bg-white/20 rounded-xl backdrop-blur-sm">
+                            <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                            </svg>
+                        </div>
                         <div>
-                            <h3 class="text-2xl font-bold">Tambah Produk Baru</h3>
-                            <p class="text-purple-100 text-sm">Daftarkan produk baru ke katalog koperasi</p>
+                            <h3 class="text-3xl font-bold tracking-tight">Produk Baru</h3>
+                            <p class="text-indigo-100 text-sm mt-1">Tambahkan item baru ke inventaris koperasi</p>
                         </div>
                     </div>
                 </div>
 
                 <!-- Form Card -->
-                <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-xl rounded-lg border-2 border-purple-200 dark:border-purple-500/30">
-                    <div class="p-6 sm:p-8 text-gray-900 dark:text-gray-100">
-                        <form @submit.prevent="submit" class="space-y-6">
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div>
-                                    <label for="main_category" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Kategori Utama</label>
-                                    <select
-                                        id="main_category"
-                                        v-model="selectedMainCategoryId"
-                                        class="w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm text-sm sm:text-base py-2"
-                                    >
-                                        <option value="" disabled>Pilih Kategori Utama</option>
-                                        <option v-for="category in mainCategories" :key="category.id" :value="category.id">
-                                            {{ category.name }}
-                                        </option>
-                                    </select>
-                                </div>
+                <div class="bg-slate-800/50 backdrop-blur-md border border-white/10 rounded-2xl shadow-2xl overflow-hidden">
+                    <div class="p-8">
+                        <form @submit.prevent="submit" class="space-y-8">
+                            
+                            <!-- Category Section -->
+                            <div class="bg-slate-900/50 rounded-xl p-6 border border-white/5 space-y-6">
+                                <h4 class="text-lg font-medium text-white flex items-center gap-2">
+                                    <svg class="w-5 h-5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" /></svg>
+                                    Kategorisasi
+                                </h4>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div class="space-y-2">
+                                        <label class="block text-sm font-medium text-slate-300">Kategori Utama</label>
+                                        <SearchableSelect
+                                            v-model="selectedMainCategoryId"
+                                            :options="mainCategories"
+                                            label-key="name"
+                                            value-key="id"
+                                            placeholder="Pilih Kategori Utama"
+                                            search-placeholder="Cari kategori..."
+                                        />
+                                    </div>
 
-                                <div>
-                                    <label for="category_id" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Sub Kategori</label>
-                                    <select
-                                        id="category_id"
-                                        v-model="form.category_id"
-                                        class="w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm text-sm sm:text-base py-2"
-                                        :disabled="!selectedMainCategoryId"
-                                    >
-                                        <option value="" disabled>Pilih Sub Kategori</option>
-                                        <option v-for="category in subCategories" :key="category.id" :value="category.id">
-                                            {{ category.name }}
-                                        </option>
-                                        <option v-if="subCategories.length === 0 && selectedMainCategoryId" :value="selectedMainCategoryId">
-                                            {{ mainCategories.find(c => c.id === selectedMainCategoryId)?.name }} (Tanpa Sub Kategori)
-                                        </option>
-                                    </select>
-                                    <InputError :message="form.errors.category_id" class="mt-2" />
-                                </div>
-                            </div>
-
-                            <div>
-                                <label for="name" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Nama Produk</label>
-                                <input
-                                    id="name"
-                                    type="text"
-                                    v-model="form.name"
-                                    class="w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm text-sm sm:text-base py-2"
-                                    required
-                                    autofocus
-                                />
-                                <InputError :message="form.errors.name" class="mt-2" />
-                            </div>
-
-                            <div>
-                                <label for="description" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Deskripsi</label>
-                                <textarea
-                                    id="description"
-                                    v-model="form.description"
-                                    class="w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm text-sm sm:text-base py-2"
-                                    rows="4"
-                                ></textarea>
-                                <InputError :message="form.errors.description" class="mt-2" />
-                            </div>
-
-                            <div>
-                                <label for="image" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Gambar Produk</label>
-                                <input
-                                    id="image"
-                                    type="file"
-                                    @change="handleImageChange"
-                                    accept="image/*"
-                                    class="w-full text-sm text-gray-500 dark:text-gray-400
-                                        file:mr-4 file:py-2 file:px-4
-                                        file:rounded-md file:border-0
-                                        file:text-sm file:font-semibold
-                                        file:bg-indigo-50 dark:file:bg-indigo-900 file:text-indigo-700 dark:file:text-indigo-200
-                                        hover:file:bg-indigo-100 dark:hover:file:bg-indigo-800 file:cursor-pointer"
-                                />
-                                <InputError :message="form.errors.image" class="mt-2" />
-                                <div v-if="imagePreview" class="mt-3">
-                                    <img :src="imagePreview" alt="Preview" class="h-32 w-32 object-cover rounded border-2 border-gray-200 dark:border-gray-700" />
+                                    <div class="space-y-2">
+                                        <label class="block text-sm font-medium text-slate-300">Sub Kategori</label>
+                                        <SearchableSelect
+                                            v-model="form.category_id"
+                                            :options="subCategories"
+                                            label-key="name"
+                                            value-key="id"
+                                            placeholder="Pilih Sub Kategori"
+                                            search-placeholder="Cari sub kategori..."
+                                            :disabled="!selectedMainCategoryId"
+                                        />
+                                        <InputError :message="form.errors.category_id" />
+                                    </div>
                                 </div>
                             </div>
 
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div>
-                                    <label for="barcode" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Barcode</label>
-                                    <input
-                                        id="barcode"
-                                        type="text"
-                                        v-model="form.barcode"
-                                        class="w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm text-sm sm:text-base py-2"
-                                        placeholder="Scan atau biarkan kosong untuk auto-generate"
-                                    />
-                                    <InputError :message="form.errors.barcode" class="mt-2" />
+                            <!-- Basic Info -->
+                            <div class="space-y-6">
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div class="space-y-2">
+                                        <label for="name" class="block text-sm font-medium text-slate-300">Nama Produk</label>
+                                        <input
+                                            id="name"
+                                            type="text"
+                                            v-model="form.name"
+                                            class="block w-full px-4 py-3 bg-slate-900/50 border border-slate-600 rounded-lg text-white placeholder-slate-500 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all"
+                                            placeholder="Contoh: Buku Tulis Sinar Dunia"
+                                            required
+                                        />
+                                        <InputError :message="form.errors.name" />
+                                    </div>
+
+                                    <div class="space-y-2">
+                                        <label for="barcode" class="block text-sm font-medium text-slate-300">Barcode / SKU</label>
+                                        <div class="relative">
+                                             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                                <svg class="h-5 w-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"/></svg>
+                                            </div>
+                                            <input
+                                                id="barcode"
+                                                type="text"
+                                                v-model="form.barcode"
+                                                class="block w-full pl-10 pr-4 py-3 bg-slate-900/50 border border-slate-600 rounded-lg text-white placeholder-slate-500 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all font-mono"
+                                                placeholder="Scan atau ketik kode..."
+                                            />
+                                        </div>
+                                        <p class="text-xs text-slate-500 mt-1">Kosongkan untuk auto-generate kode.</p>
+                                        <InputError :message="form.errors.barcode" />
+                                    </div>
                                 </div>
 
-                                <div>
-                                    <label for="unit" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Satuan Unit (UOM)</label>
-                                    <SearchableSelect
-                                        v-model="form.unit"
-                                        :options="availableUnits"
-                                        placeholder="Pilih Satuan"
-                                        search-placeholder="Cari satuan..."
-                                    />
-                                    <InputError :message="form.errors.unit" class="mt-2" />
-                                </div>
-                            </div>
-
-                            <div>
-                                <label for="netto" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Isi / Netto (Opsional)</label>
-                                <input
-                                    id="netto"
-                                    type="text"
-                                    v-model="form.netto"
-                                    class="w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm text-sm sm:text-base py-2"
-                                    placeholder="Contoh: 1 Strip / 10 Tablet"
-                                />
-                                <InputError :message="form.errors.netto" class="mt-2" />
-                            </div>
-                            <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Stok awal otomatis 0. Kelola stok melalui menu "Barang Masuk".</p>
-
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div>
-                                    <label for="harga_beli" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Harga Beli (Rp)</label>
-                                    <input
-                                        id="harga_beli"
-                                        type="number"
-                                        v-model="form.harga_beli"
-                                        class="w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm text-sm sm:text-base py-2"
-                                        min="0"
-                                        step="0.01"
-                                        required
-                                    />
-                                    <InputError :message="form.errors.harga_beli" class="mt-2" />
-                                </div>
-
-                                <div>
-                                    <label for="harga_jual" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Harga Jual (Rp)</label>
-                                    <input
-                                        id="harga_jual"
-                                        type="number"
-                                        v-model="form.harga_jual"
-                                        class="w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm text-sm sm:text-base py-2"
-                                        min="0"
-                                        step="0.01"
-                                        required
-                                    />
-                                    <InputError :message="form.errors.harga_jual" class="mt-2" />
+                                <div class="space-y-2">
+                                    <label for="description" class="block text-sm font-medium text-slate-300">Deskripsi</label>
+                                    <textarea
+                                        id="description"
+                                        v-model="form.description"
+                                        rows="3"
+                                        class="block w-full px-4 py-3 bg-slate-900/50 border border-slate-600 rounded-lg text-white placeholder-slate-500 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all"
+                                        placeholder="Informasi detail tentang produk..."
+                                    ></textarea>
+                                    <InputError :message="form.errors.description" />
                                 </div>
                             </div>
 
-                            <div class="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4">
+                            <!-- Pricing & Unit -->
+                             <div class="bg-slate-900/50 rounded-xl p-6 border border-white/5 space-y-6">
+                                <h4 class="text-lg font-medium text-white flex items-center gap-2">
+                                    <svg class="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                    Harga & Satuan
+                                </h4>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div class="space-y-2">
+                                        <label for="harga_beli" class="block text-sm font-medium text-slate-300">Harga Beli</label>
+                                        <div class="relative">
+                                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                                <span class="text-slate-400 font-bold">Rp</span>
+                                            </div>
+                                            <input
+                                                id="harga_beli"
+                                                type="number"
+                                                v-model="form.harga_beli"
+                                                class="block w-full pl-12 pr-4 py-3 bg-slate-900/50 border border-slate-600 rounded-lg text-white placeholder-slate-500 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all text-right font-mono"
+                                                min="0"
+                                                required
+                                            />
+                                        </div>
+                                        <InputError :message="form.errors.harga_beli" />
+                                    </div>
+
+                                    <div class="space-y-2">
+                                        <label for="harga_jual" class="block text-sm font-medium text-slate-300">Harga Jual</label>
+                                        <div class="relative">
+                                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                                <span class="text-slate-400 font-bold">Rp</span>
+                                            </div>
+                                            <input
+                                                id="harga_jual"
+                                                type="number"
+                                                v-model="form.harga_jual"
+                                                class="block w-full pl-12 pr-4 py-3 bg-slate-900/50 border border-slate-600 rounded-lg text-white placeholder-slate-500 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all text-right font-mono"
+                                                min="0"
+                                                required
+                                            />
+                                        </div>
+                                        <InputError :message="form.errors.harga_jual" />
+                                    </div>
+
+                                    <div class="space-y-2">
+                                        <label for="unit" class="block text-sm font-medium text-slate-300">Satuan (UOM)</label>
+                                        <SearchableSelect
+                                            v-model="form.unit"
+                                            :options="availableUnits"
+                                            placeholder="Pilih Satuan"
+                                            search-placeholder="Cari..."
+                                        />
+                                        <InputError :message="form.errors.unit" />
+                                    </div>
+
+                                    <div class="space-y-2">
+                                        <label for="netto" class="block text-sm font-medium text-slate-300">Netto / Isi (Opsional)</label>
+                                        <input
+                                            id="netto"
+                                            type="text"
+                                            v-model="form.netto"
+                                            class="block w-full px-4 py-3 bg-slate-900/50 border border-slate-600 rounded-lg text-white placeholder-slate-500 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all"
+                                            placeholder="Contoh: 500gr / 1 Liter"
+                                        />
+                                        <InputError :message="form.errors.netto" />
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Image Upload -->
+                            <div class="space-y-2">
+                                <label class="block text-sm font-medium text-slate-300">Gambar Produk</label>
+                                <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-slate-600 border-dashed rounded-xl hover:bg-slate-800/50 transition-colors">
+                                    <div class="space-y-1 text-center">
+                                         <div v-if="!imagePreview" class="flex flex-col items-center">
+                                            <svg class="mx-auto h-12 w-12 text-slate-400" stroke="currentColor" fill="none" viewBox="0 0 48 48" aria-hidden="true">
+                                                <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                            </svg>
+                                            <div class="flex text-sm text-slate-400">
+                                                <label for="image" class="relative cursor-pointer bg-transparent rounded-md font-medium text-indigo-400 hover:text-indigo-300 focus-within:outline-none">
+                                                    <span>Upload gambar</span>
+                                                    <input id="image" type="file" @change="handleImageChange" accept="image/*" class="sr-only" />
+                                                </label>
+                                                <p class="pl-1">atau drag and drop</p>
+                                            </div>
+                                            <p class="text-xs text-slate-500">PNG, JPG, GIF up to 5MB</p>
+                                        </div>
+                                        <div v-else class="relative">
+                                            <img :src="imagePreview" alt="Preview" class="mx-auto h-48 object-cover rounded-lg border border-slate-600 shadow-md" />
+                                            <button 
+                                                @click.prevent="imagePreview = null; form.image = null;"
+                                                class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 shadow-sm"
+                                            >
+                                                <svg class="min-w-4 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <InputError :message="form.errors.image" />
+                            </div>
+
+                            <!-- Form Actions -->
+                            <div class="flex items-center justify-end gap-3 pt-4 border-t border-white/5">
+                                <Link
+                                    :href="route('products.index')"
+                                    class="px-5 py-2.5 rounded-lg border border-white/10 bg-slate-700 text-slate-200 hover:bg-slate-600 hover:text-white font-medium transition-all"
+                                >
+                                    Batal
+                                </Link>
                                 <button
                                     type="submit"
                                     :disabled="form.processing"
-                                    class="inline-flex items-center justify-center px-6 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 active:from-purple-800 active:to-indigo-800 text-white rounded-lg font-bold text-sm transition-all duration-200 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
+                                    class="inline-flex items-center px-6 py-2.5 rounded-lg bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-semibold shadow-lg shadow-indigo-500/30 transition-all transform hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
-                                    <svg v-if="!form.processing" class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                    <svg v-if="form.processing" class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                                     </svg>
-                                    <svg v-else class="animate-spin w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                                    </svg>
-                                    <span v-if="!form.processing">Simpan Produk</span>
-                                    <span v-else>Menyimpan...</span>
+                                    <span v-else>Simpan Produk</span>
                                 </button>
-                                <Link :href="route('products.index')" class="inline-flex items-center justify-center px-6 py-3 bg-gray-500 hover:bg-gray-600 text-white rounded-lg font-semibold text-sm transition shadow-sm w-full sm:w-auto">
-                                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                                    </svg>
-                                    Batal
-                                </Link>
                             </div>
                         </form>
                     </div>

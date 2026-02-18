@@ -219,10 +219,25 @@
         <div class="items">
             @foreach($sale->saleItems as $item)
             <div class="item">
-                <div class="item-name">{{ $item->product->name }}</div>
+                <div class="item-name">
+                    {{ $item->product->name }}
+                    @if($item->product->unit || $item->product->netto)
+                        ({{ $item->product->unit }} {{ $item->product->netto }})
+                    @endif
+                </div>
+                <div style="font-size: 9px; color: #555; margin-bottom: 2px;">
+                    {{ $item->product->barcode }} <br>
+                    @if($item->product->category)
+                        {{ $item->product->category->parent ? $item->product->category->parent->name . ' > ' : '' }}{{ $item->product->category->name }}
+                    @endif
+                </div>
                 <div class="item-detail">
                     <span>{{ $item->quantity }} x {{ number_format($item->price, 0, ',', '.') }}</span>
                     <span>{{ number_format($item->subtotal, 0, ',', '.') }}</span>
+                </div>
+                {{-- Purchase Price (Requested by User) --}}
+                <div style="font-size: 8px; color: #777; margin-top: 1px;">
+                    HB: {{ number_format($item->product->harga_beli, 0, ',', '.') }}
                 </div>
             </div>
             @endforeach

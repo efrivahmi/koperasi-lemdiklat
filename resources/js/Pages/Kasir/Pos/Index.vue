@@ -567,8 +567,13 @@ onUnmounted(() => {
                                     </div>
                                 </div>
                                 <div class="p-3">
-                                    <h3 class="font-semibold text-sm mb-1 truncate">{{ product.name }}</h3>
-                                    <p class="text-xs text-gray-500 mb-2">{{ product.category.name }}</p>
+                                    <h3 class="font-semibold text-sm mb-1 truncate" :title="product.name">{{ product.name }}</h3>
+                                    <p class="text-xs text-gray-500 mb-1">
+                                        {{ product.category.name }}
+                                        <span v-if="product.unit || product.netto" class="text-xs font-mono text-gray-400">
+                                            ({{ product.unit }} {{ product.netto }})
+                                        </span>
+                                    </p>
                                     <div class="flex justify-between items-center">
                                         <span class="text-lg font-bold text-blue-600">
                                             {{ formatCurrency(product.harga_jual) }}

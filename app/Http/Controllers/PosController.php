@@ -38,7 +38,11 @@ class PosController extends Controller
 
         // Search by name
         if ($request->has('search') && $request->search) {
-            $query->where('name', 'like', '%' . $request->search . '%');
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('name', 'like', '%' . $search . '%')
+                  ->orWhere('barcode', 'like', '%' . $search . '%');
+            });
         }
 
         // Filter by category
@@ -500,7 +504,7 @@ class PosController extends Controller
     public function printReceipt(Sale $sale)
     {
         // Load relationships
-        $sale->load(['user', 'student.user', 'saleItems.product']);
+        $sale->load(['user', 'student.user', 'saleItems.product.category.parent']);
 
         // Return thermal printer view
         return view('receipt', [

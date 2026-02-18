@@ -2,6 +2,8 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import EmptyState from '@/Components/EmptyState.vue';
 import AuditInfo from '@/Components/AuditInfo.vue';
+import TableToolbar from '@/Components/TableToolbar.vue';
+import SearchableSelect from '@/Components/SearchableSelect.vue';
 import { Head, Link, router, useForm } from '@inertiajs/vue3';
 import { ref, watch, computed } from 'vue';
 import { usePermissions } from '@/Composables/usePermissions';
@@ -10,6 +12,7 @@ const { can } = usePermissions();
 
 const props = defineProps({
     products: Object,
+    allProducts: Array,
     filters: Object,
 });
 
@@ -26,19 +29,14 @@ const adjustmentForm = useForm({
     notes: '',
 });
 
-// Watch search to debounce and reload
-const handleSearch = () => {
-    isLoading.value = true;
-    router.get(route('products.index'), { search: search.value }, {
-        preserveState: true,
-        replace: true,
-        onFinish: () => isLoading.value = false,
-    });
-};
-
-const clearSearch = () => {
-    search.value = '';
-    handleSearch();
+// Expandable Rows Logic
+const expandedRows = ref([]);
+const toggleRow = (id) => {
+    if (expandedRows.value.includes(id)) {
+        expandedRows.value = expandedRows.value.filter(rowId => rowId !== id);
+    } else {
+        expandedRows.value.push(id);
+    }
 };
 
 const formatCurrency = (value) => {
@@ -51,7 +49,6 @@ const formatCurrency = (value) => {
 };
 
 const openAdjustmentModal = (product) => {
-    // Enforce First Stock In Rule
     if (!product.stock_ins_count || product.stock_ins_count === 0) {
         alert('Produk ini belum memiliki riwayat Barang Masuk (Stock In). Sila lakukan input stok awal melalui menu "Barang Masuk" terlebih dahulu.');
         return;
@@ -59,8 +56,8 @@ const openAdjustmentModal = (product) => {
 
     selectedProduct.value = product;
     adjustmentForm.reset();
-    adjustmentForm.type = 'deduction'; // Default safety
-    adjustmentForm.purpose = 'damage'; // Default common reason
+    adjustmentForm.type = 'deduction';
+    adjustmentForm.purpose = 'damage';
     customReason.value = '';
     showAdjustmentModal.value = true;
 };
@@ -84,9 +81,8 @@ watch(() => adjustmentForm.purpose, (newPurpose) => {
 
 const submitAdjustment = () => {
     if (adjustmentForm.purpose === 'other' && customReason.value) {
-        // Validation for 'Other' type selection
         if (!adjustmentForm.type) {
-             alert('Silakan pilih Jenis Penyesuaian (Pengurangan atau Penambahan) untuk alasan Lainnya.');
+             alert('Silakan pilih Jenis Penyesuaian (Pengurangan atau Penambahan).');
              return;
         }
         adjustmentForm.notes = `Custom Reason: ${customReason.value}. ${adjustmentForm.notes}`;
@@ -99,209 +95,232 @@ const submitAdjustment = () => {
     });
 };
 
-const deleteProduct = (id) => {
-    if (confirm('Apakah Anda yakin ingin menghapus produk ini?')) {
-        router.delete(route('products.destroy', id), {
-            preserveScroll: true,
-        });
+const deleteProduct = (product) => {
+    if (confirm(`Apakah Anda yakin ingin menghapus produk "${product.name}"?`)) {
+        router.delete(route('products.destroy', product.id));
     }
 };
 </script>
 
 <template>
-    <Head title="Produk" />
+    <Head title="Manajemen Produk" />
 
     <AuthenticatedLayout>
         <template #mobileTitle>Produk</template>
         <template #header>
-            <h2 class="font-semibold text-xl text-white leading-tight">Produk</h2>
+            <h2 class="font-semibold text-xl text-white leading-tight">Manajemen Produk</h2>
         </template>
 
-        <!-- Galaxy Theme Container -->
-        <!-- Removed conflicting background to use AuthenticatedLayout's theme -->
         <div class="min-h-screen">
             <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
                 
-                <!-- Toolbar with Glassmorphism -->
-                <div class="mb-6 bg-slate-800/50 backdrop-blur-md border border-white/10 rounded-xl shadow-2xl p-4">
-                    <div class="flex flex-col lg:flex-row gap-4 items-stretch lg:items-center justify-between">
-                        
-                        <!-- Search Bar -->
-                        <div class="flex-1 max-w-lg flex gap-2">
-                            <div class="relative group flex-1">
-                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                    <svg class="h-5 w-5 text-indigo-400 group-focus-within:text-indigo-300 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                                    </svg>
-                                </div>
-                                <input
+                <!-- Toolbar -->
+                <div class="relative z-30 mb-6 bg-slate-800/50 backdrop-blur-md border border-white/10 rounded-xl shadow-2xl p-4">
+                    <TableToolbar
+                        title="Daftar Produk"
+                        description="Kelola data produk, harga, dan stok koperasi"
+                        :search-term="filters.search"
+                        search-route="products.index"
+                        class="text-white"
+                    >
+                        <template #search-input>
+                            <!-- Search Input (User can revert to simple input if SearchableSelect fails again, but trying here) -->
+                             <SearchableSelect
+                                v-if="allProducts"
+                                :model-value="filters.search"
+                                :options="allProducts"
+                                placeholder="Cari produk..."
+                                search-placeholder="Ketik nama atau barcode..."
+                                label-key="name"
+                                value-key="name"
+                                @update:model-value="val => router.get(route('products.index'), { search: val }, { preserveState: true, replace: true })"
+                                class="w-full"
+                            />
+                            <div v-else class="relative">
+                                <span class="absolute inset-y-0 left-0 flex items-center pl-3">
+                                    <svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                                </span>
+                                <input 
                                     v-model="search"
-                                    @keyup.enter="handleSearch"
-                                    type="text"
-                                    placeholder="Cari produk (nama, barcode)..."
-                                    class="block w-full pl-10 pr-10 py-2.5 bg-slate-900/60 border border-indigo-500/30 text-indigo-100 placeholder-indigo-400/50 rounded-lg focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-400 focus:bg-slate-900/80 transition-all duration-200 shadow-inner"
-                                />
-                                <div v-if="search" class="absolute inset-y-0 right-0 pr-3 flex items-center">
-                                    <button @click="clearSearch" class="text-slate-400 hover:text-white transition-colors focus:outline-none">
-                                        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                                        </svg>
-                                    </button>
-                                </div>
+                                    @keydown.enter="router.get(route('products.index'), { search: search }, { preserveState: true, replace: true })"
+                                    type="text" 
+                                    placeholder="Cari..." 
+                                    class="w-full pl-10 pr-4 py-2 border border-slate-600 rounded-lg bg-slate-900 text-white focus:ring-indigo-500 focus:border-indigo-500"
+                                >
                             </div>
-                            <button 
-                                @click="handleSearch"
-                                class="inline-flex items-center px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-medium rounded-lg transition-colors shadow-lg shadow-indigo-500/30"
-                            >
-                                Cari
-                            </button>
-                        </div>
-
-                        <!-- Actions Buttons -->
-                        <div class="flex flex-wrap gap-3">
-                            <Link 
-                                v-if="can('products.barcode')" 
-                                :href="route('products.barcode-generator')" 
-                                class="flex-1 sm:flex-initial inline-flex items-center justify-center px-4 py-2.5 bg-slate-700/50 hover:bg-slate-700 border border-white/10 text-indigo-200 font-medium rounded-lg transition-all duration-200 hover:shadow-lg hover:border-indigo-500/30 group"
-                            >
-                                <svg class="w-5 h-5 mr-2 text-indigo-400 group-hover:text-indigo-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
+                        </template>
+                        <template #actions>
+                            <Link v-if="can('products.create')" :href="route('products.create')" class="w-full sm:w-auto inline-flex items-center justify-center px-5 py-2.5 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-semibold rounded-lg shadow-lg shadow-indigo-500/20 hover:shadow-indigo-500/40 transition-all duration-200 transform hover:-translate-y-0.5">
+                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                                 </svg>
-                                Generator Barcode
+                                Tambah Produk
                             </Link>
-                            
-                            <Link 
-                                v-if="can('products.create')" 
-                                :href="route('products.create')" 
-                                class="flex-1 sm:flex-initial inline-flex items-center justify-center px-5 py-2.5 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-semibold rounded-lg shadow-lg shadow-indigo-500/20 hover:shadow-indigo-500/40 transition-all duration-200 transform hover:-translate-y-0.5"
-                            >
-                                <svg class="w-5 h-5 sm:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                             <Link v-if="can('products.create')" :href="route('products.barcode-generator')" class="w-full sm:w-auto inline-flex items-center justify-center px-5 py-2.5 bg-slate-700 hover:bg-slate-600 text-white font-semibold rounded-lg shadow-lg border border-white/10 transition-all duration-200 transform hover:-translate-y-0.5">
+                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
                                 </svg>
-                                <span class="hidden sm:inline">Tambah Produk</span>
-                                <span class="sm:hidden">Tambah</span>
+                                Barcode Generator
                             </Link>
-                        </div>
-                    </div>
+                        </template>
+                    </TableToolbar>
                 </div>
 
-                <!-- Content Area -->
-                <EmptyState
-                    v-if="products.data.length === 0 && !search && !isLoading"
-                    icon="box"
-                    title="Belum Ada Produk"
-                    description="Mulai tambahkan produk untuk mengelola inventaris koperasi."
-                    :action-url="route('products.create')"
-                    action-text="Tambah Produk Pertama"
-                    class="bg-slate-800/50 border border-white/5 backdrop-blur-sm text-slate-300"
-                />
-
-                <div v-else class="bg-slate-800/40 backdrop-blur-md border border-white/10 rounded-xl shadow-2xl overflow-hidden">
+                <!-- Product Table -->
+                <div class="bg-slate-800/50 backdrop-blur-md border border-white/10 rounded-xl shadow-2xl overflow-hidden">
                     <div class="overflow-x-auto">
-                        <table class="min-w-full divide-y divide-white/10">
-                            <thead class="bg-slate-900/50">
+                        <table class="w-full text-left text-slate-300">
+                            <thead class="text-sm font-semibold text-slate-300 uppercase bg-slate-900/50 border-b border-white/10 sticky top-0 z-10">
                                 <tr>
-                                    <th class="px-6 py-4 text-left text-xs font-semibold text-indigo-300 uppercase tracking-wider">Info Produk</th>
-                                    <th class="px-6 py-4 text-left text-xs font-semibold text-indigo-300 uppercase tracking-wider">Kategori</th>
-                                    <th class="px-6 py-4 text-left text-xs font-semibold text-indigo-300 uppercase tracking-wider">Harga</th>
-                                    <th class="px-6 py-4 text-center text-xs font-semibold text-indigo-300 uppercase tracking-wider">Stok</th>
-                                    <th class="px-6 py-4 text-center text-xs font-semibold text-indigo-300 uppercase tracking-wider">Status</th>
-                                    <th class="px-6 py-4 text-left text-xs font-semibold text-indigo-300 uppercase tracking-wider hidden xl:table-cell">Dibuat</th>
-                                    <th class="px-6 py-4 text-left text-xs font-semibold text-indigo-300 uppercase tracking-wider hidden xl:table-cell">Diubah</th>
-                                    <th class="px-6 py-4 text-left text-xs font-semibold text-indigo-300 uppercase tracking-wider">Aksi</th>
+                                    <th scope="col" class="px-6 py-4 tracking-wider w-12"></th>
+                                    <th scope="col" class="px-6 py-4 tracking-wider">Produk</th>
+                                    <th scope="col" class="px-6 py-4 tracking-wider">Kategori</th>
+                                    <th scope="col" class="px-6 py-4 tracking-wider text-right">Harga Beli</th>
+                                    <th scope="col" class="px-6 py-4 tracking-wider text-right">Harga Jual</th>
+                                    <th scope="col" class="px-6 py-4 tracking-wider text-center">Stok</th>
+                                    <th scope="col" class="px-6 py-4 tracking-wider text-center">Unit / Netto</th>
                                 </tr>
                             </thead>
-                            <tbody class="divide-y divide-white/5 bg-transparent">
-                                <tr v-for="product in products.data" :key="product.id" class="group hover:bg-white/5 transition-colors duration-150">
-                                    <td class="px-6 py-4">
-                                        <div class="flex items-center">
-                                            <div class="h-12 w-12 flex-shrink-0 relative">
-                                                <img 
-                                                    class="h-12 w-12 rounded-lg object-cover bg-slate-700 ring-2 ring-white/10 group-hover:ring-indigo-500/50 transition-all" 
-                                                    :src="product.image_url || '/images/no-image.png'" 
-                                                    :alt="product.name"
-                                                >
-                                            </div>
-                                            <div class="ml-4">
-                                                <div class="text-sm font-bold text-white group-hover:text-indigo-200 transition-colors">{{ product.name }}</div>
-                                                <div class="text-xs text-slate-400 font-mono mt-0.5 flex items-center">
-                                                    <svg class="w-3 h-3 mr-1 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"/></svg>
-                                                    {{ product.barcode || '-' }}
+                            <tbody class="divide-y divide-white/5">
+                                <template v-for="product in products.data" :key="product.id">
+                                    <!-- Main Row -->
+                                    <tr 
+                                        class="group hover:bg-slate-700/30 transition-colors duration-150 cursor-pointer"
+                                        :class="{'bg-slate-700/20': expandedRows.includes(product.id)}"
+                                        @click="toggleRow(product.id)"
+                                    >
+                                        <td class="px-6 py-4">
+                                             <button 
+                                                class="text-slate-400 hover:text-white transition-transform duration-200 focus:outline-none"
+                                                :class="{'rotate-90': expandedRows.includes(product.id)}"
+                                            >
+                                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                                                </svg>
+                                            </button>
+                                        </td>
+                                        <td class="px-6 py-4">
+                                            <div class="flex items-center">
+                                                <div class="flex-shrink-0 h-12 w-12">
+                                                    <img 
+                                                        v-if="product.image_path" 
+                                                        :src="`/storage/${product.image_path}`" 
+                                                        class="h-12 w-12 rounded-lg object-cover border border-white/10 bg-slate-700"
+                                                        alt="Product Image" 
+                                                    />
+                                                    <div v-else class="h-12 w-12 rounded-lg bg-slate-700 border border-white/10 flex items-center justify-center text-slate-500">
+                                                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                                        </svg>
+                                                    </div>
+                                                </div>
+                                                <div class="ml-4">
+                                                    <div class="text-base font-semibold text-white tracking-wide">{{ product.name }}</div>
+                                                    <div class="text-sm text-indigo-300 font-mono mt-1 font-medium">{{ product.barcode || '-' }}</div>
                                                 </div>
                                             </div>
-                                        </div>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <span class="px-2.5 py-1 inline-flex text-xs leading-5 font-medium rounded-full bg-indigo-900/30 text-indigo-300 border border-indigo-500/20">
-                                            {{ product.category?.name || 'Uncategorized' }}
-                                        </span>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="text-sm font-semibold text-white">{{ formatCurrency(product.harga_jual) }}</div>
-                                        <div class="text-xs text-slate-500 mt-1">Beli: {{ formatCurrency(product.harga_beli) }}</div>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-center">
-                                        <div class="flex flex-col items-center justify-center gap-1.5">
-                                        <div class="text-sm font-bold text-white mb-1">
-                                            {{ product.stock }} 
-                                            <span class="text-xs font-normal text-slate-400 ml-0.5" v-if="product.unit">{{ product.unit }}</span>
-                                            <span class="text-xs font-normal text-slate-400 ml-0.5" v-else>Pcs</span>
-                                        </div>
-                                        <div v-if="product.netto" class="text-[10px] text-slate-500 -mt-1">{{ product.netto }}</div>
-                                            
-                                            <div class="w-16 h-px bg-white/10 my-0.5"></div>
+                                        </td>
+                                        <td class="px-6 py-4">
+                                            <div v-if="product.category">
+                                                <div v-if="product.category.parent" class="flex items-center text-sm text-slate-300 mb-1">
+                                                    <span>{{ product.category.parent.name }}</span>
+                                                    <svg class="w-4 h-4 mx-1 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
+                                                </div>
+                                                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-emerald-500/10 text-emerald-300 border border-emerald-500/20">
+                                                    {{ product.category.name }}
+                                                </span>
+                                            </div>
+                                            <span v-else class="text-slate-400 italic text-sm">Tanpa Kategori</span>
+                                        </td>
+                                        <td class="px-6 py-4 text-right">
+                                            <div class="text-slate-300 text-base font-medium">{{ formatCurrency(product.harga_beli) }}</div>
+                                        </td>
+                                        <td class="px-6 py-4 text-right">
+                                            <div class="text-amber-400 text-base font-bold font-mono tracking-tight">{{ formatCurrency(product.harga_jual) }}</div>
+                                        </td>
+                                        <td class="px-6 py-4 text-center">
+                                            <span 
+                                                class="inline-flex items-center px-3 py-1 rounded-full text-sm font-bold border"
+                                                :class="product.stock <= 5 
+                                                    ? 'bg-rose-500/10 text-rose-400 border-rose-500/20' 
+                                                    : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'"
+                                            >
+                                                {{ product.stock }}
+                                            </span>
+                                        </td>
+                                        <td class="px-6 py-4 text-center">
+                                            <div>
+                                                <div class="font-semibold text-white text-sm">{{ product.unit || '-' }}</div>
+                                                <div v-if="product.netto" class="text-slate-400 text-xs mt-0.5">{{ product.netto }}</div>
+                                            </div>
+                                        </td>
+                                    </tr>
 
-                                            <button 
-                                                v-if="can('products.stock')" 
-                                                @click="openAdjustmentModal(product)" 
-                                                class="text-xs text-indigo-400 hover:text-indigo-300 hover:underline decoration-indigo-400/50 underline-offset-2 transition-colors"
-                                            >
-                                                Sesuaikan
-                                            </button>
-                                        </div>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-center">
-                                        <span v-if="product.stock <= 0" class="px-2.5 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-rose-900/30 text-rose-300 border border-rose-500/20">
-                                            Habis
-                                        </span>
-                                        <span v-else-if="product.stock <= 5" class="px-2.5 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-amber-900/30 text-amber-300 border border-amber-500/20 animate-pulse">
-                                            Menipis
-                                        </span>
-                                        <span v-else class="px-2.5 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-emerald-900/30 text-emerald-300 border border-emerald-500/20">
-                                            Tersedia
-                                        </span>
-                                    </td>
-                                    <!-- Audit Info Columns -->
-                                    <td class="px-6 py-4 whitespace-nowrap text-xs text-slate-400 hidden xl:table-cell">
-                                        <AuditInfo :user="product.creator" :timestamp="product.created_at" label="Dibuat" />
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-xs text-slate-400 hidden xl:table-cell">
-                                        <AuditInfo :user="product.updater" :timestamp="product.updated_at" label="Diubah" />
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="flex items-center space-x-3">
-                                            <Link 
-                                                v-if="can('products.edit')" 
-                                                :href="route('products.edit', product.id)" 
-                                                class="text-slate-400 hover:text-white transition-colors"
-                                                title="Edit Produk"
-                                            >
-                                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
-                                            </Link>
-                                            <button 
-                                                v-if="can('products.delete')" 
-                                                @click="deleteProduct(product.id)" 
-                                                class="text-rose-400/70 hover:text-rose-400 transition-colors"
-                                                title="Hapus Produk"
-                                            >
-                                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
+                                    <!-- Expanded Details Row -->
+                                    <tr v-if="expandedRows.includes(product.id)" class="bg-slate-800/80 border-b border-white/5">
+                                        <td colspan="7" class="px-6 py-4">
+                                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 animate-fadeIn pl-16">
+                                                <!-- Operations -->
+                                                <div>
+                                                    <h4 class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">Tindakan</h4>
+                                                    <div class="flex flex-wrap gap-2">
+                                                        <Link :href="route('products.show', product.id)" class="inline-flex items-center px-3 py-1.5 bg-sky-600 hover:bg-sky-500 text-white text-xs font-medium rounded-md transition-colors shadow-sm ring-1 ring-white/10">
+                                                            <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+                                                            Detail
+                                                        </Link>
+                                                        <Link v-if="can('products.edit')" :href="route('products.edit', product.id)" class="inline-flex items-center px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-medium rounded-md transition-colors shadow-sm ring-1 ring-white/10">
+                                                            <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
+                                                            Edit
+                                                        </Link>
+                                                        <button 
+                                                            v-if="can('stock.adjust')" 
+                                                            @click.stop="openAdjustmentModal(product)"
+                                                            class="inline-flex items-center px-3 py-1.5 bg-amber-600 hover:bg-amber-500 text-white text-xs font-medium rounded-md transition-colors shadow-sm ring-1 ring-white/10"
+                                                        >
+                                                            <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                                            Stok Adjustment
+                                                        </button>
+                                                        <button 
+                                                            v-if="can('products.delete')" 
+                                                            @click.stop="deleteProduct(product)" 
+                                                            class="inline-flex items-center px-3 py-1.5 bg-rose-600 hover:bg-rose-500 text-white text-xs font-medium rounded-md transition-colors shadow-sm ring-1 ring-white/10"
+                                                        >
+                                                            <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                                                            Hapus
+                                                        </button>
+                                                    </div>
+                                                </div>
+
+                                                <!-- Info & Meta -->
+                                                <div class="space-y-4">
+                                                    <div v-if="product.description">
+                                                        <h4 class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Deskripsi</h4>
+                                                        <p class="text-sm text-slate-300 leading-relaxed">{{ product.description }}</p>
+                                                    </div>
+                                                    
+                                                    <div class="grid grid-cols-2 gap-4 pt-2 border-t border-white/5">
+                                                        <AuditInfo :user="product.creator" :timestamp="product.created_at" label="Dibuat" />
+                                                        <AuditInfo :user="product.updater" :timestamp="product.updated_at" label="Diubah" />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </template>
+
+                                <!-- Empty State -->
                                 <tr v-if="products.data.length === 0">
-                                    <td colspan="8" class="px-6 py-12 text-center text-slate-500">
-                                        Tidak ada produk yang cocok dengan pencarian "{{ search }}"
+                                    <td colspan="5" class="px-6 py-12">
+                                        <EmptyState
+                                            title="Belum ada produk"
+                                            description="Mulai tambahkan produk baru untuk inventaris Anda"
+                                        >
+                                            <template v-if="filters.search" #action>
+                                                 <button @click="router.get(route('products.index'))" class="mt-4 text-indigo-400 hover:text-indigo-300 font-medium text-sm">
+                                                    Bersihkan pencarian
+                                                </button>
+                                            </template>
+                                        </EmptyState>
                                     </td>
                                 </tr>
                             </tbody>
@@ -309,15 +328,18 @@ const deleteProduct = (id) => {
                     </div>
 
                     <!-- Pagination -->
-                    <div v-if="products.links.length > 3" class="px-6 py-4 border-t border-white/5 bg-slate-900/30 flex justify-center">
-                         <div class="flex space-x-1">
-                            <template v-for="(link, k) in products.links" :key="k">
+                    <div class="px-6 py-4 border-t border-white/5 bg-slate-900/30 flex items-center justify-between">
+                         <div class="text-sm text-slate-400">
+                            Menampilkan <span class="font-medium text-white">{{ products.from || 0 }}</span> sampai <span class="font-medium text-white">{{ products.to || 0 }}</span> dari <span class="font-medium text-white">{{ products.total }}</span> hasil
+                        </div>
+                        <div class="flex gap-1">
+                             <template v-for="(link, k) in products.links" :key="k">
                                 <Link
                                     v-if="link.url"
                                     :href="link.url"
                                     v-html="link.label"
+                                    class="px-3 py-1 text-xs font-medium rounded-md transition-colors"
                                     :class="[
-                                        'px-3 py-1.5 rounded-md text-sm font-medium transition-all duration-200',
                                         link.active 
                                             ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/30' 
                                             : 'bg-slate-800 text-slate-400 hover:bg-slate-700 hover:text-white border border-white/5'
@@ -326,22 +348,20 @@ const deleteProduct = (id) => {
                                 <span
                                     v-else
                                     v-html="link.label"
-                                    class="px-3 py-1.5 rounded-md text-sm font-medium bg-slate-900/50 text-slate-600 border border-white/5 cursor-not-allowed"
+                                    class="px-3 py-1 text-xs font-medium rounded-md bg-slate-900/50 text-slate-600 border border-white/5 cursor-not-allowed"
                                 />
-                            </template>
+                             </template>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Adjustment Modal (Dark Theme) -->
+        <!-- Adjustment Modal -->
         <div v-if="showAdjustmentModal" class="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
             <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
                 <div class="fixed inset-0 bg-black/80 backdrop-blur-sm transition-opacity" aria-hidden="true" @click="closeAdjustmentModal"></div>
-
                 <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
-
                 <div class="inline-block align-bottom bg-slate-800 rounded-xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full border border-white/10 ring-1 ring-white/5">
                     <div class="px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
                         <div class="sm:flex sm:items-start">

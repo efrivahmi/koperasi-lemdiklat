@@ -46,7 +46,7 @@ class ProductController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Product::with(['category', 'creator', 'updater'])->withCount('stockIns');
+        $query = Product::with(['category.parent', 'creator', 'updater'])->withCount('stockIns');
 
         if ($request->has('search')) {
             $query->where('name', 'like', '%' . $request->search . '%')
@@ -246,7 +246,7 @@ class ProductController extends Controller
      */
     public function printBarcode(Product $product)
     {
-        $products = collect([$product->load('category')]);
+        $products = collect([$product->load('category.parent')]);
         $quantity = 1;
 
         return view('barcode-labels', [
@@ -263,7 +263,7 @@ class ProductController extends Controller
         $productIds = $request->input('product_ids', []);
         $quantity = $request->input('quantity', 1); // How many labels per product
 
-        $products = Product::with('category')
+        $products = Product::with('category.parent')
             ->whereIn('id', $productIds)
             ->get();
 

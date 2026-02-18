@@ -380,6 +380,9 @@
                         <!-- Nama Produk -->
                         <div class="label-header">
                             {{ strtoupper(Str::limit($product->name, 30)) }}
+                            <div style="font-size: 8px; font-weight: normal; margin-top: 2px;">
+                                {{ $product->netto ? $product->netto : '' }}
+                            </div>
                         </div>
 
                         <!-- Harga (Alfamart Style) -->
@@ -405,7 +408,11 @@
 
                         <!-- Kategori -->
                         <div class="label-footer">
-                            {{ strtoupper($product->category->name ?? 'UMUM') }}
+                            @if($product->category && $product->category->parent)
+                                {{ strtoupper($product->category->parent->name) }} > {{ strtoupper($product->category->name) }}
+                            @else
+                                {{ strtoupper($product->category->name ?? 'UMUM') }}
+                            @endif
                         </div>
                     </div>
                 @endfor

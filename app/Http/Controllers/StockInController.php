@@ -17,25 +17,43 @@ class StockInController extends Controller
     {
         $query = StockIn::with(['product', 'user', 'creator', 'updater']);
 
-        if ($request->has('search')) {
-            $search = $request->search;
-            $query->whereHas('product', function($q) use ($search) {
-                $q->where('name', 'like', '%' . $search . '%');
-            });
+        // Filter by Product ID
+        if ($request->has('product_id') && $request->product_id) {
+            $query->where('product_id', $request->product_id);
+        }
+
+        // Filter by Search (Fallback or additional text search)
+        if ($request->has('search') && $request->search) {
+             $search = $request->search;
+             $query->where(function($q) use ($search) {
+                 $q->whereHas('product', function($subQ) use ($search) {
+                     $subQ->where('name', 'like', '%' . $search . '%')
+                          ->orWhere('barcode', 'like', '%' . $search . '%');
+                 })->orWhere('supplier', 'like', '%' . $search . '%');
+             });
+        }
+
+        // Filter by Date Range
+        if ($request->has('start_date') && $request->start_date) {
+            $query->whereDate('created_at', '>=', $request->start_date);
+        }
+
+        if ($request->has('end_date') && $request->end_date) {
+            $query->whereDate('created_at', '<=', $request->end_date);
         }
 
         $stock_ins = $query->latest()->paginate(10);
 
-        if ($request->routeIs('kasir.*')) {
-            return Inertia::render('Kasir/StockIns/Index', [
-                'stock_ins' => $stock_ins,
-                'filters' => $request->only(['search'])
-            ]);
+        // Get selected product for SearchableSelect initial display
+        $selectedProduct = null;
+        if ($request->has('product_id') && $request->product_id) {
+            $selectedProduct = Product::find($request->product_id);
         }
 
         return Inertia::render('Admin/StockIns/Index', [
             'stock_ins' => $stock_ins,
-            'filters' => $request->only(['search'])
+            'filters' => $request->only(['search', 'product_id', 'start_date', 'end_date']),
+            'selectedProduct' => $selectedProduct
         ]);
     }
 

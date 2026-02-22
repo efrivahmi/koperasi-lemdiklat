@@ -7,6 +7,14 @@ const props = defineProps({
     mobileTitle: {
         type: String,
         default: null
+    },
+    hideHeaderClock: {
+        type: Boolean,
+        default: false
+    },
+    hideHeaderPos: {
+        type: Boolean,
+        default: false
     }
 });
 
@@ -338,7 +346,6 @@ const closeMobileMenu = () => {
     }
 };
 
-page.props.isLoading = isLoading;
 </script>
 
 <template>
@@ -536,7 +543,7 @@ page.props.isLoading = isLoading;
                         <h1 v-else class="text-sm font-bold text-white drop-shadow-md truncate leading-tight">
                             {{ pageTitle }}
                         </h1>
-                        <p class="text-[10px] text-purple-300/80 leading-tight mt-0.5">{{ formattedDateShort }} • {{ formattedTime }}</p>
+                        <p v-if="!hideHeaderClock" class="text-[10px] text-purple-300/80 leading-tight mt-0.5">{{ formattedDateShort }} • {{ formattedTime }}</p>
                     </div>
                 </div>
                 <div class="flex items-center gap-1.5">
@@ -609,7 +616,7 @@ page.props.isLoading = isLoading;
                         <slot name="header" />
                     </div>
                     <!-- Live Clock -->
-                    <div class="hidden xl:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10">
+                    <div v-if="!hideHeaderClock" class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 group hover:bg-white/10 transition-colors">
                         <svg class="w-4 h-4 text-purple-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
@@ -621,7 +628,7 @@ page.props.isLoading = isLoading;
 
                 <div class="flex items-center gap-4">
                     <!-- Quick Action Button in Header -->
-                    <Link v-if="userRole === 'admin' || userRole === 'master' || (userRole === 'kasir' && userPermissions['pos.access'])"
+                    <Link v-if="!hideHeaderPos && (userRole === 'admin' || userRole === 'master' || (userRole === 'kasir' && userPermissions['pos.access']))"
                         :href="userRole === 'kasir' ? route('kasir.pos.index') : route('pos.index')"
                         class="hidden md:flex items-center gap-2 bg-gradient-to-r from-pink-600 to-rose-500 hover:from-pink-500 hover:to-rose-400 text-white px-4 py-2 rounded-xl text-sm font-bold shadow-lg shadow-pink-500/30 transition-all duration-300 hover:scale-105 border border-pink-400/50">
                         <span>🛒</span>

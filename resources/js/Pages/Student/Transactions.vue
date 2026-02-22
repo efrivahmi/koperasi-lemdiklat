@@ -43,106 +43,109 @@ const getTransactionLabel = (type) => {
 <template>
     <Head title="Riwayat Transaksi" />
     <AuthenticatedLayout>
-        <template #mobileTitle>Transaksi</template>
+        <template #mobileTitle>Riwayat Transaksi</template>
         <template #header>
-            <div class="flex justify-between items-center">
-                <div>
-                    <h2 class="text-xl font-semibold text-gray-800 dark:text-gray-200">Riwayat Transaksi</h2>
-                    <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">{{ student.user.name }} ({{ student.nis }})</p>
-                </div>
-                <div class="text-right">
-                    <p class="text-sm text-gray-600 dark:text-gray-400">Saldo Saat Ini</p>
-                    <p class="text-2xl font-bold text-purple-600 dark:text-purple-400">{{ formatCurrency(student.balance) }}</p>
-                </div>
-            </div>
+            <h2 class="text-xl font-semibold leading-tight text-white drop-shadow-md">Riwayat Transaksi</h2>
         </template>
 
-        <div class="py-12">
-            <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
+        <div class="py-8 min-h-screen relative">
+            <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6 relative z-10">
                 <!-- Filters -->
-                <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
-                    <h3 class="font-semibold mb-4 text-gray-900 dark:text-gray-100">Filter Transaksi</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div class="bg-slate-800/50 backdrop-blur-md p-6 rounded-2xl border border-white/10 shadow-xl shadow-purple-500/5">
+                    <h3 class="font-semibold mb-4 text-white flex items-center gap-2">
+                        <span class="text-purple-400">🔍</span>
+                        Filter Transaksi
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
                         <div>
-                            <label class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Dari Tanggal</label>
-                            <input type="date" v-model="searchForm.date_from" class="w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300" />
+                            <label class="block text-xs font-semibold uppercase tracking-wider mb-2 text-purple-200/70">Dari Tanggal</label>
+                            <input type="date" v-model="searchForm.date_from" 
+                                class="w-full rounded-xl bg-slate-900/50 border-white/10 text-white focus:ring-purple-500 focus:border-purple-500 transition-all" />
                         </div>
                         <div>
-                            <label class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Sampai Tanggal</label>
-                            <input type="date" v-model="searchForm.date_to" class="w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300" />
+                            <label class="block text-xs font-semibold uppercase tracking-wider mb-2 text-purple-200/70">Sampai Tanggal</label>
+                            <input type="date" v-model="searchForm.date_to" 
+                                class="w-full rounded-xl bg-slate-900/50 border-white/10 text-white focus:ring-purple-500 focus:border-purple-500 transition-all" />
                         </div>
-                        <div>
-                            <label class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Tipe Transaksi</label>
-                            <select v-model="searchForm.type" class="w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300">
-                                <option value="">Semua Tipe</option>
-                                <option value="topup">Top Up</option>
-                                <option value="purchase">Pembelian</option>
-                                <option value="redeem">Redeem Voucher</option>
+                        <div class="lg:col-span-2">
+                            <label class="block text-xs font-semibold uppercase tracking-wider mb-2 text-purple-200/70">Tipe Transaksi</label>
+                            <select v-model="searchForm.type" 
+                                class="w-full rounded-xl bg-slate-900/50 border-white/10 text-white focus:ring-purple-500 focus:border-purple-500 transition-all">
+                                <option value="" class="bg-slate-900">Semua Tipe</option>
+                                <option value="topup" class="bg-slate-900">Top Up</option>
+                                <option value="purchase" class="bg-slate-900">Pembelian</option>
+                                <option value="redeem" class="bg-slate-900">Redeem Voucher</option>
                             </select>
                         </div>
                         <div class="flex items-end gap-2">
-                            <button @click="search" class="flex-1 px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-md font-semibold">
+                            <button @click="search" 
+                                class="flex-1 px-6 py-2.5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white rounded-xl font-bold shadow-lg shadow-purple-500/20 transition-all active:scale-95">
                                 Tampilkan
                             </button>
                             <button @click="() => { searchForm = { date_from: '', date_to: '', type: '' }; search(); }"
-                                class="px-6 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-md font-semibold">
-                                Reset
+                                class="px-4 py-2.5 bg-slate-700/50 hover:bg-slate-600/50 text-white rounded-xl font-bold border border-white/10 transition-all active:scale-95">
+                                ↺
                             </button>
                         </div>
                     </div>
                 </div>
 
                 <!-- Transactions List -->
-                <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm rounded-lg">
-                    <div class="p-4 bg-indigo-50 dark:bg-indigo-900/20 border-b border-indigo-200 dark:border-indigo-800">
-                        <p class="text-sm text-indigo-800 dark:text-indigo-200">
+                <div class="bg-slate-800/50 backdrop-blur-md overflow-hidden shadow-2xl rounded-2xl border border-white/10">
+                    <div class="p-4 bg-purple-900/20 border-b border-white/10">
+                        <p class="text-sm text-purple-200">
                             <strong>Total Transaksi:</strong> {{ transactions.total }} •
                             Menampilkan {{ transactions.from }}-{{ transactions.to }}
                         </p>
                     </div>
 
                     <div class="overflow-x-auto">
-                        <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                            <thead class="bg-gradient-to-r from-purple-600 to-indigo-600 text-white">
+                        <table class="min-w-full divide-y divide-white/10">
+                            <thead class="bg-slate-900/50">
                                 <tr>
-                                    <th class="px-6 py-3 text-left text-xs font-bold uppercase">Tanggal & Waktu</th>
-                                    <th class="px-6 py-3 text-left text-xs font-bold uppercase">Tipe Transaksi</th>
-                                    <th class="px-6 py-3 text-left text-xs font-bold uppercase">Keterangan</th>
-                                    <th class="px-6 py-3 text-right text-xs font-bold uppercase">Jumlah</th>
-                                    <th class="px-6 py-3 text-right text-xs font-bold uppercase">Saldo Akhir</th>
+                                    <th class="px-6 py-4 text-left text-xs font-bold text-purple-200 uppercase tracking-widest">Tanggal & Waktu</th>
+                                    <th class="px-6 py-4 text-left text-xs font-bold text-purple-200 uppercase tracking-widest">Tipe</th>
+                                    <th class="px-6 py-4 text-left text-xs font-bold text-purple-200 uppercase tracking-widest">Keterangan</th>
+                                    <th class="px-6 py-4 text-right text-xs font-bold text-purple-200 uppercase tracking-widest">Jumlah</th>
+                                    <th class="px-6 py-4 text-right text-xs font-bold text-purple-200 uppercase tracking-widest">Saldo Akhir</th>
                                 </tr>
                             </thead>
-                            <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                            <tbody class="divide-y divide-white/5">
                                 <tr v-if="transactions.data.length === 0">
-                                    <td colspan="5" class="px-6 py-12 text-center text-gray-500 dark:text-gray-400">
+                                    <td colspan="5" class="px-6 py-12 text-center text-slate-400 italic">
                                         Tidak ada transaksi ditemukan
                                     </td>
                                 </tr>
-                                <tr v-for="transaction in transactions.data" :key="transaction.id" class="hover:bg-gray-50 dark:hover:bg-gray-700 transition">
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
-                                        <div class="font-semibold">{{ new Date(transaction.created_at).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' }) }}</div>
-                                        <div class="text-xs text-gray-500 dark:text-gray-400">{{ new Date(transaction.created_at).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) }}</div>
+                                <tr v-for="transaction in transactions.data" :key="transaction.id" class="hover:bg-white/5 transition-colors group">
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm font-semibold text-white">{{ new Date(transaction.created_at).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' }) }}</div>
+                                        <div class="text-[10px] text-slate-400 group-hover:text-purple-300 transition-colors uppercase tracking-wider">{{ new Date(transaction.created_at).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) }} WIB</div>
                                     </td>
 
                                     <td class="px-6 py-4 whitespace-nowrap">
-                                        <span :class="getTransactionBadge(transaction.type)" class="px-3 py-1 rounded-full text-xs font-semibold inline-flex items-center gap-1">
+                                        <div :class="[
+                                            'px-3 py-1 rounded-lg text-[10px] font-bold uppercase tracking-widest inline-flex items-center gap-1.5 shadow-sm border',
+                                            transaction.type === 'topup' ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/20' : 
+                                            transaction.type === 'purchase' ? 'bg-rose-500/20 text-rose-300 border-rose-500/20' : 
+                                            'bg-blue-500/20 text-blue-300 border-blue-500/20'
+                                        ]">
                                             <span>{{ getTransactionIcon(transaction.type) }}</span>
                                             {{ getTransactionLabel(transaction.type) }}
-                                        </span>
+                                        </div>
                                     </td>
 
-                                    <td class="px-6 py-4 text-sm text-gray-900 dark:text-gray-100">
+                                    <td class="px-6 py-4 text-sm text-slate-300">
                                         {{ transaction.description || '-' }}
                                     </td>
 
-                                    <td class="px-6 py-4 text-right">
-                                        <span class="text-lg font-bold" :class="transaction.type === 'topup' || transaction.type === 'redeem' ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'">
+                                    <td class="px-6 py-4 text-right whitespace-nowrap">
+                                        <span class="text-base font-bold tabular-nums" :class="transaction.type === 'topup' || transaction.type === 'redeem' ? 'text-emerald-400' : 'text-rose-400'">
                                             {{ transaction.type === 'topup' || transaction.type === 'redeem' ? '+' : '-' }}{{ formatCurrency(transaction.amount) }}
                                         </span>
                                     </td>
 
-                                    <td class="px-6 py-4 text-right">
-                                        <span class="text-lg font-bold text-blue-600 dark:text-blue-400">
+                                    <td class="px-6 py-4 text-right whitespace-nowrap">
+                                        <span class="text-base font-bold text-indigo-300 tabular-nums">
                                             {{ formatCurrency(transaction.ending_balance) }}
                                         </span>
                                     </td>
@@ -152,15 +155,26 @@ const getTransactionLabel = (type) => {
                     </div>
 
                     <!-- Pagination -->
-                    <div class="px-6 py-4 flex justify-between items-center border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50">
-                        <div class="text-sm text-gray-600 dark:text-gray-400">
-                            Menampilkan {{ transactions.from }} - {{ transactions.to }} dari {{ transactions.total }} transaksi
+                    <div class="px-6 py-6 flex flex-col sm:flex-row justify-between items-center gap-4 border-t border-white/10 bg-slate-900/30">
+                        <div class="text-xs font-medium text-slate-400 uppercase tracking-widest">
+                            Menampilkan {{ transactions.from }} - {{ transactions.to }} dari {{ transactions.total }}
                         </div>
-                        <div class="flex gap-2">
-                            <Link v-for="link in transactions.links" :key="link.label" :href="link.url"
-                                :class="['px-3 py-2 text-sm rounded', link.active ? 'bg-indigo-600 text-white' : 'bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600', !link.url ? 'opacity-50 cursor-not-allowed' : '']"
-                                v-html="link.label"
-                                :preserve-scroll="true" />
+                        <div class="flex flex-wrap items-center gap-2">
+                            <template v-for="link in transactions.links" :key="link.label">
+                                <Link v-if="link.url"
+                                    :href="link.url"
+                                    :class="[
+                                        'px-3 py-2 text-xs font-bold rounded-lg transition-all border', 
+                                        link.active 
+                                            ? 'bg-gradient-to-r from-purple-600 to-indigo-600 border-purple-500 text-white shadow-lg shadow-purple-500/20' 
+                                            : 'bg-slate-800/50 border-white/10 text-slate-400 hover:text-white hover:bg-slate-700/50'
+                                    ]"
+                                    v-html="link.label"
+                                    :preserve-scroll="true" />
+                                <span v-else
+                                    class="px-3 py-2 text-xs font-bold rounded-lg bg-slate-900/50 border border-white/5 text-slate-600 cursor-not-allowed"
+                                    v-html="link.label" />
+                            </template>
                         </div>
                     </div>
                 </div>

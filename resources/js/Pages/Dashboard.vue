@@ -1,7 +1,7 @@
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head, Link, usePage } from '@inertiajs/vue3';
-import { computed } from 'vue';
+import { computed, ref, onMounted, onUnmounted } from 'vue';
 import { Bar, Doughnut } from 'vue-chartjs';
 import {
     Chart as ChartJS,
@@ -36,6 +36,46 @@ const hasPermission = (module) => {
     if (userRole.value === 'admin' || userRole.value === 'master') return true;
     return userPermissions.value[module] || false;
 };
+
+// Live clock and greeting logic
+const currentTime = ref(new Date());
+let clockInterval = null;
+
+const greeting = computed(() => {
+    const hour = currentTime.value.getHours();
+    if (hour < 11) return 'Selamat Pagi';
+    if (hour < 15) return 'Selamat Siang';
+    if (hour < 18) return 'Selamat Sore';
+    return 'Selamat Malam';
+});
+
+const liveTime = computed(() => {
+    return currentTime.value.toLocaleTimeString('id-ID', {
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: false
+    });
+});
+
+const liveDate = computed(() => {
+    return currentTime.value.toLocaleDateString('id-ID', {
+        weekday: 'long',
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric'
+    });
+});
+
+onMounted(() => {
+    clockInterval = setInterval(() => {
+        currentTime.value = new Date();
+    }, 1000);
+});
+
+onUnmounted(() => {
+    if (clockInterval) clearInterval(clockInterval);
+});
 
 const formatCurrency = (value) => {
     return new Intl.NumberFormat('id-ID', {
@@ -169,33 +209,45 @@ const topProductsChartOptions = {
 <template>
     <Head title="Dashboard" />
 
-    <AuthenticatedLayout>
+    <AuthenticatedLayout :hideHeaderClock="true" :hideHeaderPos="true">
         <template #mobileTitle>Dashboard</template>
         <template #header>
             <div class="flex justify-between items-center">
                 <h2 class="text-xl font-semibold leading-tight text-white drop-shadow-md">
                     Dashboard Koperasi
                 </h2>
-                <div class="text-sm text-slate-300">
-                    {{ new Date().toLocaleDateString('id-ID', {
-                        weekday: 'long',
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric'
-                    }) }}
-                </div>
             </div>
         </template>
 
         <div class="py-8 min-h-screen relative">
             <div class="mx-auto max-w-7xl sm:px-6 lg:px-8 space-y-6 relative z-10">
 
+                <!-- Greeting Banner -->
+                <div class="relative overflow-hidden rounded-2xl bg-indigo-950/40 backdrop-blur-xl p-6 sm:p-8 shadow-2xl shadow-indigo-500/20 border border-white/10 mb-6 group transition-all duration-500 hover:shadow-indigo-500/30">
+                    <div class="absolute -top-20 -right-20 w-60 h-60 bg-white/10 rounded-full blur-3xl pointer-events-none"></div>
+                    <div class="absolute -bottom-16 -left-16 w-48 h-48 bg-pink-500/20 rounded-full blur-3xl pointer-events-none"></div>
+                    <div class="relative z-10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                        <div>
+                            <h1 class="text-2xl sm:text-3xl font-bold text-white drop-shadow-lg">
+                                {{ greeting }}, {{ user?.name?.split(' ')[0] }} 👋
+                            </h1>
+                            <p class="text-purple-100/80 text-sm mt-1">{{ liveDate }}</p>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <div class="bg-white/15 backdrop-blur-md rounded-xl px-5 py-3 border border-white/20 shadow-lg">
+                                <p class="text-3xl sm:text-4xl font-bold text-white tabular-nums tracking-wider drop-shadow-lg">{{ liveTime }}</p>
+                                <p class="text-[10px] text-purple-200 uppercase tracking-widest text-center mt-0.5">Waktu Indonesia Barat</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Today's Stats Row -->
                 <!-- Stats Bento Grid -->
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 lg:auto-rows-[minmax(160px,auto)]">
 
                     <!-- Month Revenue (HERO BENTO - Span 2x2) -->
-                    <div class="relative overflow-hidden sm:rounded-[2xl] p-8 text-white lg:col-span-2 lg:row-span-2 bg-gradient-to-br from-emerald-500 via-teal-700 to-slate-900 shadow-[0_8px_30px_rgba(16,185,129,0.3)] border border-emerald-400/30 group transform transition-all duration-500 hover:-translate-y-1 hover:shadow-[0_15px_40px_rgba(16,185,129,0.4)] flex flex-col justify-between animate-fade-in-up">
+                    <div class="relative overflow-hidden sm:rounded-[2xl] p-8 text-white lg:col-span-2 lg:row-span-2 bg-emerald-950/40 backdrop-blur-xl shadow-[0_8px_30px_rgba(16,185,129,0.2)] border border-emerald-400/30 group transform transition-all duration-500 hover:-translate-y-1 hover:shadow-[0_15px_40px_rgba(16,185,129,0.3)] flex flex-col justify-between animate-fade-in-up">
                         <!-- Abstract background shapes -->
                         <div class="absolute -top-24 -right-24 w-64 h-64 bg-emerald-400/20 rounded-full blur-3xl group-hover:bg-emerald-400/30 transition-all duration-700 pointer-events-none"></div>
                         <div class="absolute -bottom-24 -left-24 w-80 h-80 bg-teal-500/20 rounded-full blur-3xl group-hover:bg-teal-500/30 transition-all duration-700 pointer-events-none"></div>
@@ -225,7 +277,7 @@ const topProductsChartOptions = {
                     </div>
 
                     <!-- Today's Revenue (WIDE BENTO - Span 2x1) -->
-                    <div class="relative overflow-hidden sm:rounded-[2xl] p-6 text-white lg:col-span-2 lg:row-span-1 bg-blue-950/60 backdrop-blur-xl border border-blue-500/30 shadow-[0_8px_30px_rgba(59,130,246,0.15)] group transform transition-all duration-300 hover:-translate-y-1 hover:border-blue-400/50 flex flex-col justify-center animate-fade-in-up animation-delay-100">
+                    <div class="relative overflow-hidden sm:rounded-[2xl] p-6 text-white lg:col-span-2 lg:row-span-1 bg-blue-950/40 backdrop-blur-xl border border-blue-500/30 shadow-[0_8px_30px_rgba(59,130,246,0.15)] group transform transition-all duration-300 hover:-translate-y-1 hover:border-blue-400/50 flex flex-col justify-center animate-fade-in-up animation-delay-100">
                         <div class="absolute inset-0 bg-gradient-to-r from-blue-600/10 to-transparent pointer-events-none"></div>
                         <div class="relative z-10 flex justify-between items-center gap-6">
                             <div class="min-w-0">
@@ -245,7 +297,7 @@ const topProductsChartOptions = {
                     </div>
 
                     <!-- Laba Bersih (SQUARE BENTO - Span 1x1) -->
-                    <div class="relative overflow-hidden sm:rounded-[2xl] p-6 text-white lg:col-span-1 lg:row-span-1 bg-purple-950/60 backdrop-blur-xl border border-purple-500/30 shadow-[0_8px_30px_rgba(168,85,247,0.15)] group transform transition-all duration-300 hover:-translate-y-1 hover:border-purple-400/50 flex flex-col justify-between animate-fade-in-up animation-delay-200">
+                    <div class="relative overflow-hidden sm:rounded-[2xl] p-6 text-white lg:col-span-1 lg:row-span-1 bg-purple-950/40 backdrop-blur-xl border border-purple-500/30 shadow-[0_8px_30px_rgba(168,85,247,0.15)] group transform transition-all duration-300 hover:-translate-y-1 hover:border-purple-400/50 flex flex-col justify-between animate-fade-in-up animation-delay-200">
                         <div class="absolute -right-10 -top-10 w-32 h-32 bg-purple-500/20 rounded-full blur-2xl pointer-events-none"></div>
                         <div class="relative z-10 flex justify-between items-start mb-4">
                             <div class="bg-purple-500/20 p-3 rounded-xl border border-purple-400/30 text-purple-300">
@@ -260,7 +312,7 @@ const topProductsChartOptions = {
                     </div>
 
                     <!-- Total Siswa (SQUARE BENTO - Span 1x1) -->
-                    <div class="relative overflow-hidden sm:rounded-[2xl] p-6 pb-8 text-white lg:col-span-1 lg:row-span-1 bg-orange-950/60 backdrop-blur-xl border border-orange-500/30 shadow-[0_8px_30px_rgba(249,115,22,0.15)] group transform transition-all duration-300 hover:-translate-y-1 hover:border-orange-400/50 flex flex-col justify-between animate-fade-in-up animation-delay-300">
+                    <div class="relative overflow-hidden sm:rounded-[2xl] p-6 pb-8 text-white lg:col-span-1 lg:row-span-1 bg-orange-950/40 backdrop-blur-xl border border-orange-500/30 shadow-[0_8px_30px_rgba(249,115,22,0.15)] group transform transition-all duration-300 hover:-translate-y-1 hover:border-orange-400/50 flex flex-col justify-between animate-fade-in-up animation-delay-300">
                         <div class="absolute -left-10 -bottom-10 w-32 h-32 bg-orange-500/20 rounded-full blur-2xl pointer-events-none"></div>
                         <div class="relative z-10 flex justify-between items-start mb-4">
                             <div class="bg-orange-500/20 p-3 rounded-xl border border-orange-400/30 text-orange-300">

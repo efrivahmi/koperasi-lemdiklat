@@ -71,7 +71,7 @@ const lowStockExpanded = ref(false);
 <template>
     <Head title="Dashboard Kasir" />
 
-    <AuthenticatedLayout>
+    <AuthenticatedLayout :hideHeaderClock="true" :hideHeaderPos="true">
         <template #mobileTitle>Dashboard</template>
         <template #header>
             <h2 class="text-xl font-semibold leading-tight text-white drop-shadow-md">
@@ -83,7 +83,7 @@ const lowStockExpanded = ref(false);
             <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 space-y-6 relative z-10">
 
                 <!-- Greeting Banner -->
-                <div class="relative overflow-hidden rounded-2xl bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 p-6 sm:p-8 shadow-2xl shadow-purple-500/30 border border-white/10">
+                <div class="relative overflow-hidden rounded-2xl bg-indigo-950/40 backdrop-blur-xl p-6 sm:p-8 shadow-2xl shadow-indigo-500/20 border border-white/10 group transition-all duration-500 hover:shadow-indigo-500/30">
                     <div class="absolute -top-20 -right-20 w-60 h-60 bg-white/10 rounded-full blur-3xl pointer-events-none"></div>
                     <div class="absolute -bottom-16 -left-16 w-48 h-48 bg-pink-500/20 rounded-full blur-3xl pointer-events-none"></div>
                     <div class="relative z-10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -105,7 +105,7 @@ const lowStockExpanded = ref(false);
                 <!-- Today's Sales Hero -->
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                     <!-- Today Revenue -->
-                    <div class="relative overflow-hidden rounded-2xl p-6 bg-gradient-to-br from-emerald-500 via-teal-600 to-green-800 shadow-xl shadow-emerald-500/20 border border-emerald-400/30 group hover:-translate-y-0.5 transition-all duration-300">
+                    <div class="relative overflow-hidden rounded-2xl p-6 bg-emerald-950/40 backdrop-blur-xl shadow-xl shadow-emerald-500/10 border border-emerald-400/30 group hover:-translate-y-0.5 transition-all duration-300">
                         <div class="absolute -top-16 -right-16 w-40 h-40 bg-emerald-300/20 rounded-full blur-3xl pointer-events-none"></div>
                         <div class="relative z-10">
                             <div class="flex items-center gap-3 mb-4">
@@ -124,7 +124,7 @@ const lowStockExpanded = ref(false);
                     </div>
 
                     <!-- Month Revenue (compact) -->
-                    <div class="relative overflow-hidden rounded-2xl p-6 bg-blue-950/60 backdrop-blur-xl border border-blue-500/30 shadow-xl shadow-blue-500/10 group hover:-translate-y-0.5 transition-all duration-300">
+                    <div class="relative overflow-hidden rounded-2xl p-6 bg-blue-950/40 backdrop-blur-xl border border-blue-500/30 shadow-xl shadow-blue-500/10 group hover:-translate-y-0.5 transition-all duration-300">
                         <div class="absolute -right-10 -top-10 w-32 h-32 bg-blue-500/15 rounded-full blur-2xl pointer-events-none"></div>
                         <div class="relative z-10">
                             <div class="flex items-center gap-3 mb-4">

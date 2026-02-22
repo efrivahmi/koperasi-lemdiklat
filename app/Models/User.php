@@ -99,8 +99,8 @@ class User extends Authenticatable
      */
     public function hasPermission(string $permission): bool
     {
-        // Admin dan Master memiliki semua permissions
-        if (in_array($this->role, ['admin', 'master'])) {
+        // Hanya Master yang selalu memiliki semua permissions tanpa terkecuali
+        if ($this->role === 'master') {
             return true;
         }
 
@@ -109,7 +109,7 @@ class User extends Authenticatable
             return false;
         }
 
-        // Check permission untuk kasir
+        // Check permission untuk admin dan kasir
         $permissions = $this->permissions ?? [];
         return isset($permissions[$permission]) && $permissions[$permission] === true;
     }

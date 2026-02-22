@@ -43,14 +43,13 @@ const formatCurrency = (value) => {
                         <p class="text-slate-400 text-sm mt-1">Kelola informasi dan produk kategori ini</p>
                     </div>
                     <div class="flex gap-3">
-                        <Link :href="route('categories.index')" class="inline-flex items-center px-4 py-2 bg-slate-700/50 hover:bg-slate-700 border border-white/10 text-slate-300 hover:text-white rounded-lg transition-all">
+                        <Link :href="route('kasir.categories.index')" class="inline-flex items-center px-4 py-2 bg-slate-700/50 hover:bg-slate-700 border border-white/10 text-slate-300 hover:text-white rounded-lg transition-all">
                             <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
                             Kembali
                         </Link>
-                        
-                        <Link v-if="can('categories.edit')" :href="route('categories.edit', category.id)" class="inline-flex items-center px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-medium rounded-lg shadow-lg shadow-indigo-500/30 transition-all">
-                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
-                            Edit Kategori
+                        <Link :href="route('kasir.categories.edit', category.id)" class="inline-flex items-center px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-medium rounded-lg shadow-lg shadow-indigo-500/30 transition-all">
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
+                            Edit
                         </Link>
                     </div>
                 </div>
@@ -164,7 +163,7 @@ const formatCurrency = (value) => {
                                         </span>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                        <Link v-if="can && can('categories.edit')" :href="route('categories.edit', child.id)" class="text-indigo-400 hover:text-indigo-300 transition-colors inline-block" title="Edit">
+                                        <Link v-if="can && can('categories.edit')" :href="route('kasir.categories.edit', child.id)" class="text-indigo-400 hover:text-indigo-300 transition-colors inline-block" title="Edit">
                                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
                                         </Link>
                                     </td>
@@ -210,7 +209,7 @@ const formatCurrency = (value) => {
                             </div>
                             <h3 class="text-lg font-bold text-white">Daftar Produk</h3>
                         </div>
-                         <Link v-if="can && can('products.create')" :href="route('products.create')" class="inline-flex items-center justify-center px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-medium rounded-lg transition-colors shadow-lg shadow-emerald-500/20">
+                         <Link v-if="can && can('products.create')" :href="route('kasir.products.create')" class="inline-flex items-center justify-center px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-medium rounded-lg transition-colors shadow-lg shadow-emerald-500/20">
                             <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg>
                             Tambah Produk
                         </Link>

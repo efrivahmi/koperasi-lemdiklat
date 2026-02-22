@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue';
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
 import { Link, usePage, router } from '@inertiajs/vue3';
 import ThemeToggle from '@/Components/ThemeToggle.vue';
 
@@ -15,6 +15,46 @@ const sidebarOpen = ref(false);
 const mobileMenuOpen = ref(false);
 const isLoading = ref(false);
 const isMobile = ref(false);
+const profileDropdownOpen = ref(false);
+
+// Live clock
+const currentTime = ref(new Date());
+let clockInterval = null;
+
+const formattedDate = computed(() => {
+    return currentTime.value.toLocaleDateString('id-ID', {
+        weekday: 'long',
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric'
+    });
+});
+
+const formattedTime = computed(() => {
+    return currentTime.value.toLocaleTimeString('id-ID', {
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: false
+    }) + ' WIB';
+});
+
+const formattedDateShort = computed(() => {
+    return currentTime.value.toLocaleDateString('id-ID', {
+        weekday: 'short',
+        day: 'numeric',
+        month: 'short'
+    });
+});
+
+// Greeting based on time of day
+const greeting = computed(() => {
+    const hour = currentTime.value.getHours();
+    if (hour < 11) return 'Selamat Pagi';
+    if (hour < 15) return 'Selamat Siang';
+    if (hour < 18) return 'Selamat Sore';
+    return 'Selamat Malam';
+});
 
 const user = computed(() => page.props.auth?.user);
 const userRole = computed(() => user.value?.role || 'siswa');
@@ -53,6 +93,12 @@ const handleFinish = () => {
 onMounted(() => {
     checkMobile();
     window.addEventListener('resize', checkMobile);
+    document.addEventListener('click', handleClickOutside);
+
+    // Start live clock
+    clockInterval = setInterval(() => {
+        currentTime.value = new Date();
+    }, 1000);
 
     // Listen to Inertia navigation events
     router.on('start', handleStart);
@@ -61,10 +107,24 @@ onMounted(() => {
 
 onUnmounted(() => {
     window.removeEventListener('resize', checkMobile);
-
-    // Inertia.js automatically handles event listener cleanup
-    // No need to manually remove router event listeners
+    document.removeEventListener('click', handleClickOutside);
+    if (clockInterval) clearInterval(clockInterval);
 });
+
+const toggleProfileDropdown = () => {
+    profileDropdownOpen.value = !profileDropdownOpen.value;
+};
+
+const handleClickOutside = (event) => {
+    const desktopDropdown = document.getElementById('profile-dropdown');
+    const mobileDropdown = document.getElementById('mobile-profile-dropdown');
+    const isOutside =
+        (!desktopDropdown || !desktopDropdown.contains(event.target)) &&
+        (!mobileDropdown || !mobileDropdown.contains(event.target));
+    if (isOutside) {
+        profileDropdownOpen.value = false;
+    }
+};
 
 const menuItems = computed(() => {
     const role = userRole.value;
@@ -197,19 +257,19 @@ const menuItems = computed(() => {
         // Laporan
         const reportItems = [];
         if (permissions['reports.sales']) {
-            reportItems.push({ name: 'Laporan Penjualan', route: 'kasir.reports.sales', icon: '📊', gradient: 'from-teal-500 to-green-500' });
+            reportItems.push({ name: 'Laporan Penjualan', route: 'reports.sales', icon: '📊', gradient: 'from-teal-500 to-green-500' });
         }
         if (permissions['reports.inventory']) {
-            reportItems.push({ name: 'Laporan Inventori', route: 'kasir.reports.inventory', icon: '📈', gradient: 'from-blue-500 to-indigo-500' });
+            reportItems.push({ name: 'Laporan Inventori', route: 'reports.inventory', icon: '📈', gradient: 'from-blue-500 to-indigo-500' });
         }
         if (permissions['reports.stock_adjustments']) {
-            reportItems.push({ name: 'Penyesuaian Stok', route: 'kasir.reports.stock-adjustments', icon: '📦', gradient: 'from-orange-500 to-red-500' });
+            reportItems.push({ name: 'Penyesuaian Stok', route: 'reports.stock-adjustments', icon: '📦', gradient: 'from-orange-500 to-red-500' });
         }
         if (permissions['reports.financial']) {
-            reportItems.push({ name: 'Laporan Keuangan', route: 'kasir.reports.financial', icon: '💰', gradient: 'from-green-500 to-teal-500' });
+            reportItems.push({ name: 'Laporan Keuangan', route: 'reports.financial', icon: '💰', gradient: 'from-green-500 to-teal-500' });
         }
         if (permissions['reports.student_transactions']) {
-            reportItems.push({ name: 'Transaksi Siswa', route: 'kasir.reports.student-transactions', icon: '💳', gradient: 'from-purple-500 to-indigo-500' });
+            reportItems.push({ name: 'Transaksi Siswa', route: 'reports.student-transactions', icon: '💳', gradient: 'from-purple-500 to-indigo-500' });
         }
         if (reportItems.length > 0) {
             sections.push({ title: 'Laporan', items: reportItems });
@@ -464,28 +524,76 @@ page.props.isLoading = isLoading;
     ]">
         <!-- Mobile Header -->
         <div v-if="isMobile" class="sticky top-0 z-30 bg-gradient-to-r from-purple-900 via-indigo-900 to-blue-900 border-b border-purple-500/30 shadow-lg shadow-purple-500/20 lg:hidden backdrop-blur-sm">
-            <div class="flex items-center justify-between px-4 py-3">
+            <div class="flex items-center justify-between px-4 py-2.5">
                 <div class="flex items-center space-x-3 min-w-0 flex-1">
                     <Link :href="route('dashboard')" class="flex-shrink-0">
                         <img src="/storage/logos/icon.png" alt="Logo" class="w-8 h-8 object-contain drop-shadow-lg" />
                     </Link>
                     <div class="min-w-0 flex-1">
-                        <h1 v-if="$slots.mobileTitle" class="text-base font-bold text-white drop-shadow-md truncate">
+                        <h1 v-if="$slots.mobileTitle" class="text-sm font-bold text-white drop-shadow-md truncate leading-tight">
                             <slot name="mobileTitle" />
                         </h1>
-                        <h1 v-else class="text-base font-bold text-white drop-shadow-md truncate">
+                        <h1 v-else class="text-sm font-bold text-white drop-shadow-md truncate leading-tight">
                             {{ pageTitle }}
                         </h1>
+                        <p class="text-[10px] text-purple-300/80 leading-tight mt-0.5">{{ formattedDateShort }} • {{ formattedTime }}</p>
                     </div>
                 </div>
-                <div class="flex items-center gap-2">
-                    <ThemeToggle />
+                <div class="flex items-center gap-1.5">
+                    <!-- Mobile Profile Dropdown -->
+                    <div id="mobile-profile-dropdown" class="relative">
+                        <button @click="profileDropdownOpen = !profileDropdownOpen" class="flex items-center gap-1 p-1 rounded-lg hover:bg-white/10 transition-colors">
+                            <div class="relative">
+                                <div v-if="user?.photo" class="w-8 h-8 rounded-full overflow-hidden border-2 border-purple-400 shadow-md">
+                                    <img :src="`/storage/${user.photo}`" :alt="user?.name" class="w-full h-full object-cover">
+                                </div>
+                                <div v-else class="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white font-bold shadow-md text-xs">
+                                    {{ user?.name?.charAt(0).toUpperCase() }}
+                                </div>
+                                <span class="absolute bottom-0 right-0 w-2 h-2 bg-green-400 rounded-full border-[1.5px] border-gray-900"></span>
+                            </div>
+                            <svg class="w-3.5 h-3.5 text-purple-300 transition-transform duration-200" :class="{ 'rotate-180': profileDropdownOpen }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </button>
+
+                        <!-- Mobile Dropdown Menu -->
+                        <Transition name="fade">
+                            <div v-if="profileDropdownOpen" class="absolute right-0 mt-2 w-56 bg-slate-800/95 backdrop-blur-xl rounded-xl border border-purple-500/30 shadow-2xl shadow-purple-500/20 py-2 z-50">
+                                <div class="px-4 py-3 border-b border-purple-500/20">
+                                    <p class="text-sm font-semibold text-white truncate">{{ user?.name }}</p>
+                                    <p class="text-xs text-purple-300 truncate">{{ user?.email }}</p>
+                                    <span class="inline-block mt-1.5 px-2 py-0.5 text-[10px] font-semibold rounded-full bg-gradient-to-r from-purple-600 to-pink-600 text-white">{{ userRoleLabel }}</span>
+                                </div>
+                                <div class="py-1">
+                                    <Link :href="route('profile.edit')" @click="profileDropdownOpen = false" class="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-300 hover:bg-purple-500/20 hover:text-white transition-colors">
+                                        <span class="text-lg">⚙️</span>
+                                        <span>Profil</span>
+                                    </Link>
+                                    <div class="flex items-center justify-between px-4 py-2.5 text-sm text-slate-300">
+                                        <div class="flex items-center gap-3">
+                                            <span class="text-lg">🎨</span>
+                                            <span>Mode Gelap</span>
+                                        </div>
+                                        <ThemeToggle />
+                                    </div>
+                                </div>
+                                <div class="border-t border-purple-500/20 pt-1">
+                                    <Link :href="route('logout')" method="post" as="button" @click="profileDropdownOpen = false" class="flex items-center gap-3 w-full px-4 py-2.5 text-sm text-rose-400 hover:bg-rose-500/20 hover:text-rose-300 transition-colors">
+                                        <span class="text-lg">🚪</span>
+                                        <span>Logout</span>
+                                    </Link>
+                                </div>
+                            </div>
+                        </Transition>
+                    </div>
+
                     <button
                         @click="toggleSidebar"
                         class="p-2 rounded-lg bg-gradient-to-br from-purple-600 to-pink-600 text-white shadow-lg shadow-purple-500/50 flex-shrink-0"
                         title="Open menu"
                     >
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
                         </svg>
                     </button>
@@ -493,13 +601,25 @@ page.props.isLoading = isLoading;
             </div>
         </div>
 
-        <!-- Header -->
+        <!-- Desktop Header -->
         <header v-if="$slots.header" class="sticky top-0 z-20 bg-gradient-to-r from-purple-900/95 via-indigo-900/95 to-blue-900/95 border-b border-purple-500/30 shadow-lg shadow-purple-500/10 backdrop-blur-md hidden lg:block">
-            <div class="px-4 lg:px-8 py-4 text-white flex justify-between items-center">
-                <div>
-                   <slot name="header" />
+            <div class="px-4 lg:px-8 py-3 text-white flex justify-between items-center">
+                <div class="flex items-center gap-6">
+                    <div>
+                        <slot name="header" />
+                    </div>
+                    <!-- Live Clock -->
+                    <div class="hidden xl:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10">
+                        <svg class="w-4 h-4 text-purple-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <span class="text-xs text-purple-200 font-medium">{{ formattedDate }}</span>
+                        <span class="text-xs text-purple-300/60">•</span>
+                        <span class="text-xs text-white font-semibold tabular-nums">{{ formattedTime }}</span>
+                    </div>
                 </div>
-                <div class="flex items-center gap-5">
+
+                <div class="flex items-center gap-4">
                     <!-- Quick Action Button in Header -->
                     <Link v-if="userRole === 'admin' || userRole === 'master' || (userRole === 'kasir' && userPermissions['pos.access'])"
                         :href="userRole === 'kasir' ? route('kasir.pos.index') : route('pos.index')"
@@ -508,28 +628,66 @@ page.props.isLoading = isLoading;
                         <span>POS / Kasir</span>
                     </Link>
 
-                    <div class="w-px h-8 bg-purple-500/30 hidden md:block"></div>
+                    <div class="w-px h-8 bg-purple-500/30"></div>
 
-                    <!-- User Info in Header -->
-                    <div v-if="user" class="flex items-center gap-3">
-                        <div class="text-right hidden md:block">
-                            <p class="text-sm font-semibold text-white leading-tight drop-shadow-sm">{{ user.name }}</p>
-                            <p class="text-[10px] text-purple-200 uppercase tracking-widest font-bold">{{ userRoleLabel }}</p>
-                        </div>
-                        <div class="relative">
-                            <div v-if="user.photo" class="w-9 h-9 rounded-full overflow-hidden shadow-md border-2 border-purple-400">
-                                <img :src="`/storage/${user.photo}`" :alt="user.name" class="w-full h-full object-cover">
+                    <!-- Profile Dropdown -->
+                    <div id="profile-dropdown" class="relative">
+                        <button @click="toggleProfileDropdown" class="flex items-center gap-3 px-3 py-1.5 rounded-xl hover:bg-white/10 transition-all duration-200 group">
+                            <div class="text-right hidden md:block">
+                                <p class="text-sm font-semibold text-white leading-tight drop-shadow-sm group-hover:text-purple-100 transition-colors">{{ user?.name }}</p>
+                                <p class="text-[10px] text-purple-200 uppercase tracking-widest font-bold">{{ userRoleLabel }}</p>
                             </div>
-                            <div v-else class="w-9 h-9 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white font-bold shadow-md text-sm">
-                                {{ user.name?.charAt(0).toUpperCase() }}
+                            <div class="relative">
+                                <div v-if="user?.photo" class="w-9 h-9 rounded-full overflow-hidden shadow-md border-2 border-purple-400 group-hover:border-pink-400 transition-colors">
+                                    <img :src="`/storage/${user.photo}`" :alt="user?.name" class="w-full h-full object-cover">
+                                </div>
+                                <div v-else class="w-9 h-9 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white font-bold shadow-md text-sm group-hover:from-purple-400 group-hover:to-pink-400 transition-all">
+                                    {{ user?.name?.charAt(0).toUpperCase() }}
+                                </div>
+                                <span class="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-400 rounded-full border-2 border-gray-800"></span>
                             </div>
-                            <span class="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-400 rounded-full border-2 border-gray-800"></span>
-                        </div>
+                            <!-- Chevron -->
+                            <svg class="w-4 h-4 text-purple-300 transition-transform duration-200" :class="{ 'rotate-180': profileDropdownOpen }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </button>
+
+                        <!-- Dropdown Menu -->
+                        <Transition name="fade">
+                            <div v-if="profileDropdownOpen" class="absolute right-0 mt-2 w-64 bg-slate-800/95 backdrop-blur-xl rounded-xl border border-purple-500/30 shadow-2xl shadow-purple-500/20 py-2 z-50">
+                                <!-- User Info -->
+                                <div class="px-4 py-3 border-b border-purple-500/20">
+                                    <p class="text-sm font-semibold text-white truncate">{{ user?.name }}</p>
+                                    <p class="text-xs text-purple-300 truncate mt-0.5">{{ user?.email }}</p>
+                                    <div class="flex items-center gap-2 mt-2">
+                                        <span class="px-2 py-0.5 text-[10px] font-semibold rounded-full bg-gradient-to-r from-purple-600 to-pink-600 text-white">{{ userRoleLabel }}</span>
+                                        <span class="text-[10px] text-purple-300/60">{{ formattedDateShort }}</span>
+                                    </div>
+                                </div>
+                                <!-- Actions -->
+                                <div class="py-1">
+                                    <Link :href="route('profile.edit')" @click="profileDropdownOpen = false" class="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-300 hover:bg-purple-500/20 hover:text-white transition-colors rounded-lg mx-1">
+                                        <span class="text-lg">⚙️</span>
+                                        <span>Pengaturan Profil</span>
+                                    </Link>
+                                    <div class="flex items-center justify-between px-4 py-2.5 text-sm text-slate-300 rounded-lg mx-1">
+                                        <div class="flex items-center gap-3">
+                                            <span class="text-lg">🎨</span>
+                                            <span>Mode Gelap</span>
+                                        </div>
+                                        <ThemeToggle />
+                                    </div>
+                                </div>
+                                <!-- Logout -->
+                                <div class="border-t border-purple-500/20 pt-1 mt-1">
+                                    <Link :href="route('logout')" method="post" as="button" @click="profileDropdownOpen = false" class="flex items-center gap-3 w-full px-4 py-2.5 text-sm text-rose-400 hover:bg-rose-500/20 hover:text-rose-300 transition-colors rounded-lg mx-1">
+                                        <span class="text-lg">🚪</span>
+                                        <span>Keluar</span>
+                                    </Link>
+                                </div>
+                            </div>
+                        </Transition>
                     </div>
-
-                    <div class="w-px h-8 bg-purple-500/30 hidden md:block"></div>
-
-                    <ThemeToggle />
                 </div>
             </div>
         </header>

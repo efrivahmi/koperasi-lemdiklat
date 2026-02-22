@@ -243,7 +243,7 @@ const printBatchCards = () => {
                                         </td>
                                         <td class="px-4 py-4 whitespace-nowrap text-sm font-medium">
                                             <div class="flex items-center gap-2">
-                                                <Link v-if="can('students.view')" :href="route('students.show', student.id)" class="text-sky-400 hover:text-sky-300 transition-colors">Detail</Link>
+                                                <Link v-if="can('students.show')" :href="route('students.show', student.id)" class="text-sky-400 hover:text-sky-300 transition-colors">Detail</Link>
                                                 <button v-if="can('students.view')" @click="printCard(student.id)" class="text-purple-400 hover:text-purple-300 transition-colors" title="Cetak Kartu">🖨️</button>
                                                 <Link v-if="can('students.edit')" :href="route('students.edit', student.id)" class="text-indigo-400 hover:text-indigo-300 transition-colors">Edit</Link>
                                                 <Link v-if="can('students.edit')" :href="route('students.rfid.register', student.id)" class="text-emerald-400 hover:text-emerald-300 transition-colors">RFID</Link>

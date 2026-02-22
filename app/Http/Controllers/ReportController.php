@@ -72,7 +72,8 @@ class ReportController extends Controller
                 'summary' => $summary
             ]);
 
-            return Inertia::render('Admin/Reports/Sales', [
+            $viewPath = auth()->user()->role === 'kasir' ? 'Kasir' : 'Admin';
+            return Inertia::render("{$viewPath}/Reports/Sales", [
                 'sales' => $sales,
                 'summary' => $summary,
                 'filters' => [
@@ -86,7 +87,7 @@ class ReportController extends Controller
         } catch (\Exception $e) {
             return $this->handleReportError(
                 $e,
-                'Admin/Reports/Sales',
+                auth()->user()->role === 'kasir' ? 'Kasir/Reports/Sales' : 'Admin/Reports/Sales',
                 [
                     'sales' => new \Illuminate\Pagination\LengthAwarePaginator([], 0, 20),
                     'summary' => [
@@ -155,13 +156,52 @@ class ReportController extends Controller
 
             $products = $query->orderBy('stock', 'asc')->paginate(20);
 
-            // Optimize: Load stock movements only when expanded (lazy load)
-            // This significantly improves initial page load performance
-            // Stock movements are loaded on-demand via AJAX when user expands a product row
+            // Re-implement eager loading of stock movements for inventory report
             foreach ($products as $product) {
+                // Get adjustments
+                $adjustments = \Illuminate\Support\Facades\DB::table('stock_adjustments')
+                    ->join('users', 'stock_adjustments.adjusted_by', '=', 'users.id')
+                    ->where('product_id', $product->id)
+                    ->select('stock_adjustments.*', 'users.name as adjusted_by_name')
+                    ->orderBy('created_at', 'desc')
+                    ->limit(10)
+                    ->get()
+                    ->map(function ($adj) {
+                        return (object) [
+                            'id' => $adj->id,
+                            'created_at' => $adj->created_at,
+                            'type' => $adj->type,
+                            'purpose' => $adj->purpose,
+                            'quantity_before' => $adj->quantity_before,
+                            'quantity_after' => $adj->quantity_after,
+                            'quantity_adjusted' => $adj->quantity_adjusted,
+                            'notes' => $adj->notes,
+                            'adjusted_by' => (object) ['name' => $adj->adjusted_by_name]
+                        ];
+                    });
+
+                // Get sales
+                $sales = \Illuminate\Support\Facades\DB::table('sale_items')
+                    ->join('sales', 'sale_items.sale_id', '=', 'sales.id')
+                    ->leftJoin('students', 'sales.student_id', '=', 'students.id')
+                    ->leftJoin('users as students_user', 'students.user_id', '=', 'students_user.id')
+                    ->leftJoin('users as cashiers', 'sales.created_by', '=', 'cashiers.id')
+                    ->where('sale_items.product_id', $product->id)
+                    ->select(
+                        'sale_items.quantity',
+                        'sale_items.price',
+                        'sales.created_at',
+                        'sales.payment_method',
+                        'students_user.name as student_name',
+                        'cashiers.name as cashier_name'
+                    )
+                    ->orderBy('sales.created_at', 'desc')
+                    ->limit(10)
+                    ->get();
+
                 $product->stock_movements = [
-                    'adjustments' => [],
-                    'sales' => []
+                    'adjustments' => $adjustments,
+                    'sales' => $sales
                 ];
             }
 
@@ -181,7 +221,8 @@ class ReportController extends Controller
                 'total_products' => $products->total()
             ]);
 
-            return Inertia::render('Admin/Reports/Inventory', [
+            $viewPath = auth()->user()->role === 'kasir' ? 'Kasir' : 'Admin';
+            return Inertia::render("{$viewPath}/Reports/Inventory", [
                 'products' => $products,
                 'summary' => $summary,
                 'categories' => $categories,
@@ -194,7 +235,8 @@ class ReportController extends Controller
                 'user_id' => auth()->id()
             ]);
 
-            return Inertia::render('Admin/Reports/Inventory', [
+            $viewPath = auth()->user()->role === 'kasir' ? 'Kasir' : 'Admin';
+            return Inertia::render("{$viewPath}/Reports/Inventory", [
                 'products' => new \Illuminate\Pagination\LengthAwarePaginator([], 0, 20),
                 'summary' => [
                     'total_products' => 0,
@@ -261,7 +303,8 @@ class ReportController extends Controller
                 'net_profit' => $netProfit
             ]);
 
-            return Inertia::render('Admin/Reports/Financial', [
+            $viewPath = auth()->user()->role === 'kasir' ? 'Kasir' : 'Admin';
+            return Inertia::render("{$viewPath}/Reports/Financial", [
                 'data' => [
                     'total_revenue' => $totalRevenue,
                     'total_cogs' => $totalCOGS,
@@ -285,7 +328,8 @@ class ReportController extends Controller
                 'user_id' => auth()->id()
             ]);
 
-            return Inertia::render('Admin/Reports/Financial', [
+            $viewPath = auth()->user()->role === 'kasir' ? 'Kasir' : 'Admin';
+            return Inertia::render("{$viewPath}/Reports/Financial", [
                 'data' => [
                     'total_revenue' => 0,
                     'total_cogs' => 0,
@@ -378,7 +422,8 @@ class ReportController extends Controller
                 'total_transactions' => $transactions->total()
             ]);
 
-            return Inertia::render('Admin/Reports/StudentTransactions', [
+            $viewPath = auth()->user()->role === 'kasir' ? 'Kasir' : 'Admin';
+            return Inertia::render("{$viewPath}/Reports/StudentTransactions", [
                 'transactions' => $transactions,
                 'classes' => $classes,
                 'students' => $students,
@@ -397,7 +442,8 @@ class ReportController extends Controller
                 'user_id' => auth()->id()
             ]);
 
-            return Inertia::render('Admin/Reports/StudentTransactions', [
+            $viewPath = auth()->user()->role === 'kasir' ? 'Kasir' : 'Admin';
+            return Inertia::render("{$viewPath}/Reports/StudentTransactions", [
                 'transactions' => new \Illuminate\Pagination\LengthAwarePaginator([], 0, 50),
                 'classes' => [],
                 'students' => [],
@@ -659,7 +705,8 @@ class ReportController extends Controller
                 'summary' => $summary
             ]);
 
-            return Inertia::render('Admin/Reports/StockAdjustments', [
+            $viewPath = auth()->user()->role === 'kasir' ? 'Kasir' : 'Admin';
+            return Inertia::render("{$viewPath}/Reports/StockAdjustments", [
                 'adjustments' => $adjustments,
                 'summary' => $summary,
                 'products' => $products,
@@ -681,7 +728,8 @@ class ReportController extends Controller
                 'user_id' => auth()->id()
             ]);
 
-            return Inertia::render('Admin/Reports/StockAdjustments', [
+            $viewPath = auth()->user()->role === 'kasir' ? 'Kasir' : 'Admin';
+            return Inertia::render("{$viewPath}/Reports/StockAdjustments", [
                 'adjustments' => new \Illuminate\Pagination\LengthAwarePaginator([], 0, 20),
                 'summary' => [
                     'total_adjustments' => 0,

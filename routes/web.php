@@ -117,9 +117,7 @@ Route::middleware(['auth', 'role:admin,master,kasir'])->group(function () {
     // POS
     // POS & Staf Koperasi Routes
     Route::prefix('stafkoperasi')->as('kasir.')->group(function () {
-        Route::get('/dashboard', function () {
-            return Inertia::render('Kasir/Dashboard');
-        })->name('dashboard');
+        Route::get('/dashboard', [\App\Http\Controllers\DashboardController::class, 'index'])->name('dashboard');
 
         Route::get('/pos', [\App\Http\Controllers\PosController::class, 'index'])->name('pos.index');
         Route::get('/transactions-history', [\App\Http\Controllers\PosController::class, 'transactionsHistory'])->name('pos.transactions-history');

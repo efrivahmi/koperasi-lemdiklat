@@ -17,7 +17,7 @@ class RoleMiddleware
         return [
             // Products
             'products.index'            => 'products.view',
-            'products.show'             => 'products.view',
+            'products.show'             => 'products.show',
             'products.create'           => 'products.create',
             'products.store'            => 'products.create',
             'products.edit'             => 'products.edit',
@@ -32,7 +32,7 @@ class RoleMiddleware
 
             // Categories
             'categories.index'          => 'categories.view',
-            'categories.show'           => 'categories.view',
+            'categories.show'           => 'categories.show',
             'categories.create'         => 'categories.create',
             'categories.store'          => 'categories.create',
             'categories.edit'           => 'categories.edit',
@@ -41,7 +41,7 @@ class RoleMiddleware
 
             // Students
             'students.index'            => 'students.view',
-            'students.show'             => 'students.view',
+            'students.show'             => 'students.show',
             'students.create'           => 'students.create',
             'students.store'            => 'students.create',
             'students.edit'             => 'students.edit',
@@ -56,7 +56,7 @@ class RoleMiddleware
 
             // Teachers
             'teachers.index'            => 'teachers.view',
-            'teachers.show'             => 'teachers.view',
+            'teachers.show'             => 'teachers.show',
             'teachers.create'           => 'teachers.create',
             'teachers.store'            => 'teachers.create',
             'teachers.edit'             => 'teachers.edit',
@@ -81,8 +81,16 @@ class RoleMiddleware
 
             // Kasir Specific Resources (Duplicated from Admin)
             'kasir.categories.index'    => 'categories.view',
+            'kasir.categories.show'     => 'categories.show',
+            'kasir.categories.create'   => 'categories.create',
+            'kasir.categories.store'    => 'categories.create',
+            'kasir.categories.edit'     => 'categories.edit',
+            'kasir.categories.update'   => 'categories.edit',
+            'kasir.categories.destroy'  => 'categories.delete',
+
             'kasir.products.index'      => 'products.view',
-            'kasir.products.create'     => 'products.create', // Optional if Kasir can create
+            'kasir.products.show'       => 'products.show',
+            'kasir.products.create'     => 'products.create',
             'kasir.products.store'      => 'products.create',
             'kasir.products.edit'       => 'products.edit',
             'kasir.products.update'     => 'products.edit',
@@ -95,18 +103,21 @@ class RoleMiddleware
             'kasir.products.print-barcodes' => 'products.barcode',
             'kasir.api.generate-barcode' => 'products.barcode',
             
+            'kasir.stock-adjustments.update' => 'reports.stock_adjustments.edit',
+            'kasir.stock-adjustments.destroy' => 'reports.stock_adjustments.delete',
+            
             'kasir.stock-ins.index'     => 'stock_ins.view',
             'kasir.stock-ins.create'    => 'stock_ins.create',
             'kasir.stock-ins.store'     => 'stock_ins.create',
-            'kasir.stock-ins.show'      => 'stock_ins.view',
+            'kasir.stock-ins.show'      => 'stock_ins.show',
             'kasir.stock-ins.destroy'   => 'stock_ins.delete',
 
             'kasir.vouchers.index'      => 'vouchers.view',
             'kasir.vouchers.create'     => 'vouchers.create',
             'kasir.vouchers.store'      => 'vouchers.create',
-            'kasir.vouchers.show'       => 'vouchers.view',
-            'kasir.vouchers.edit'       => 'vouchers.view', // If needed
-            'kasir.vouchers.update'     => 'vouchers.create', 
+            'kasir.vouchers.show'       => 'vouchers.show',
+            'kasir.vouchers.edit'       => 'vouchers.edit',
+            'kasir.vouchers.update'     => 'vouchers.edit', 
             'kasir.vouchers.destroy'    => 'vouchers.delete',
             'kasir.vouchers.redeem'     => 'vouchers.redeem',
             'kasir.vouchers.redeem.form'=> 'vouchers.redeem',
@@ -117,7 +128,7 @@ class RoleMiddleware
             'kasir.savings.index'       => 'savings.view',
             'kasir.savings.create'      => 'savings.manage',
             'kasir.savings.store'       => 'savings.manage',
-            'kasir.savings.show'        => 'savings.view',
+            'kasir.savings.show'        => 'savings.show',
             'kasir.savings.deposit'     => 'savings.manage',
             'kasir.savings.withdraw'    => 'savings.manage',
 
@@ -127,7 +138,7 @@ class RoleMiddleware
             'kasir.transactions.topup'  => 'transactions.topup',
             
             'kasir.students.index'      => 'students.view',
-            'kasir.students.show'       => 'students.view',
+            'kasir.students.show'       => 'students.show',
             'kasir.students.create'     => 'students.create',
             'kasir.students.store'      => 'students.create',
             'kasir.students.edit'       => 'students.edit',
@@ -141,7 +152,7 @@ class RoleMiddleware
             'kasir.students.rfid.export'=> 'students.view',
             
             'kasir.teachers.index'      => 'teachers.view',
-            'kasir.teachers.show'       => 'teachers.view',
+            'kasir.teachers.show'       => 'teachers.show',
             'kasir.teachers.create'     => 'teachers.create',
             'kasir.teachers.store'      => 'teachers.create',
             'kasir.teachers.edit'       => 'teachers.edit',
@@ -164,20 +175,23 @@ class RoleMiddleware
             'transactions.search.teacher' => 'pos.access',
 
             // Reports
-            'reports.sales'              => 'reports.view',
-            'reports.sales.export'       => 'reports.download',
-            'reports.inventory'          => 'reports.view',
-            'reports.inventory.export'   => 'reports.download',
-            'reports.financial'          => 'reports.view',
-            'reports.financial.export'   => 'reports.download',
-            'reports.student-transactions' => 'reports.view',
-            'reports.student-transactions.export' => 'reports.download',
-            'reports.stock-adjustments'  => 'reports.view',
-            'reports.stock-adjustments.export' => 'reports.download',
+            // Reports
+            'reports.sales'              => 'reports.sales',
+            'reports.sales.export'       => 'reports.export',
+            'reports.inventory'          => 'reports.inventory',
+            'reports.inventory.export'   => 'reports.export',
+            'reports.financial'          => 'reports.financial',
+            'reports.financial.export'   => 'reports.export',
+            'reports.student-transactions' => 'reports.student_transactions',
+            'reports.student-transactions.export' => 'reports.export',
+            'reports.stock-adjustments'  => 'reports.stock_adjustments',
+            'reports.stock-adjustments.export' => 'reports.export',
+            'stock-adjustments.update'   => 'reports.stock_adjustments.edit',
+            'stock-adjustments.destroy'  => 'reports.stock_adjustments.delete',
 
             // Users
             'users.index'               => 'users.view',
-            'users.show'                => 'users.view',
+            'users.show'                => 'users.show',
             'users.create'              => 'users.create',
             'users.store'               => 'users.create',
             'users.edit'                => 'users.edit',
@@ -186,29 +200,29 @@ class RoleMiddleware
 
             // Stock Ins
             'stock-ins.index'           => 'stock_ins.view',
-            'stock-ins.show'            => 'stock_ins.view',
+            'stock-ins.show'            => 'stock_ins.show',
             'stock-ins.create'          => 'stock_ins.create',
             'stock-ins.store'           => 'stock_ins.create',
-            'stock-ins.edit'            => 'stock_ins.create',
-            'stock-ins.update'          => 'stock_ins.create',
+            'stock-ins.edit'            => 'stock_ins.edit',
+            'stock-ins.update'          => 'stock_ins.edit',
             'stock-ins.destroy'         => 'stock_ins.delete',
 
             // Expenses
             'expenses.index'            => 'expenses.view',
-            'expenses.show'             => 'expenses.view',
+            'expenses.show'             => 'expenses.show',
             'expenses.create'           => 'expenses.create',
             'expenses.store'            => 'expenses.create',
-            'expenses.edit'             => 'expenses.create',
-            'expenses.update'           => 'expenses.create',
+            'expenses.edit'             => 'expenses.edit',
+            'expenses.update'           => 'expenses.edit',
             'expenses.destroy'          => 'expenses.delete',
 
             // Vouchers
             'vouchers.index'            => 'vouchers.view',
-            'vouchers.show'             => 'vouchers.view',
+            'vouchers.show'             => 'vouchers.show',
             'vouchers.create'           => 'vouchers.create',
             'vouchers.store'            => 'vouchers.create',
-            'vouchers.edit'             => 'vouchers.view',
-            'vouchers.update'           => 'vouchers.create',
+            'vouchers.edit'             => 'vouchers.edit',
+            'vouchers.update'           => 'vouchers.edit',
             'vouchers.destroy'          => 'vouchers.delete',
             'vouchers.search.student'   => 'vouchers.redeem',
             'vouchers.print'            => 'vouchers.print',
@@ -220,7 +234,7 @@ class RoleMiddleware
             'savings.index'             => 'savings.view',
             'savings.create'            => 'savings.manage',
             'savings.store'             => 'savings.manage',
-            'savings.show'              => 'savings.view',
+            'savings.show'              => 'savings.show',
             'savings.deposit'           => 'savings.manage',
             'savings.withdraw'          => 'savings.manage',
         ];
@@ -240,18 +254,18 @@ class RoleMiddleware
 
         $user = $request->user();
 
-        // Admin dan Master selalu bisa akses
-        if (in_array($user->role, ['admin', 'master'])) {
+        // Hanya Master yang selalu bisa akses tanpa batas
+        if ($user->role === 'master') {
             return $next($request);
         }
 
-        // Check apakah role user ada dalam daftar roles yang diizinkan
+        // Check apakah role user ada dalam daftar roles yang diizinkan (e.g. 'role:admin,master,kasir')
         if (!in_array($user->role, $roles)) {
             abort(403, 'Unauthorized action.');
         }
 
-        // Untuk kasir, cek permission granular berdasarkan route name
-        if ($user->role === 'kasir') {
+        // Untuk kasir dan admin, cek permission granular berdasarkan route name
+        if (in_array($user->role, ['kasir', 'admin'])) {
             $routeName = $request->route()->getName();
             $permissionMap = $this->getRoutePermissionMap();
 

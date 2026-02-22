@@ -3,6 +3,9 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import AuditInfo from '@/Components/AuditInfo.vue';
 import { Head, Link, router } from '@inertiajs/vue3';
 import { ref, computed } from 'vue';
+import { usePermissions } from '@/Composables/usePermissions';
+
+const { can } = usePermissions();
 
 const props = defineProps({
     product: Object,
@@ -65,6 +68,7 @@ const activeTab = ref('stock-in');
                             Kembali
                         </Link>
                         <button 
+                            v-if="can('products.create')"
                             @click="printBarcode" 
                             class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg transition-colors shadow-lg shadow-indigo-500/20 text-sm font-medium flex items-center gap-2"
                         >
@@ -72,6 +76,7 @@ const activeTab = ref('stock-in');
                             Cetak Barcode
                         </button>
                         <Link 
+                            v-if="can('products.edit')"
                             :href="route('products.edit', product.id)" 
                             class="px-4 py-2 bg-amber-500 hover:bg-amber-400 text-white rounded-lg transition-colors shadow-lg shadow-amber-500/20 text-sm font-medium flex items-center gap-2"
                         >

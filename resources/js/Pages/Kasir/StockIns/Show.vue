@@ -1,9 +1,6 @@
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head, Link } from '@inertiajs/vue3';
-import { usePermissions } from '@/Composables/usePermissions';
-
-const { can } = usePermissions();
 
 const props = defineProps({
     stockIn: Object,
@@ -80,7 +77,7 @@ const formatDate = (date) => {
                                             />
                                         </div>
                                         <div>
-                                            <Link :href="route('products.show', stockIn.product?.id)" class="text-xl font-bold text-white hover:text-indigo-400 transition-colors">
+                                            <Link :href="route('kasir.products.show', stockIn.product?.id)" class="text-xl font-bold text-white hover:text-indigo-400 transition-colors">
                                                 {{ stockIn.product?.name }}
                                             </Link>
                                             <p class="text-sm text-slate-400 font-mono mt-1">{{ stockIn.product?.barcode }}</p>
@@ -121,11 +118,11 @@ const formatDate = (date) => {
 
                             <!-- Action Buttons moved to body -->
                             <div class="mt-8 flex gap-4 border-t border-white/10 pt-6">
-                                <Link v-if="can('stock_ins.edit')" :href="route('stock-ins.edit', stockIn.id)" class="inline-flex items-center justify-center px-6 py-2.5 bg-amber-500 hover:bg-amber-600 text-white font-semibold rounded-xl shadow-lg shadow-amber-500/20 transition-all transform hover:-translate-y-0.5">
+                                <Link :href="route('kasir.stock-ins.edit', stockIn.id)" class="inline-flex items-center justify-center px-6 py-2.5 bg-amber-500 hover:bg-amber-600 text-white font-semibold rounded-xl shadow-lg shadow-amber-500/20 transition-all transform hover:-translate-y-0.5">
                                     <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-.5-9l4.5 4.5M6 17v4m-1-2h2" /></svg>
                                     Edit Data
                                 </Link>
-                                <Link :href="route('stock-ins.index')" class="inline-flex items-center justify-center px-6 py-2.5 bg-slate-700 hover:bg-slate-600 text-white font-semibold rounded-xl border border-white/10 transition-all hover:bg-slate-600">
+                                <Link :href="route('kasir.stock-ins.index')" class="inline-flex items-center justify-center px-6 py-2.5 bg-slate-700 hover:bg-slate-600 text-white font-semibold rounded-xl border border-white/10 transition-all hover:bg-slate-600">
                                     <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
                                     Kembali
                                 </Link>
@@ -166,7 +163,7 @@ const formatDate = (date) => {
                             </div>
 
                              <div class="mt-6 pt-4 border-t border-white/10 text-center">
-                                <Link :href="route('products.show', stockIn.product?.id)" class="text-indigo-400 hover:text-indigo-300 text-sm font-medium flex items-center justify-center gap-1 transition-colors">
+                                <Link :href="route('kasir.products.show', stockIn.product?.id)" class="text-indigo-400 hover:text-indigo-300 text-sm font-medium flex items-center justify-center gap-1 transition-colors">
                                     Lihat Detail Produk Lengkap
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
                                 </Link>

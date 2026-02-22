@@ -82,7 +82,7 @@ const formatDate = (date) => new Date(date).toLocaleDateString('id-ID');
                                         </td>
                                         <td class="px-4 py-4 whitespace-nowrap text-sm font-medium">
                                             <div class="flex items-center gap-2">
-                                                <Link v-if="can('expenses.view')" :href="route('expenses.show', expense.id)" class="text-sky-400 hover:text-sky-300 transition-colors">Detail</Link>
+                                                <Link v-if="can('expenses.show')" :href="route('expenses.show', expense.id)" class="text-sky-400 hover:text-sky-300 transition-colors">Detail</Link>
                                                 <Link v-if="can('expenses.edit')" :href="route('expenses.edit', expense.id)" class="text-indigo-400 hover:text-indigo-300 transition-colors">Edit</Link>
                                                 <button v-if="can('expenses.delete')" @click="router.delete(route('expenses.destroy', expense.id))" class="text-rose-400 hover:text-rose-300 transition-colors">Hapus</button>
                                             </div>

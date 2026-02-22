@@ -1,6 +1,9 @@
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head, Link } from '@inertiajs/vue3';
+import { usePermissions } from '@/Composables/usePermissions';
+
+const { can } = usePermissions();
 
 const props = defineProps({ expense: Object });
 
@@ -20,7 +23,7 @@ const formatDate = (date) => new Date(date).toLocaleDateString('id-ID', { day: '
                 <!-- Action Buttons -->
                 <div class="bg-slate-800/50 backdrop-blur-md border border-white/10 rounded-xl p-4">
                     <div class="flex flex-wrap gap-2">
-                        <Link :href="route('expenses.edit', expense.id)" class="flex-1 sm:flex-initial inline-flex items-center justify-center px-4 py-2.5 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-semibold rounded-lg shadow-lg shadow-indigo-500/20 transition-all text-sm">
+                        <Link v-if="can('expenses.edit')" :href="route('expenses.edit', expense.id)" class="flex-1 sm:flex-initial inline-flex items-center justify-center px-4 py-2.5 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-semibold rounded-lg shadow-lg shadow-indigo-500/20 transition-all text-sm">
                             ✏️ <span class="ml-1">Edit</span>
                         </Link>
                         <Link :href="route('expenses.index')" class="flex-1 sm:flex-initial inline-flex items-center justify-center px-4 py-2.5 bg-slate-700 hover:bg-slate-600 text-white font-semibold rounded-lg border border-white/10 transition-all text-sm">

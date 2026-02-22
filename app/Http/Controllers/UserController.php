@@ -35,11 +35,13 @@ class UserController extends Controller
             ],
             'Data Siswa & Guru' => [
                 ['key' => 'students.view',   'label' => 'Lihat Data Siswa'],
+                ['key' => 'students.show',   'label' => 'Lihat Detail Siswa'],
                 ['key' => 'students.cards',  'label' => 'Cetak Kartu Siswa (Batch)'],
                 ['key' => 'students.create', 'label' => 'Tambah Siswa'],
                 ['key' => 'students.edit',   'label' => 'Edit Siswa'],
                 ['key' => 'students.delete', 'label' => 'Hapus Siswa'],
                 ['key' => 'teachers.view',   'label' => 'Lihat Data Guru'],
+                ['key' => 'teachers.show',   'label' => 'Lihat Detail Guru'],
                 ['key' => 'teachers.create', 'label' => 'Tambah Guru'],
                 ['key' => 'teachers.edit',   'label' => 'Edit Guru'],
                 ['key' => 'teachers.delete', 'label' => 'Hapus Guru'],
@@ -53,13 +55,16 @@ class UserController extends Controller
             ],
             'Voucher' => [
                 ['key' => 'vouchers.view',    'label' => 'Lihat Daftar Voucher'],
+                ['key' => 'vouchers.show',    'label' => 'Lihat Detail Voucher'],
                 ['key' => 'vouchers.create',  'label' => 'Generate Voucher'],
+                ['key' => 'vouchers.edit',    'label' => 'Edit Voucher'],
                 ['key' => 'vouchers.print',   'label' => 'Cetak Voucher'],
                 ['key' => 'vouchers.redeem',  'label' => 'Redeem Voucher'],
                 ['key' => 'vouchers.delete',  'label' => 'Hapus Voucher'],
             ],
             'Tabungan (Savings)' => [
-                ['key' => 'savings.view',     'label' => 'Lihat Data Tabungan'],
+                ['key' => 'savings.view',     'label' => 'Lihat Daftar Tabungan'],
+                ['key' => 'savings.show',     'label' => 'Lihat Detail Tabungan'],
                 ['key' => 'savings.manage',   'label' => 'Kelola Tabungan (Setor/Tarik)'],
             ],
             'Transaksi (Kasir)' => [
@@ -70,19 +75,25 @@ class UserController extends Controller
             ],
             'Pengeluaran (Expenses)' => [
                 ['key' => 'expenses.view',    'label' => 'Lihat Data Pengeluaran'],
+                ['key' => 'expenses.show',    'label' => 'Lihat Detail Pengeluaran'],
                 ['key' => 'expenses.create',  'label' => 'Catat Pengeluaran'],
+                ['key' => 'expenses.edit',    'label' => 'Edit Pengeluaran'],
                 ['key' => 'expenses.delete',  'label' => 'Hapus Pengeluaran'],
             ],
             'Laporan & Keuangan' => [
-                ['key' => 'reports.sales',                'label' => 'Laporan Penjualan'],
-                ['key' => 'reports.inventory',            'label' => 'Laporan Inventori'],
-                ['key' => 'reports.stock_adjustments',    'label' => 'Laporan Penyesuaian Stok'],
-                ['key' => 'reports.financial',            'label' => 'Laporan Keuangan'],
-                ['key' => 'reports.student_transactions', 'label' => 'Laporan Transaksi Siswa'],
-                ['key' => 'reports.download',             'label' => 'Download Laporan (Excel/PDF)'],
+                ['key' => 'reports.sales',                    'label' => 'Laporan Penjualan'],
+                ['key' => 'reports.inventory',                'label' => 'Laporan Inventori'],
+                ['key' => 'reports.stock_adjustments',        'label' => 'Laporan Penyesuaian Stok'],
+                ['key' => 'reports.stock_adjustments.edit',   'label' => 'Edit Penyesuaian Stok'],
+                ['key' => 'reports.stock_adjustments.delete', 'label' => 'Hapus Penyesuaian Stok'],
+                ['key' => 'reports.financial',                'label' => 'Laporan Keuangan'],
+                ['key' => 'reports.student_transactions',     'label' => 'Laporan Transaksi Siswa'],
+                ['key' => 'reports.print',                    'label' => 'Cetak Thermal Laporan'],
+                ['key' => 'reports.export',                   'label' => 'Export Laporan (Excel)'],
             ],
             'Manajemen User' => [
                 ['key' => 'users.view',   'label' => 'Lihat Daftar User'],
+                ['key' => 'users.show',   'label' => 'Lihat Detail User'],
                 ['key' => 'users.create', 'label' => 'Tambah User'],
                 ['key' => 'users.edit',   'label' => 'Edit User'],
                 ['key' => 'users.delete', 'label' => 'Hapus User'],
@@ -142,7 +153,7 @@ class UserController extends Controller
 
         // Proses Permission: ubah dari ['key1', 'key2'] jadi ['key1'=>true, 'key2'=>true]
         $permissionsToSave = [];
-        if ($validated['role'] === 'kasir' && !empty($validated['permissions'])) {
+        if (in_array($validated['role'], ['admin', 'kasir']) && !empty($validated['permissions'])) {
             foreach ($validated['permissions'] as $perm) {
                 $permissionsToSave[$perm] = true;
             }
@@ -219,7 +230,7 @@ class UserController extends Controller
 
         // Proses Permission Update
         $permissionsToSave = [];
-        if ($request->has('permissions') && $validated['role'] === 'kasir') {
+        if ($request->has('permissions') && in_array($validated['role'], ['admin', 'kasir'])) {
             foreach ($request->permissions as $perm) {
                 $permissionsToSave[$perm] = true;
             }

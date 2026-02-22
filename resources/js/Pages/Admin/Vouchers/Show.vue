@@ -2,6 +2,9 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head, Link } from '@inertiajs/vue3';
 import { computed } from 'vue';
+import { usePermissions } from '@/Composables/usePermissions';
+
+const { can } = usePermissions();
 
 const props = defineProps({ voucher: Object });
 
@@ -9,7 +12,7 @@ const formatCurrency = (v) => new Intl.NumberFormat('id-ID', { style: 'currency'
 const formatDate = (d) => new Date(d).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' });
 const isExpired = computed(() => new Date(props.voucher.expired_date) < new Date());
 const isExpiringSoon = computed(() => { const d = Math.ceil((new Date(props.voucher.expired_date) - new Date()) / 86400000); return d <= 7 && d > 0; });
-const canEdit = computed(() => !props.voucher.is_used);
+const canEdit = computed(() => !props.voucher.is_used && can('vouchers.edit'));
 </script>
 
 <template>

@@ -74,8 +74,11 @@ const availableVouchersCount = computed(() => props.vouchers.data.filter(v => v.
                             <Link :href="route('vouchers.redeem.form')" class="inline-flex items-center justify-center px-4 py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-semibold rounded-lg shadow-lg shadow-emerald-500/20 transition-all text-sm">
                                 ⚡ <span class="hidden sm:inline ml-1">Redeem Voucher</span><span class="sm:hidden ml-1">Redeem</span>
                             </Link>
-                            <Link :href="route('vouchers.create')" class="inline-flex items-center justify-center px-4 py-2.5 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-semibold rounded-lg shadow-lg shadow-indigo-500/20 transition-all text-sm">
-                                ➕ <span class="hidden sm:inline ml-1">Generate Voucher</span><span class="sm:hidden ml-1">Generate</span>
+                        </div>
+                        <div class="flex gap-2 w-full sm:w-auto mt-4 sm:mt-0">
+                            <Link v-if="can('vouchers.create')" :href="route('vouchers.create')" class="inline-flex items-center justify-center px-4 py-2.5 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-semibold rounded-lg shadow-lg shadow-indigo-500/20 transition-all text-sm">
+                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" /></svg>
+                                Generate Voucher
                             </Link>
                         </div>
                     </div>
@@ -129,13 +132,13 @@ const availableVouchersCount = computed(() => props.vouchers.data.filter(v => v.
                                             <td class="px-4 py-4 whitespace-nowrap text-sm font-medium">
                                                 <div class="flex items-center gap-2">
                                                     <!-- Detail -->
-                                                    <Link :href="route('vouchers.show', v.id)" class="text-sky-400 hover:text-sky-300 transition-colors">Detail</Link>
+                                                    <Link v-if="can('vouchers.show')" :href="route('vouchers.show', v.id)" class="text-sky-400 hover:text-sky-300 transition-colors">Detail</Link>
                                                     <!-- Edit -->
-                                                    <Link :href="route('vouchers.edit', v.id)" class="text-indigo-400 hover:text-indigo-300 transition-colors">Edit</Link>
+                                                    <Link v-if="can('vouchers.edit')" :href="route('vouchers.edit', v.id)" class="text-indigo-400 hover:text-indigo-300 transition-colors">Edit</Link>
                                                     <!-- Print -->
-                                                    <button @click="printVoucher(v.id)" class="text-purple-400 hover:text-purple-300 transition-colors">Cetak</button>
+                                                    <button v-if="can('vouchers.print')" @click="printVoucher(v.id)" class="text-purple-400 hover:text-purple-300 transition-colors">Cetak</button>
                                                     <!-- Delete -->
-                                                    <button @click="deleteVoucher(v.id)" class="text-rose-400 hover:text-rose-300 transition-colors">Hapus</button>
+                                                    <button v-if="can('vouchers.delete')" @click="deleteVoucher(v.id)" class="text-rose-400 hover:text-rose-300 transition-colors">Hapus</button>
                                                 </div>
                                             </td>
                                     </tr>

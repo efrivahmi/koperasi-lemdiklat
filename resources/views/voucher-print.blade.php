@@ -72,6 +72,13 @@
             }
         }
 
+        /* Global Print Color Adjust */
+        html, body, * {
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+            color-adjust: exact !important;
+        }
+
         @media print {
             @page {
                 size: A4;
@@ -80,6 +87,7 @@
             body {
                 margin: 0;
                 padding: 0;
+                background-color: #ffffff !important;
             }
             .no-print {
                 display: none !important;
@@ -94,6 +102,24 @@
                 grid-template-columns: repeat(2, 1fr);
                 gap: 5mm;
             }
+            /* Aggressive fallback for printing backgrounds */
+            .voucher-card {
+                background-color: #f5f7fa !important;
+                box-shadow: inset 0 0 0 1000px #f5f7fa !important;
+                border: 2px dashed #667eea !important;
+            }
+            .voucher-amount-box {
+                background-color: #667eea !important;
+                box-shadow: inset 0 0 0 1000px #667eea !important;
+                color: white !important;
+                -webkit-text-fill-color: white !important;
+            }
+            .print-controls {
+                display: none !important;
+            }
+            .status-available { background-color: #10b981 !important; box-shadow: inset 0 0 0 1000px #10b981 !important; color: white !important; }
+            .status-used { background-color: #ef4444 !important; box-shadow: inset 0 0 0 1000px #ef4444 !important; color: white !important; }
+            .status-expired { background-color: #f59e0b !important; box-shadow: inset 0 0 0 1000px #f59e0b !important; color: white !important; }
         }
 
         body {
@@ -112,7 +138,8 @@
         .print-controls {
             margin-bottom: 20px;
             padding: 15px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background-color: #667eea;
+            background-image: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             border-radius: 10px;
             display: flex;
             justify-content: space-between;
@@ -172,7 +199,8 @@
             border: 2px dashed #667eea;
             border-radius: 12px;
             padding: 15px;
-            background: linear-gradient(135deg, #f5f7fa 0%, #ffffff 100%);
+            background-color: #f5f7fa;
+            background-image: linear-gradient(135deg, #f5f7fa 0%, #ffffff 100%);
             position: relative;
             overflow: hidden;
         }
@@ -217,7 +245,8 @@
         }
 
         .voucher-amount-box {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background-color: #667eea;
+            background-image: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             text-align: center;
             padding: 15px;

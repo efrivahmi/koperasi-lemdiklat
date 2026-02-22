@@ -57,7 +57,7 @@ Route::middleware(['auth', 'role:admin,master,kasir'])->prefix('admin')->group(f
     // Vouchers (specific routes MUST come before resource routes)
     Route::get('vouchers/search-student', [\App\Http\Controllers\VoucherController::class, 'searchStudent'])->name('vouchers.search.student');
     Route::get('vouchers/print/{voucher}', [\App\Http\Controllers\VoucherController::class, 'printVoucher'])->name('vouchers.print');
-    Route::post('vouchers/print-batch', [\App\Http\Controllers\VoucherController::class, 'printBatch'])->name('vouchers.print.batch');
+    Route::match(['get', 'post'], 'vouchers/print-batch', [\App\Http\Controllers\VoucherController::class, 'printBatch'])->name('vouchers.print.batch');
     Route::get('vouchers-redeem', [\App\Http\Controllers\VoucherController::class, 'redeemForm'])->name('vouchers.redeem.form');
     Route::post('vouchers-redeem', [\App\Http\Controllers\VoucherController::class, 'redeem'])->name('vouchers.redeem');
     Route::resource('vouchers', \App\Http\Controllers\VoucherController::class);
@@ -145,7 +145,7 @@ Route::middleware(['auth', 'role:admin,master,kasir'])->group(function () {
         // Vouchers
         Route::get('vouchers/search-student', [\App\Http\Controllers\VoucherController::class, 'searchStudent'])->name('vouchers.search.student');
         Route::get('vouchers/print/{voucher}', [\App\Http\Controllers\VoucherController::class, 'printVoucher'])->name('vouchers.print');
-        Route::post('vouchers/print-batch', [\App\Http\Controllers\VoucherController::class, 'printBatch'])->name('vouchers.print.batch');
+        Route::match(['get', 'post'], 'vouchers/print-batch', [\App\Http\Controllers\VoucherController::class, 'printBatch'])->name('vouchers.print.batch');
         Route::get('vouchers-redeem', [\App\Http\Controllers\VoucherController::class, 'redeemForm'])->name('vouchers.redeem.form');
         Route::post('vouchers-redeem', [\App\Http\Controllers\VoucherController::class, 'redeem'])->name('vouchers.redeem');
         Route::resource('vouchers', \App\Http\Controllers\VoucherController::class);
@@ -168,7 +168,7 @@ Route::middleware(['auth', 'role:admin,master,kasir'])->group(function () {
         Route::post('vouchers/redeem', [\App\Http\Controllers\VoucherController::class, 'redeem'])->name('vouchers.redeem');
         Route::get('vouchers/search-student', [\App\Http\Controllers\VoucherController::class, 'searchStudent'])->name('vouchers.search.student');
         Route::get('vouchers/{voucher}/print', [\App\Http\Controllers\VoucherController::class, 'printVoucher'])->name('vouchers.print');
-        Route::post('vouchers/print/batch', [\App\Http\Controllers\VoucherController::class, 'printBatch'])->name('vouchers.print.batch');
+        Route::match(['get', 'post'], 'vouchers/print/batch', [\App\Http\Controllers\VoucherController::class, 'printBatch'])->name('vouchers.print.batch');
 
         // Top-up (Duplicated for Kasir)
         Route::get('transactions/topup', [\App\Http\Controllers\TransactionController::class, 'topupForm'])->name('transactions.topup.form');

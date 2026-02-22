@@ -130,7 +130,7 @@ class StudentController extends Controller
                 'user',
                 'transactions.creator',
                 'transactions.updater',
-                'sales.sale_items.product'
+                'sales.saleItems.product'
             ])
         ]);
     }

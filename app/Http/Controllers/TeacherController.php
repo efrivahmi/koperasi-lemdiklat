@@ -137,7 +137,12 @@ class TeacherController extends Controller
     public function show(Teacher $teacher)
     {
         return Inertia::render('Admin/Teachers/Show', [
-            'teacher' => $teacher->load('user')
+            'teacher' => $teacher->load([
+                'user',
+                'transactions.creator',
+                'transactions.updater',
+                'sales.saleItems.product'
+            ])
         ]);
     }
 

@@ -45,179 +45,115 @@ const submit = () => {
     <AuthenticatedLayout>
         <template #mobileTitle>Guru</template>
         <template #header>
-            <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">Tambah Guru</h2>
+            <h2 class="font-semibold text-xl text-white leading-tight">Tambah Guru</h2>
         </template>
 
-        <div class="py-6 sm:py-12">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="min-h-screen">
+            <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
                 <!-- Header Card -->
-                <div class="mb-6 bg-gradient-to-r from-purple-600 via-indigo-600 to-blue-600 rounded-lg shadow-lg p-6 text-white">
+                <div class="mb-6 bg-gradient-to-r from-purple-600/80 via-indigo-600/80 to-blue-600/80 backdrop-blur-md rounded-xl shadow-2xl p-6 text-white border border-white/10">
                     <div class="flex items-center gap-3">
-                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-                        </svg>
+                        <div class="bg-white/10 backdrop-blur-md p-3 rounded-xl border border-white/20">
+                            <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                            </svg>
+                        </div>
                         <div>
                             <h3 class="text-2xl font-bold">Tambah Guru Baru</h3>
-                            <p class="text-purple-100 text-sm">Daftarkan guru baru ke sistem koperasi</p>
+                            <p class="text-purple-100/80 text-sm">Daftarkan guru baru ke sistem koperasi</p>
                         </div>
                     </div>
                 </div>
 
                 <!-- Form Card -->
-                <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-xl rounded-lg border-2 border-purple-200 dark:border-purple-500/30">
-                    <div class="p-6 sm:p-8 text-gray-900 dark:text-gray-100">
+                <div class="bg-slate-800/50 backdrop-blur-md overflow-hidden shadow-2xl rounded-xl border border-white/10">
+                    <div class="p-6 sm:p-8 text-white">
                         <form @submit.prevent="submit" class="space-y-6">
                             <!-- Informasi Akun -->
-                            <div class="border-b border-gray-200 dark:border-gray-700 pb-4">
-                                <h4 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Informasi Akun</h4>
+                            <div class="border-b border-white/10 pb-4">
+                                <h4 class="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+                                    <span class="w-2 h-2 bg-indigo-400 rounded-full"></span>
+                                    Informasi Akun
+                                </h4>
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div>
-                                        <label for="name" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Nama Lengkap</label>
-                                        <input
-                                            id="name"
-                                            type="text"
-                                            v-model="form.name"
-                                            class="w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm text-sm sm:text-base py-2"
-                                            required
-                                            autofocus
-                                        />
+                                        <label for="name" class="block text-sm font-medium text-slate-300 mb-1">Nama Lengkap</label>
+                                        <input id="name" type="text" v-model="form.name" class="w-full bg-slate-900/70 border-slate-600 text-white placeholder-slate-400 focus:border-indigo-500 focus:ring-indigo-500 rounded-lg shadow-sm text-sm py-2.5" required autofocus />
                                         <InputError :message="form.errors.name" class="mt-2" />
                                     </div>
-
                                     <div>
-                                        <label for="email" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Email</label>
-                                        <input
-                                            id="email"
-                                            type="email"
-                                            v-model="form.email"
-                                            class="w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm text-sm sm:text-base py-2"
-                                            required
-                                        />
+                                        <label for="email" class="block text-sm font-medium text-slate-300 mb-1">Email</label>
+                                        <input id="email" type="email" v-model="form.email" class="w-full bg-slate-900/70 border-slate-600 text-white placeholder-slate-400 focus:border-indigo-500 focus:ring-indigo-500 rounded-lg shadow-sm text-sm py-2.5" required />
                                         <InputError :message="form.errors.email" class="mt-2" />
                                     </div>
-
                                     <div>
-                                        <label for="password" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Password</label>
-                                        <input
-                                            id="password"
-                                            type="password"
-                                            v-model="form.password"
-                                            class="w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm text-sm sm:text-base py-2"
-                                            required
-                                        />
+                                        <label for="password" class="block text-sm font-medium text-slate-300 mb-1">Password</label>
+                                        <input id="password" type="password" v-model="form.password" class="w-full bg-slate-900/70 border-slate-600 text-white placeholder-slate-400 focus:border-indigo-500 focus:ring-indigo-500 rounded-lg shadow-sm text-sm py-2.5" required />
                                         <InputError :message="form.errors.password" class="mt-2" />
                                     </div>
                                 </div>
                             </div>
 
                             <!-- Data Guru -->
-                            <div class="border-b border-gray-200 dark:border-gray-700 pb-4">
-                                <h4 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Data Guru</h4>
+                            <div class="border-b border-white/10 pb-4">
+                                <h4 class="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+                                    <span class="w-2 h-2 bg-purple-400 rounded-full"></span>
+                                    Data Guru
+                                </h4>
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div>
-                                        <label for="nip" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">NIP</label>
-                                        <input
-                                            id="nip"
-                                            type="text"
-                                            v-model="form.nip"
-                                            class="w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm text-sm sm:text-base py-2"
-                                            placeholder="Nomor Induk Pegawai"
-                                            required
-                                        />
+                                        <label for="nip" class="block text-sm font-medium text-slate-300 mb-1">NIP</label>
+                                        <input id="nip" type="text" v-model="form.nip" class="w-full bg-slate-900/70 border-slate-600 text-white placeholder-slate-400 focus:border-indigo-500 focus:ring-indigo-500 rounded-lg shadow-sm text-sm py-2.5" placeholder="Nomor Induk Pegawai" required />
                                         <InputError :message="form.errors.nip" class="mt-2" />
                                     </div>
-
                                     <div>
-                                        <label for="nuptk" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">NUPTK (Opsional)</label>
-                                        <input
-                                            id="nuptk"
-                                            type="text"
-                                            v-model="form.nuptk"
-                                            class="w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm text-sm sm:text-base py-2"
-                                            placeholder="Nomor Unik Pendidik dan Tenaga Kependidikan"
-                                        />
+                                        <label for="nuptk" class="block text-sm font-medium text-slate-300 mb-1">NUPTK (Opsional)</label>
+                                        <input id="nuptk" type="text" v-model="form.nuptk" class="w-full bg-slate-900/70 border-slate-600 text-white placeholder-slate-400 focus:border-indigo-500 focus:ring-indigo-500 rounded-lg shadow-sm text-sm py-2.5" placeholder="Nomor Unik Pendidik dan Tenaga Kependidikan" />
                                         <InputError :message="form.errors.nuptk" class="mt-2" />
                                     </div>
-
                                     <div>
-                                        <label for="jabatan" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Jabatan (Opsional)</label>
-                                        <input
-                                            id="jabatan"
-                                            type="text"
-                                            v-model="form.jabatan"
-                                            class="w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm text-sm sm:text-base py-2"
-                                            placeholder="Contoh: Guru Tetap, Guru Honorer"
-                                        />
+                                        <label for="jabatan" class="block text-sm font-medium text-slate-300 mb-1">Jabatan (Opsional)</label>
+                                        <input id="jabatan" type="text" v-model="form.jabatan" class="w-full bg-slate-900/70 border-slate-600 text-white placeholder-slate-400 focus:border-indigo-500 focus:ring-indigo-500 rounded-lg shadow-sm text-sm py-2.5" placeholder="Contoh: Guru Tetap, Guru Honorer" />
                                         <InputError :message="form.errors.jabatan" class="mt-2" />
                                     </div>
-
                                     <div>
-                                        <label for="mata_pelajaran" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Mata Pelajaran (Opsional)</label>
-                                        <input
-                                            id="mata_pelajaran"
-                                            type="text"
-                                            v-model="form.mata_pelajaran"
-                                            class="w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm text-sm sm:text-base py-2"
-                                            placeholder="Contoh: Matematika, Bahasa Indonesia"
-                                        />
+                                        <label for="mata_pelajaran" class="block text-sm font-medium text-slate-300 mb-1">Mata Pelajaran (Opsional)</label>
+                                        <input id="mata_pelajaran" type="text" v-model="form.mata_pelajaran" class="w-full bg-slate-900/70 border-slate-600 text-white placeholder-slate-400 focus:border-indigo-500 focus:ring-indigo-500 rounded-lg shadow-sm text-sm py-2.5" placeholder="Contoh: Matematika, Bahasa Indonesia" />
                                         <InputError :message="form.errors.mata_pelajaran" class="mt-2" />
                                     </div>
-
                                     <div>
-                                        <label for="jenjang" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Jenjang (Opsional)</label>
-                                        <select
-                                            id="jenjang"
-                                            v-model="form.jenjang"
-                                            class="w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm text-sm sm:text-base py-2"
-                                        >
+                                        <label for="jenjang" class="block text-sm font-medium text-slate-300 mb-1">Jenjang (Opsional)</label>
+                                        <select id="jenjang" v-model="form.jenjang" class="w-full bg-slate-900/70 border-slate-600 text-white focus:border-indigo-500 focus:ring-indigo-500 rounded-lg shadow-sm text-sm py-2.5">
                                             <option value="">Pilih Jenjang</option>
                                             <option value="SMA Taruna Nusantara Indonesia">SMA Taruna Nusantara Indonesia</option>
                                             <option value="SMK Taruna Nusantara Jaya">SMK Taruna Nusantara Jaya</option>
                                         </select>
                                         <InputError :message="form.errors.jenjang" class="mt-2" />
                                     </div>
-
-                                    <div>
-                                        <label for="alamat_lengkap" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Alamat Lengkap (Opsional)</label>
-                                        <textarea
-                                            id="alamat_lengkap"
-                                            v-model="form.alamat_lengkap"
-                                            rows="3"
-                                            class="w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm text-sm sm:text-base py-2"
-                                            placeholder="Alamat lengkap guru"
-                                        ></textarea>
+                                    <div class="md:col-span-2">
+                                        <label for="alamat_lengkap" class="block text-sm font-medium text-slate-300 mb-1">Alamat Lengkap (Opsional)</label>
+                                        <textarea id="alamat_lengkap" v-model="form.alamat_lengkap" rows="3" class="w-full bg-slate-900/70 border-slate-600 text-white placeholder-slate-400 focus:border-indigo-500 focus:ring-indigo-500 rounded-lg shadow-sm text-sm py-2.5" placeholder="Alamat lengkap guru"></textarea>
                                         <InputError :message="form.errors.alamat_lengkap" class="mt-2" />
                                     </div>
                                 </div>
                             </div>
 
                             <!-- Saldo dan RFID -->
-                            <div class="border-b border-gray-200 dark:border-gray-700 pb-4">
-                                <h4 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Saldo & RFID</h4>
+                            <div class="border-b border-white/10 pb-4">
+                                <h4 class="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+                                    <span class="w-2 h-2 bg-emerald-400 rounded-full"></span>
+                                    Saldo & RFID
+                                </h4>
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div>
-                                        <label for="balance" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Saldo Awal (Rp)</label>
-                                        <input
-                                            id="balance"
-                                            type="number"
-                                            v-model="form.balance"
-                                            class="w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm text-sm sm:text-base py-2"
-                                            min="0"
-                                            step="0.01"
-                                        />
+                                        <label for="balance" class="block text-sm font-medium text-slate-300 mb-1">Saldo Awal (Rp)</label>
+                                        <input id="balance" type="number" v-model="form.balance" class="w-full bg-slate-900/70 border-slate-600 text-white placeholder-slate-400 focus:border-indigo-500 focus:ring-indigo-500 rounded-lg shadow-sm text-sm py-2.5" min="0" step="0.01" />
                                         <InputError :message="form.errors.balance" class="mt-2" />
                                     </div>
-
                                     <div>
-                                        <label for="rfid_uid" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">RFID UID (Opsional)</label>
-                                        <input
-                                            id="rfid_uid"
-                                            type="text"
-                                            v-model="form.rfid_uid"
-                                            class="w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm text-sm sm:text-base py-2"
-                                            placeholder="Kosongkan untuk auto-generate"
-                                        />
-                                        <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">RFID UID akan di-generate otomatis jika dikosongkan</p>
+                                        <label for="rfid_uid" class="block text-sm font-medium text-slate-300 mb-1">RFID UID (Opsional)</label>
+                                        <input id="rfid_uid" type="text" v-model="form.rfid_uid" class="w-full bg-slate-900/70 border-slate-600 text-white placeholder-slate-400 focus:border-indigo-500 focus:ring-indigo-500 rounded-lg shadow-sm text-sm py-2.5" placeholder="Kosongkan untuk auto-generate" />
+                                        <p class="mt-1 text-sm text-slate-400">RFID UID akan di-generate otomatis jika dikosongkan</p>
                                         <InputError :message="form.errors.rfid_uid" class="mt-2" />
                                     </div>
                                 </div>
@@ -225,23 +161,17 @@ const submit = () => {
 
                             <!-- Foto -->
                             <div>
-                                <label for="foto" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Foto Guru</label>
-                                <input
-                                    id="foto"
-                                    type="file"
-                                    @change="handleFotoChange"
-                                    accept="image/*"
-                                    class="w-full text-sm text-gray-500 dark:text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 dark:file:bg-indigo-900 file:text-indigo-700 dark:file:text-indigo-200 hover:file:bg-indigo-100 dark:hover:file:bg-indigo-800 file:cursor-pointer"
-                                />
+                                <label for="foto" class="block text-sm font-medium text-slate-300 mb-1">Foto Guru</label>
+                                <input id="foto" type="file" @change="handleFotoChange" accept="image/*" class="w-full text-sm text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-indigo-600/20 file:text-indigo-300 hover:file:bg-indigo-600/30 file:cursor-pointer file:border file:border-indigo-500/30" />
                                 <InputError :message="form.errors.foto" class="mt-2" />
                                 <div v-if="fotoPreview" class="mt-3">
-                                    <img :src="fotoPreview" alt="Preview" class="h-32 w-32 object-cover rounded-full border-2 border-gray-200 dark:border-gray-700" />
+                                    <img :src="fotoPreview" alt="Preview" class="h-32 w-32 object-cover rounded-full ring-4 ring-indigo-500/30" />
                                 </div>
                             </div>
 
                             <!-- Buttons -->
-                            <div class="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4">
-                                <button type="submit" :disabled="form.processing" class="inline-flex items-center justify-center px-6 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 active:from-purple-800 active:to-indigo-800 text-white rounded-lg font-bold text-sm transition-all duration-200 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto">
+                            <div class="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4 pt-4 border-t border-white/10">
+                                <button type="submit" :disabled="form.processing" class="inline-flex items-center justify-center px-6 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white rounded-lg font-bold text-sm transition-all duration-200 shadow-lg shadow-purple-500/20 hover:shadow-purple-500/40 disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto transform hover:-translate-y-0.5">
                                     <svg v-if="!form.processing" class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                                     </svg>
@@ -251,7 +181,7 @@ const submit = () => {
                                     <span v-if="!form.processing">Simpan Guru</span>
                                     <span v-else>Menyimpan...</span>
                                 </button>
-                                <Link :href="route('teachers.index')" class="inline-flex items-center justify-center px-6 py-3 bg-gray-500 hover:bg-gray-600 text-white rounded-lg font-semibold text-sm transition shadow-sm w-full sm:w-auto">
+                                <Link :href="route('teachers.index')" class="inline-flex items-center justify-center px-6 py-3 bg-slate-700 hover:bg-slate-600 text-white rounded-lg font-semibold text-sm transition-all border border-white/10 w-full sm:w-auto">
                                     <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                                     </svg>

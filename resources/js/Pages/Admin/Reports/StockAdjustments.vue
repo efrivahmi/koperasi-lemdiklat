@@ -13,6 +13,19 @@ const props = defineProps({
     error: String,
 });
 
+// Smart customer name logic
+const uniqueCustomerNames = computed(() => {
+    if (!props.adjustments?.data) return [];
+    const names = props.adjustments.data
+        .map(item => item.client_name && item.client_name.trim() !== '' ? item.client_name : '-');
+    return [...new Set(names)];
+});
+
+const hasMultipleCustomers = computed(() => {
+    const named = uniqueCustomerNames.value.filter(n => n !== '-');
+    return new Set(named).size > 1;
+});
+
 const searchForm = ref({
     date_from: props.filters?.date_from || '',
     date_to: props.filters?.date_to || '',
@@ -20,6 +33,7 @@ const searchForm = ref({
     type: props.filters?.type || '',
     adjusted_by: props.filters?.adjusted_by || '',
     search: props.filters?.search || '',
+    client_name: props.filters?.client_name || '',
 });
 
 const applyFilters = () => {
@@ -37,6 +51,7 @@ const resetFilters = () => {
         type: '',
         adjusted_by: '',
         search: '',
+        client_name: '',
     };
     applyFilters();
 };
@@ -121,6 +136,7 @@ const editForm = useForm({
     type: 'deduction',
     purpose: 'other',
     notes: '',
+    client_name: '',
 });
 
 const openEditModal = (adjustment) => {
@@ -130,6 +146,7 @@ const openEditModal = (adjustment) => {
     editForm.type = adjustment.type;
     editForm.purpose = adjustment.purpose;
     editForm.notes = adjustment.notes || '';
+    editForm.client_name = adjustment.client_name || '';
     showEditModal.value = true;
 };
 
@@ -172,10 +189,16 @@ const printThermal = () => {
         <div class="min-h-screen">
             <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
 
+                <!-- Flash Success Message -->
+                <div v-if="$page.props.flash?.success" class="mb-6 bg-emerald-900/30 border border-emerald-500/30 text-emerald-200 px-4 py-3 rounded-lg relative backdrop-blur-sm">
+                    <strong class="font-bold">Berhasil!</strong>
+                    <span class="block sm:inline"> {{ $page.props.flash.success }}</span>
+                </div>
+
                 <!-- Error Message -->
-                <div v-if="error" class="mb-6 bg-rose-900/30 border border-rose-500/30 text-rose-200 px-4 py-3 rounded-lg relative backdrop-blur-sm">
+                <div v-if="error || $page.props.errors?.error" class="mb-6 bg-rose-900/30 border border-rose-500/30 text-rose-200 px-4 py-3 rounded-lg relative backdrop-blur-sm">
                     <strong class="font-bold">Error!</strong>
-                    <span class="block sm:inline"> {{ error }}</span>
+                    <span class="block sm:inline"> {{ error || $page.props.errors?.error }}</span>
                 </div>
 
                 <!-- Statistics Cards -->
@@ -276,6 +299,12 @@ const printThermal = () => {
                         <div>
                             <label class="block text-sm font-medium text-slate-300 mb-1">Cari Produk</label>
                             <input type="text" v-model="searchForm.search" placeholder="Nama atau barcode..." class="w-full bg-slate-900/60 border-slate-600 text-white rounded-lg focus:ring-indigo-500 focus:border-indigo-500 text-sm transition-all" @keyup.enter="applyFilters" />
+                        </div>
+
+                        <!-- Client Name Filter -->
+                        <div>
+                            <label class="block text-sm font-medium text-slate-300 mb-1">Nama Pelanggan</label>
+                            <input type="text" v-model="searchForm.client_name" placeholder="Cari nama pelanggan..." class="w-full bg-slate-900/60 border-slate-600 text-white rounded-lg focus:ring-indigo-500 focus:border-indigo-500 text-sm transition-all" @keyup.enter="applyFilters" />
                         </div>
                     </div>
 
@@ -410,7 +439,7 @@ const printThermal = () => {
         </div>
 
         <!-- Edit Adjustment Modal -->
-        <div v-if="showEditModal" class="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+        <div v-if="showEditModal" class="fixed inset-0 z-[100] overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
             <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
                 <div class="fixed inset-0 bg-black/80 backdrop-blur-sm transition-opacity" aria-hidden="true" @click="closeEditModal"></div>
 
@@ -427,17 +456,32 @@ const printThermal = () => {
 
                                 <form @submit.prevent="updateAdjustment">
                                     
+                                    <!-- Inline Validation Errors -->
+                                    <div v-if="editForm.errors.quantity || editForm.errors.error || editForm.errors.notes" class="mb-4 bg-rose-900/40 border border-rose-500/40 text-rose-200 px-3 py-2 rounded-lg text-sm">
+                                        <p v-if="editForm.errors.quantity">{{ editForm.errors.quantity }}</p>
+                                        <p v-if="editForm.errors.notes">{{ editForm.errors.notes }}</p>
+                                        <p v-if="editForm.errors.error">{{ editForm.errors.error }}</p>
+                                    </div>
+
+                                    <!-- Current Stock Info -->
+                                    <div class="mb-4 p-3 bg-slate-900/50 rounded-lg border border-white/5">
+                                        <div class="flex justify-between items-center">
+                                            <span class="text-sm text-slate-400">Stok Saat Ini:</span>
+                                            <span class="text-lg font-bold text-white">{{ editingAdjustment?.product?.stock || 0 }} {{ editingAdjustment?.product?.unit || 'Pcs' }}</span>
+                                        </div>
+                                    </div>
+
                                     <!-- Purpose Selection -->
                                     <div class="mb-5">
                                         <label class="block text-sm font-medium text-slate-300 mb-2">Alasan Penyesuaian</label>
                                         <select v-model="editForm.purpose" class="block w-full pl-3 pr-10 py-2.5 text-base bg-slate-900/70 border-slate-600 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-lg text-white">
-                                            <option value="damage">Kerusakan Barang</option>
-                                            <option value="expired">Barang Kadaluarsa</option>
-                                            <option value="internal_use">Keperluan Internal/Kantor</option>
-                                            <option value="personal_use">Keperluan Pribadi</option>
-                                            <option value="return_to_supplier">Retur ke Supplier</option>
-                                            <option value="sale">Penjualan Manual</option>
-                                            <option value="other">Lainnya</option>
+                                            <option value="damage">Kerusakan Barang (Pengurangan - Rugi)</option>
+                                            <option value="expired">Barang Kadaluarsa (Pengurangan - Rugi)</option>
+                                            <option value="internal_use">Keperluan Internal/Kantor (Pengurangan - Rugi/Biaya)</option>
+                                            <option value="personal_use">Keperluan Pribadi (Pengurangan - Prive)</option>
+                                            <option value="return_to_supplier">Retur ke Supplier (Pengurangan - Refund)</option>
+                                            <option value="sale">Penjualan Manual/Langsung (Pengurangan - Profit)</option>
+                                            <option value="other">Lainnya (Custom)</option>
                                         </select>
                                     </div>
 
@@ -447,16 +491,22 @@ const printThermal = () => {
                                         <div class="grid grid-cols-2 gap-3">
                                             <label 
                                                 class="cursor-pointer border rounded-lg p-3 text-center transition-all"
-                                                :class="editForm.type === 'deduction' ? 'bg-rose-900/30 border-rose-500/50 text-rose-200' : 'bg-slate-900/50 border-slate-700 text-slate-400 hover:bg-slate-800'"
+                                                :class="[
+                                                    editForm.type === 'deduction' ? 'bg-rose-900/30 border-rose-500/50 text-rose-200' : 'bg-slate-900/50 border-slate-700 text-slate-400 hover:bg-slate-800',
+                                                    editForm.purpose !== 'other' ? 'opacity-50 cursor-not-allowed' : ''
+                                                ]"
                                             >
-                                                <input type="radio" v-model="editForm.type" value="deduction" class="sr-only">
+                                                <input type="radio" v-model="editForm.type" value="deduction" class="sr-only" :disabled="editForm.purpose !== 'other'">
                                                 <span class="block font-semibold">Pengurangan (-)</span>
                                             </label>
                                             <label 
                                                 class="cursor-pointer border rounded-lg p-3 text-center transition-all"
-                                                :class="editForm.type === 'addition' ? 'bg-emerald-900/30 border-emerald-500/50 text-emerald-200' : 'bg-slate-900/50 border-slate-700 text-slate-400 hover:bg-slate-800'"
+                                                :class="[
+                                                    editForm.type === 'addition' ? 'bg-emerald-900/30 border-emerald-500/50 text-emerald-200' : 'bg-slate-900/50 border-slate-700 text-slate-400 hover:bg-slate-800',
+                                                    editForm.purpose !== 'other' ? 'opacity-50 cursor-not-allowed' : ''
+                                                ]"
                                             >
-                                                <input type="radio" v-model="editForm.type" value="addition" class="sr-only">
+                                                <input type="radio" v-model="editForm.type" value="addition" class="sr-only" :disabled="editForm.purpose !== 'other'">
                                                 <span class="block font-semibold">Penambahan (+)</span>
                                             </label>
                                         </div>
@@ -479,9 +529,20 @@ const printThermal = () => {
                                         </div>
                                     </div>
 
+                                    <!-- Client Name Input -->
+                                    <div class="mb-5">
+                                        <label class="block text-sm font-medium text-slate-300 mb-2">Nama Klien / Tujuan Penyesuaian (Opsional)</label>
+                                        <input 
+                                            type="text" 
+                                            v-model="editForm.client_name" 
+                                            class="block w-full py-2.5 px-3 bg-slate-900/70 border-slate-600 rounded-lg text-white focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" 
+                                            placeholder="Contoh: Nama Siswa, Divisi, dll"
+                                        >
+                                    </div>
+
                                     <!-- Notes -->
                                     <div class="mb-4">
-                                        <label class="block text-sm font-medium text-slate-300 mb-2">Catatan Tambahan</label>
+                                        <label class="block text-sm font-medium text-slate-300 mb-2">Catatan Tambahan (Opsional)</label>
                                         <textarea 
                                             v-model="editForm.notes" 
                                             rows="2" 
@@ -517,35 +578,108 @@ const printThermal = () => {
         <!-- Thermal Print Layout (Hidden on Screen) -->
         <ThermalPrintLayout
             title="LAPORAN PENYESUAIAN STOK"
-            subtitle="Periode: Hari Ini"
+            :subtitle="'Periode: ' + (filters?.date_from || 'Hari Ini') + ' s/d ' + (filters?.date_to || 'Hari Ini')"
             :user="$page.props.auth.user"
         >
-             <!-- Summary -->
-             <div style="margin-bottom: 10px; border-bottom: 1px dashed black; padding-bottom: 5px;">
-                <div style="font-weight: bold; font-size: 11px;">RINGKASAN</div>
-                <div style="display: flex; justify-content: space-between;">
-                    <span>Total Item:</span>
-                    <span>{{ summary.total_adjustments }}</span>
-                </div>
-                <div style="display: flex; justify-content: space-between;">
-                    <span>Profit/Loss:</span>
-                    <span>{{ formatCurrency(adjustments.data.reduce((sum, item) => sum + (item.profit_loss_impact || 0), 0)) }}</span>
+            <!-- Customer Name Section -->
+            <div style="margin-bottom: 8px; border-bottom: 1px dashed black; padding-bottom: 6px;">
+                <div style="font-weight: bold; font-size: 11px; margin-bottom: 4px;">INFORMASI PELANGGAN:</div>
+                <div v-for="(name, idx) in uniqueCustomerNames" :key="'cust-' + idx" style="font-size: 11px; margin-bottom: 2px;">
+                    • {{ name }}
                 </div>
             </div>
 
-            <!-- List -->
-            <div v-for="item in adjustments.data" :key="item.id" style="margin-bottom: 8px; border-bottom: 1px dashed #ccc; padding-bottom: 4px;">
-                <div style="font-weight: bold;">{{ item.product?.name }}</div>
-                <div style="font-size: 9px; margin-bottom: 2px;">{{ item.product?.barcode }}</div>
-                <div style="display: flex; justify-content: space-between;">
-                    <span>{{ getPurposeLabel(item.purpose) }}</span>
-                    <span :style="{ fontWeight: 'bold', color: item.type === 'addition' ? 'black' : 'black' }">
-                        {{ item.type === 'addition' ? '+' : '-' }}{{ item.quantity_adjusted }}
-                    </span>
+            <!-- Detail Items -->
+            <div style="font-weight: bold; font-size: 12px; text-align: center; margin-bottom: 5px;">DETAIL ITEM</div>
+            <div style="border-bottom: 1px dashed black; margin-bottom: 6px;"></div>
+
+            <div v-for="(item, index) in adjustments.data" :key="item.id" style="margin-bottom: 10px; padding-bottom: 6px; border-bottom: 1px dashed #aaa;">
+                <!-- Item Number & Product Name -->
+                <div style="font-weight: bold; font-size: 12px;">
+                    {{ index + 1 }}. {{ item.product?.name || '-' }}
                 </div>
-                <div style="display: flex; justify-content: space-between; font-size: 9px;">
+
+                <!-- Barcode -->
+                <div style="font-size: 10px; font-family: monospace; color: #555; margin-bottom: 2px;">
+                    BC: {{ item.product?.barcode || '-' }}
+                </div>
+
+                <!-- Category -->
+                <div style="display: flex; justify-content: space-between; font-size: 11px;">
+                    <span>Kategori:</span>
+                    <span style="font-weight: bold;">{{ item.product?.category?.name || 'Tanpa Kategori' }}</span>
+                </div>
+
+                <!-- Type & Purpose -->
+                <div style="display: flex; justify-content: space-between; font-size: 11px;">
+                    <span>Tipe:</span>
+                    <span style="font-weight: bold;">{{ item.type === 'addition' ? '(+) Penambahan' : '(-) Pengurangan' }}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; font-size: 11px;">
+                    <span>Alasan:</span>
+                    <span>{{ getPurposeLabel(item.purpose) }}</span>
+                </div>
+
+                <!-- Per-item Customer Name (always shown) -->
+                <div style="display: flex; justify-content: space-between; font-size: 11px; margin-top: 2px;">
+                    <span>Pelanggan:</span>
+                    <span style="font-weight: bold;">{{ item.client_name || '-' }}</span>
+                </div>
+
+                <!-- Quantity -->
+                <div style="display: flex; justify-content: space-between; font-size: 11px; margin-top: 2px;">
+                    <span>Jumlah:</span>
+                    <span style="font-weight: bold;">{{ item.type === 'addition' ? '+' : '-' }}{{ item.quantity_adjusted }} {{ item.product?.unit || 'Pcs' }}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; font-size: 10px; color: #666;">
+                    <span>Stok:</span>
+                    <span>{{ item.quantity_before }} → {{ item.quantity_after }}</span>
+                </div>
+
+                <!-- Cost / Financial Impact -->
+                <div style="display: flex; justify-content: space-between; font-size: 11px; margin-top: 2px;">
+                    <span>Harga Beli/unit:</span>
+                    <span>{{ formatCurrency(item.product?.harga_beli || 0) }}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; font-size: 11px; font-weight: bold;">
+                    <span>Laba/Rugi:</span>
+                    <span>{{ (item.profit_loss_impact || 0) >= 0 ? '+' : '' }}{{ formatCurrency(item.profit_loss_impact || 0) }}</span>
+                </div>
+
+                <!-- Notes -->
+                <div v-if="item.notes" style="font-size: 10px; margin-top: 2px; font-style: italic; color: #555;">
+                    Catatan: {{ item.notes }}
+                </div>
+
+                <!-- Adjusted By, Date -->
+                <div style="display: flex; justify-content: space-between; font-size: 10px; color: #777; margin-top: 2px;">
+                    <span>Oleh: {{ item.adjusted_by?.name || '-' }}</span>
                     <span>{{ formatDate(item.created_at) }}</span>
-                    <span>{{ formatCurrency(item.profit_loss_impact || 0) }}</span>
+                </div>
+            </div>
+
+            <!-- Summary -->
+            <div style="margin-top: 8px; border-top: 1px dashed black; padding-top: 6px;">
+                <div style="font-weight: bold; font-size: 12px; text-align: center; margin-bottom: 4px;">RINGKASAN</div>
+                <div style="display: flex; justify-content: space-between; font-size: 11px;">
+                    <span>Total Penyesuaian:</span>
+                    <span style="font-weight: bold;">{{ summary.total_adjustments }} item</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; font-size: 11px;">
+                    <span>Penambahan:</span>
+                    <span style="font-weight: bold;">{{ summary.additions_count }} (+{{ summary.total_additions }})</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; font-size: 11px;">
+                    <span>Pengurangan:</span>
+                    <span style="font-weight: bold;">{{ summary.deductions_count }} (-{{ summary.total_deductions }})</span>
+                </div>
+            </div>
+
+            <!-- Grand Total -->
+            <div style="margin-top: 5px; border-top: 1px dotted #999; padding-top: 5px;">
+                <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: bold;">
+                    <span>TOTAL LABA/RUGI:</span>
+                    <span>{{ formatCurrency(adjustments.data.reduce((sum, item) => sum + (item.profit_loss_impact || 0), 0)) }}</span>
                 </div>
             </div>
         </ThermalPrintLayout>

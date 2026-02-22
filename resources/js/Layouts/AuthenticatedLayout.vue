@@ -154,13 +154,13 @@ const menuItems = computed(() => {
 
         // Inventori & Keuangan
         const inventoryItems = [];
-        if (permissions['products.view']) {
+        if (permissions['stock_ins.view']) {
             inventoryItems.push({ name: 'Stok Masuk', route: 'kasir.stock-ins.index', icon: '📥', gradient: 'from-indigo-500 to-blue-500' });
         }
-        if (permissions['pos.access']) {
+        if (permissions['vouchers.view']) {
             inventoryItems.push({ name: 'Voucher', route: 'kasir.vouchers.index', icon: '🎟️', gradient: 'from-yellow-500 to-orange-500' });
         }
-        if (permissions['reports.view']) {
+        if (permissions['expenses.view']) {
             inventoryItems.push({ name: 'Pengeluaran', route: 'expenses.index', icon: '💸', gradient: 'from-red-500 to-pink-500' });
         }
         if (permissions['transactions.history']) {
@@ -495,18 +495,47 @@ page.props.isLoading = isLoading;
 
         <!-- Header -->
         <header v-if="$slots.header" class="sticky top-0 z-20 bg-gradient-to-r from-purple-900/95 via-indigo-900/95 to-blue-900/95 border-b border-purple-500/30 shadow-lg shadow-purple-500/10 backdrop-blur-md hidden lg:block">
-            <div class="px-4 lg:px-8 py-6 text-white flex justify-between items-center">
+            <div class="px-4 lg:px-8 py-4 text-white flex justify-between items-center">
                 <div>
                    <slot name="header" />
                 </div>
-                 <div class="flex items-center gap-3">
+                <div class="flex items-center gap-5">
+                    <!-- Quick Action Button in Header -->
+                    <Link v-if="userRole === 'admin' || userRole === 'master' || (userRole === 'kasir' && userPermissions['pos.access'])"
+                        :href="userRole === 'kasir' ? route('kasir.pos.index') : route('pos.index')"
+                        class="hidden md:flex items-center gap-2 bg-gradient-to-r from-pink-600 to-rose-500 hover:from-pink-500 hover:to-rose-400 text-white px-4 py-2 rounded-xl text-sm font-bold shadow-lg shadow-pink-500/30 transition-all duration-300 hover:scale-105 border border-pink-400/50">
+                        <span>🛒</span>
+                        <span>POS / Kasir</span>
+                    </Link>
+
+                    <div class="w-px h-8 bg-purple-500/30 hidden md:block"></div>
+
+                    <!-- User Info in Header -->
+                    <div v-if="user" class="flex items-center gap-3">
+                        <div class="text-right hidden md:block">
+                            <p class="text-sm font-semibold text-white leading-tight drop-shadow-sm">{{ user.name }}</p>
+                            <p class="text-[10px] text-purple-200 uppercase tracking-widest font-bold">{{ userRoleLabel }}</p>
+                        </div>
+                        <div class="relative">
+                            <div v-if="user.photo" class="w-9 h-9 rounded-full overflow-hidden shadow-md border-2 border-purple-400">
+                                <img :src="`/storage/${user.photo}`" :alt="user.name" class="w-full h-full object-cover">
+                            </div>
+                            <div v-else class="w-9 h-9 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white font-bold shadow-md text-sm">
+                                {{ user.name?.charAt(0).toUpperCase() }}
+                            </div>
+                            <span class="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-400 rounded-full border-2 border-gray-800"></span>
+                        </div>
+                    </div>
+
+                    <div class="w-px h-8 bg-purple-500/30 hidden md:block"></div>
+
                     <ThemeToggle />
                 </div>
             </div>
         </header>
 
         <!-- Main -->
-        <main class="relative z-10 p-4 lg:p-6">
+        <main class="relative p-4 lg:p-6">
             <slot />
         </main>
     </div>

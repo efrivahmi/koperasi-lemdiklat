@@ -17,6 +17,7 @@ class StockAdjustmentController extends Controller
             'type' => 'required|in:deduction,addition',
             'purpose' => 'required|in:sale,internal_use,personal_use,damage,expired,return_to_supplier,other',
             'notes' => 'nullable|string|max:500',
+            'client_name' => 'nullable|string|max:255',
         ]);
 
         if ($request->purpose === 'other' && empty($request->notes)) {
@@ -48,6 +49,7 @@ class StockAdjustmentController extends Controller
                 'type' => $request->type,
                 'purpose' => $request->purpose,
                 'notes' => $request->notes,
+                'client_name' => $request->client_name,
                 'adjusted_by' => auth()->id(),
             ]);
 
@@ -101,6 +103,7 @@ class StockAdjustmentController extends Controller
             'type' => 'required|in:deduction,addition',
             'purpose' => 'required|in:sale,internal_use,personal_use,damage,expired,return_to_supplier,other',
             'notes' => 'nullable|string|max:500',
+            'client_name' => 'nullable|string|max:255',
         ]);
 
         if ($request->purpose === 'other' && empty($request->notes)) {
@@ -157,6 +160,7 @@ class StockAdjustmentController extends Controller
                 'type' => $request->type,
                 'purpose' => $request->purpose,
                 'notes' => $request->notes,
+                'client_name' => $request->client_name,
                 'adjusted_by' => auth()->id(), // Update who modified it last
             ]);
 
@@ -177,6 +181,12 @@ class StockAdjustmentController extends Controller
             DB::beginTransaction();
 
             $product = $stockAdjustment->product;
+
+            // Prevent deletion if product has never had an incoming stock (StockIn)
+            if (!$product->stockIns()->exists()) {
+                DB::rollBack();
+                return back()->withErrors(['error' => 'Penyesuaian stok tidak dapat dihapus karena produk ini belum pernah menerima stok masuk (Stock In) pertama.']);
+            }
 
             // Revert stock change
             if ($stockAdjustment->type === 'deduction') {

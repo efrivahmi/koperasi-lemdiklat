@@ -27,6 +27,7 @@ const adjustmentForm = useForm({
     quantity: 1,
     purpose: 'other',
     notes: '',
+    client_name: '',
 });
 
 // Expandable Rows Logic
@@ -58,6 +59,7 @@ const openAdjustmentModal = (product) => {
     adjustmentForm.reset();
     adjustmentForm.type = 'deduction';
     adjustmentForm.purpose = 'damage';
+    adjustmentForm.client_name = '';
     customReason.value = '';
     showAdjustmentModal.value = true;
 };
@@ -264,7 +266,7 @@ const deleteProduct = (product) => {
                                                 <div>
                                                     <h4 class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">Tindakan</h4>
                                                     <div class="flex flex-wrap gap-2">
-                                                        <Link :href="route('products.show', product.id)" class="inline-flex items-center px-3 py-1.5 bg-sky-600 hover:bg-sky-500 text-white text-xs font-medium rounded-md transition-colors shadow-sm ring-1 ring-white/10">
+                                                        <Link v-if="can('products.show')" :href="route('products.show', product.id)" class="inline-flex items-center px-3 py-1.5 bg-sky-600 hover:bg-sky-500 text-white text-xs font-medium rounded-md transition-colors shadow-sm ring-1 ring-white/10">
                                                             <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
                                                             Detail
                                                         </Link>
@@ -273,7 +275,7 @@ const deleteProduct = (product) => {
                                                             Edit
                                                         </Link>
                                                         <button 
-                                                            v-if="can('stock.adjust')" 
+                                                            v-if="can('products.stock')" 
                                                             @click.stop="openAdjustmentModal(product)"
                                                             class="inline-flex items-center px-3 py-1.5 bg-amber-600 hover:bg-amber-500 text-white text-xs font-medium rounded-md transition-colors shadow-sm ring-1 ring-white/10"
                                                         >
@@ -358,7 +360,7 @@ const deleteProduct = (product) => {
         </div>
 
         <!-- Adjustment Modal -->
-        <div v-if="showAdjustmentModal" class="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+        <div v-if="showAdjustmentModal" class="fixed inset-0 z-[100] overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
             <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
                 <div class="fixed inset-0 bg-black/80 backdrop-blur-sm transition-opacity" aria-hidden="true" @click="closeAdjustmentModal"></div>
                 <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
@@ -372,6 +374,21 @@ const deleteProduct = (product) => {
                                 <p class="text-sm text-slate-400 mb-6">Produk: <span class="text-indigo-400 font-semibold">{{ selectedProduct?.name }}</span></p>
 
                                 <form @submit.prevent="submitAdjustment">
+                                    
+                                    <!-- Inline Validation Errors -->
+                                    <div v-if="adjustmentForm.errors.quantity || adjustmentForm.errors.error || adjustmentForm.errors.notes" class="mb-4 bg-rose-900/40 border border-rose-500/40 text-rose-200 px-3 py-2 rounded-lg text-sm">
+                                        <p v-if="adjustmentForm.errors.quantity">{{ adjustmentForm.errors.quantity }}</p>
+                                        <p v-if="adjustmentForm.errors.notes">{{ adjustmentForm.errors.notes }}</p>
+                                        <p v-if="adjustmentForm.errors.error">{{ adjustmentForm.errors.error }}</p>
+                                    </div>
+
+                                    <!-- Current Stock Info -->
+                                    <div class="mb-4 p-3 bg-slate-900/50 rounded-lg border border-white/5">
+                                        <div class="flex justify-between items-center">
+                                            <span class="text-sm text-slate-400">Stok Saat Ini:</span>
+                                            <span class="text-lg font-bold text-white">{{ selectedProduct?.stock || 0 }} {{ selectedProduct?.unit || 'Pcs' }}</span>
+                                        </div>
+                                    </div>
                                     
                                     <!-- Purpose Selection -->
                                     <div class="mb-5">
@@ -441,6 +458,17 @@ const deleteProduct = (product) => {
                                                 <span class="text-slate-400 sm:text-sm">{{ selectedProduct?.unit || 'Pcs' }}</span>
                                             </div>
                                         </div>
+                                    </div>
+
+                                    <!-- Client Name -->
+                                    <div class="mb-5">
+                                        <label class="block text-sm font-medium text-slate-300 mb-2">Nama Klien / Tujuan Penyesuaian (Opsional)</label>
+                                        <input 
+                                            type="text" 
+                                            v-model="adjustmentForm.client_name" 
+                                            class="block w-full py-2.5 px-3 bg-slate-900/70 border-slate-600 rounded-lg text-white focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" 
+                                            placeholder="Contoh: Nama Siswa, Divisi, dll"
+                                        >
                                     </div>
 
                                     <!-- Notes -->

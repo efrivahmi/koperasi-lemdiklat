@@ -28,12 +28,14 @@ class UserController extends Controller
             ],
             'Master Data: Kategori' => [
                 ['key' => 'categories.view',   'label' => 'Lihat Kategori'],
+                ['key' => 'categories.show',   'label' => 'Lihat Detail Kategori'],
                 ['key' => 'categories.create', 'label' => 'Tambah Kategori'],
                 ['key' => 'categories.edit',   'label' => 'Edit Kategori'],
                 ['key' => 'categories.delete', 'label' => 'Hapus Kategori'],
             ],
             'Data Siswa & Guru' => [
                 ['key' => 'students.view',   'label' => 'Lihat Data Siswa'],
+                ['key' => 'students.cards',  'label' => 'Cetak Kartu Siswa (Batch)'],
                 ['key' => 'students.create', 'label' => 'Tambah Siswa'],
                 ['key' => 'students.edit',   'label' => 'Edit Siswa'],
                 ['key' => 'students.delete', 'label' => 'Hapus Siswa'],
@@ -46,6 +48,7 @@ class UserController extends Controller
                 ['key' => 'stock_ins.view',   'label' => 'Lihat Riwayat Stok Masuk'],
                 ['key' => 'stock_ins.show',   'label' => 'Lihat Detail Stok Masuk'],
                 ['key' => 'stock_ins.create', 'label' => 'Catat Stok Masuk'],
+                ['key' => 'stock_ins.edit',   'label' => 'Edit Stok Masuk'],
                 ['key' => 'stock_ins.delete', 'label' => 'Hapus Data Stok Masuk'],
             ],
             'Voucher' => [

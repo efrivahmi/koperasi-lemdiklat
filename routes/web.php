@@ -45,6 +45,8 @@ Route::middleware(['auth', 'role:admin,master,kasir'])->prefix('admin')->group(f
     Route::get('api/products/search', [\App\Http\Controllers\ProductController::class, 'apiSearch'])->name('api.products.search');
     Route::post('products/{product}/adjust-stock', [\App\Http\Controllers\StockAdjustmentController::class, 'store'])->name('products.adjust-stock');
     Route::get('products/{product}/adjustment-history', [\App\Http\Controllers\StockAdjustmentController::class, 'history'])->name('products.adjustment-history');
+    Route::put('stock-adjustments/{stockAdjustment}', [\App\Http\Controllers\StockAdjustmentController::class, 'update'])->name('stock-adjustments.update');
+    Route::delete('stock-adjustments/{stockAdjustment}', [\App\Http\Controllers\StockAdjustmentController::class, 'destroy'])->name('stock-adjustments.destroy');
 
     Route::resource('products', \App\Http\Controllers\ProductController::class);
 
@@ -133,6 +135,8 @@ Route::middleware(['auth', 'role:admin,master,kasir'])->group(function () {
         Route::get('api/generate-barcode', [\App\Http\Controllers\ProductController::class, 'generateBarcodeApi'])->name('api.generate-barcode');
         Route::post('products/{product}/adjust-stock', [\App\Http\Controllers\StockAdjustmentController::class, 'store'])->name('products.adjust-stock');
         Route::get('products/{product}/adjustment-history', [\App\Http\Controllers\StockAdjustmentController::class, 'history'])->name('products.adjustment-history');
+        Route::put('stock-adjustments/{stockAdjustment}', [\App\Http\Controllers\StockAdjustmentController::class, 'update'])->name('stock-adjustments.update');
+        Route::delete('stock-adjustments/{stockAdjustment}', [\App\Http\Controllers\StockAdjustmentController::class, 'destroy'])->name('stock-adjustments.destroy');
         Route::resource('products', \App\Http\Controllers\ProductController::class);
 
         // Inventory

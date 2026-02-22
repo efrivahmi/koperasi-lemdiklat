@@ -161,6 +161,7 @@ const toggleRow = (id) => {
                                         <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                             <div class="flex items-center justify-end space-x-3">
                                                  <Link 
+                                                    v-if="can('categories.show')"
                                                     :href="route('categories.show', category.id)" 
                                                     class="text-sky-400 hover:text-sky-300 transition-colors"
                                                     title="Detail Kategori"

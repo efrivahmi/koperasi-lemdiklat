@@ -17,6 +17,7 @@ class StockAdjustment extends Model
         'type',
         'purpose',
         'notes',
+        'client_name',
         'adjusted_by',
         'created_by',
         'updated_by',

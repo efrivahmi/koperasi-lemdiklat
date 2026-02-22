@@ -437,7 +437,7 @@ class ReportController extends Controller
                 'filters' => $request->all()
             ]);
 
-            $query = StockAdjustment::with(['product', 'adjustedBy', 'creator', 'updater']);
+            $query = StockAdjustment::with(['product.category', 'adjustedBy', 'creator', 'updater']);
 
             // Default date range (this month)
             $dateFrom = $request->date_from ?? Carbon::now()->startOfMonth()->format('Y-m-d');
@@ -467,6 +467,11 @@ class ReportController extends Controller
                     $q->where('name', 'like', '%' . $search . '%')
                       ->orWhere('barcode', 'like', '%' . $search . '%');
                 });
+            }
+
+            // Filter by client name
+            if ($request->has('client_name') && $request->client_name) {
+                $query->where('client_name', 'like', '%' . $request->client_name . '%');
             }
 
             $adjustments = $query->latest()->paginate(20);
@@ -666,6 +671,7 @@ class ReportController extends Controller
                     'type' => $request->type ?? '',
                     'adjusted_by' => $request->adjusted_by ?? '',
                     'search' => $request->search ?? '',
+                    'client_name' => $request->client_name ?? '',
                 ],
             ]);
 
@@ -704,6 +710,7 @@ class ReportController extends Controller
                     'type' => '',
                     'adjusted_by' => '',
                     'search' => '',
+                    'client_name' => '',
                 ],
                 'error' => 'Gagal memuat laporan: ' . $e->getMessage()
             ]);
@@ -718,7 +725,7 @@ class ReportController extends Controller
         $filename = 'laporan-penyesuaian-stok-' . $dateFrom . '-to-' . $dateTo . '.xlsx';
 
         return Excel::download(
-            new StockAdjustmentsExport($dateFrom, $dateTo, $request->product_id, $request->type, $request->adjusted_by, $request->search),
+            new StockAdjustmentsExport($dateFrom, $dateTo, $request->product_id, $request->type, $request->adjusted_by, $request->search, $request->client_name),
             $filename
         );
     }

@@ -13,9 +13,12 @@ use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
 use PhpOffice\PhpSpreadsheet\Style\Color;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
+use Maatwebsite\Excel\Concerns\WithEvents;
+use Maatwebsite\Excel\Events\AfterSheet;
+use PhpOffice\PhpSpreadsheet\Cell\DataType;
 use Carbon\Carbon;
 
-class StockAdjustmentsExport implements FromCollection, WithHeadings, WithMapping, WithStyles, WithColumnWidths, WithColumnFormatting
+class StockAdjustmentsExport implements FromCollection, WithHeadings, WithMapping, WithStyles, WithColumnWidths, WithColumnFormatting, WithEvents
 {
     protected $dateFrom;
     protected $dateTo;
@@ -23,8 +26,9 @@ class StockAdjustmentsExport implements FromCollection, WithHeadings, WithMappin
     protected $type;
     protected $adjustedBy;
     protected $search;
+    protected $clientName;
 
-    public function __construct($dateFrom, $dateTo, $productId = null, $type = null, $adjustedBy = null, $search = null)
+    public function __construct($dateFrom, $dateTo, $productId = null, $type = null, $adjustedBy = null, $search = null, $clientName = null)
     {
         $this->dateFrom = $dateFrom;
         $this->dateTo = $dateTo;
@@ -32,6 +36,7 @@ class StockAdjustmentsExport implements FromCollection, WithHeadings, WithMappin
         $this->type = $type;
         $this->adjustedBy = $adjustedBy;
         $this->search = $search;
+        $this->clientName = $clientName;
     }
 
     public function collection()
@@ -60,6 +65,10 @@ class StockAdjustmentsExport implements FromCollection, WithHeadings, WithMappin
             });
         }
 
+        if ($this->clientName) {
+            $query->where('client_name', 'like', '%' . $this->clientName . '%');
+        }
+
         return $query->latest()->get();
     }
 
@@ -80,6 +89,7 @@ class StockAdjustmentsExport implements FromCollection, WithHeadings, WithMappin
             'Pendapatan',
             'Laba/Rugi',
             'Disesuaikan Oleh',
+            'Nama Pelanggan',
             'Catatan',
             'Dibuat Oleh',
             'Dibuat Pada',
@@ -176,17 +186,18 @@ class StockAdjustmentsExport implements FromCollection, WithHeadings, WithMappin
             Carbon::parse($adjustment->created_at)->format('d/m/Y'),
             Carbon::parse($adjustment->created_at)->format('H:i:s'),
             $adjustment->product->name ?? '-',
-            $adjustment->product->barcode ?? '-', // Ensure this is just the value
+            (string) ($adjustment->product->barcode ?? '-'), // Explicit string cast, FORMAT_TEXT handles display
             $adjustment->type === 'addition' ? 'Penambahan' : 'Pengurangan',
             $purposeLabel,
             $adjustment->quantity_before,
-            $signedQty, // Use signed quantity
+            $signedQty,
             $adjustment->quantity_after,
-            number_format($hargaBeli, 0, ',', '.'),
-            number_format($hargaJual, 0, ',', '.'),
-            number_format($revenue, 0, ',', '.'),
-            number_format($profit, 0, ',', '.'), // Allow negative formatting
+            $hargaBeli,        // Raw number — Excel formats via columnFormats
+            $hargaJual,        // Raw number
+            $revenue,          // Raw number
+            $profit,           // Raw number (can be negative)
             $adjustment->adjustedBy->name ?? '-',
+            $adjustment->client_name ?? '-',
             $adjustment->notes ?? '-',
             $adjustment->creator->name ?? '-',
             $adjustment->created_at ? Carbon::parse($adjustment->created_at)->format('d/m/Y H:i:s') : '-',
@@ -222,7 +233,7 @@ class StockAdjustmentsExport implements FromCollection, WithHeadings, WithMappin
             'A' => 12,  // Tanggal
             'B' => 10,  // Waktu
             'C' => 30,  // Nama Produk
-            'D' => 15,  // Barcode
+            'D' => 18,  // Barcode
             'E' => 18,  // Tipe Penyesuaian
             'F' => 28,  // Tujuan Penyesuaian
             'G' => 12,  // Stok Sebelum
@@ -233,17 +244,39 @@ class StockAdjustmentsExport implements FromCollection, WithHeadings, WithMappin
             'L' => 15,  // Pendapatan
             'M' => 15,  // Laba/Rugi
             'N' => 20,  // Disesuaikan Oleh
-            'O' => 35,  // Catatan
-            'P' => 20,  // Dibuat Oleh
-            'Q' => 18,  // Dibuat Pada
-            'R' => 20,  // Diubah Oleh
-            'S' => 18,  // Diubah Pada
+            'O' => 25,  // Nama Pelanggan
+            'P' => 35,  // Catatan
+            'Q' => 20,  // Dibuat Oleh
+            'R' => 18,  // Dibuat Pada
+            'S' => 20,  // Diubah Oleh
+            'T' => 18,  // Diubah Pada
         ];
     }
     public function columnFormats(): array
     {
         return [
             'D' => \PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_TEXT,
+            'J' => '#,##0',
+            'K' => '#,##0',
+            'L' => '#,##0',
+            'M' => '#,##0',
+        ];
+    }
+
+    public function registerEvents(): array
+    {
+        return [
+            AfterSheet::class => function(AfterSheet $event) {
+                $sheet = $event->sheet->getDelegate();
+                $highestRow = $sheet->getHighestRow();
+
+                // Force column D (Barcode) to be stored as text string
+                for ($row = 2; $row <= $highestRow; $row++) {
+                    $cell = $sheet->getCell('D' . $row);
+                    $value = $cell->getValue();
+                    $cell->setValueExplicit((string) $value, DataType::TYPE_STRING);
+                }
+            },
         ];
     }
 }

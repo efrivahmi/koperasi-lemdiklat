@@ -173,10 +173,10 @@ const topProductsChartOptions = {
         <template #mobileTitle>Dashboard</template>
         <template #header>
             <div class="flex justify-between items-center">
-                <h2 class="text-xl font-semibold leading-tight text-gray-800 dark:text-gray-200">
+                <h2 class="text-xl font-semibold leading-tight text-white drop-shadow-md">
                     Dashboard Koperasi
                 </h2>
-                <div class="text-sm text-gray-600 dark:text-gray-400">
+                <div class="text-sm text-slate-300">
                     {{ new Date().toLocaleDateString('id-ID', {
                         weekday: 'long',
                         year: 'numeric',
@@ -187,259 +187,215 @@ const topProductsChartOptions = {
             </div>
         </template>
 
-        <div class="py-12">
-            <div class="mx-auto max-w-7xl sm:px-6 lg:px-8 space-y-6">
+        <div class="py-8 min-h-screen relative">
+            <div class="mx-auto max-w-7xl sm:px-6 lg:px-8 space-y-6 relative z-10">
 
                 <!-- Today's Stats Row -->
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                    <!-- Today's Revenue -->
-                    <div class="bg-gradient-to-br from-blue-500 via-blue-600 to-cyan-600 overflow-hidden shadow-lg sm:rounded-lg p-6 text-white transform transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-blue-500/50 animate-fade-in-up">
-                        <div class="flex justify-between items-start">
-                            <div class="flex-1">
-                                <p class="text-blue-100 text-sm font-medium">Penjualan Hari Ini</p>
-                                <p class="text-3xl font-bold mt-2 animate-number-grow">{{ formatCurrency(stats.todayRevenue) }}</p>
-                                <p class="text-blue-100 text-xs mt-2">{{ stats.todayTransactions }} transaksi</p>
-                            </div>
-                            <div class="text-5xl opacity-20 animate-float">💰</div>
-                        </div>
-                        <div class="absolute bottom-0 right-0 w-20 h-20 bg-white/10 rounded-full -mr-10 -mb-10"></div>
-                    </div>
+                <!-- Stats Bento Grid -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 lg:auto-rows-[minmax(160px,auto)]">
 
-                    <!-- Month Revenue -->
-                    <div class="bg-gradient-to-br from-green-500 via-green-600 to-emerald-600 overflow-hidden shadow-lg sm:rounded-lg p-6 text-white transform transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-green-500/50 animate-fade-in-up animation-delay-100">
-                        <div class="flex justify-between items-start">
-                            <div class="flex-1">
-                                <p class="text-green-100 text-sm font-medium">Pendapatan Bulan Ini</p>
-                                <p class="text-3xl font-bold mt-2 animate-number-grow">{{ formatCurrency(stats.monthRevenue) }}</p>
-                                <p class="text-green-100 text-xs mt-2">Sejak awal bulan</p>
-                            </div>
-                            <div class="text-5xl opacity-20 animate-float animation-delay-200">📈</div>
-                        </div>
-                        <div class="absolute bottom-0 right-0 w-20 h-20 bg-white/10 rounded-full -mr-10 -mb-10"></div>
-                    </div>
+                    <!-- Month Revenue (HERO BENTO - Span 2x2) -->
+                    <div class="relative overflow-hidden sm:rounded-[2xl] p-8 text-white lg:col-span-2 lg:row-span-2 bg-gradient-to-br from-emerald-500 via-teal-700 to-slate-900 shadow-[0_8px_30px_rgba(16,185,129,0.3)] border border-emerald-400/30 group transform transition-all duration-500 hover:-translate-y-1 hover:shadow-[0_15px_40px_rgba(16,185,129,0.4)] flex flex-col justify-between animate-fade-in-up">
+                        <!-- Abstract background shapes -->
+                        <div class="absolute -top-24 -right-24 w-64 h-64 bg-emerald-400/20 rounded-full blur-3xl group-hover:bg-emerald-400/30 transition-all duration-700 pointer-events-none"></div>
+                        <div class="absolute -bottom-24 -left-24 w-80 h-80 bg-teal-500/20 rounded-full blur-3xl group-hover:bg-teal-500/30 transition-all duration-700 pointer-events-none"></div>
+                        <svg class="absolute top-0 right-0 text-white/5 w-64 h-64 transform rotate-12 translate-x-12 -translate-y-12 pointer-events-none" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2L2 22h20L12 2zm0 4l7.5 13h-15L12 6z"/></svg>
 
-                    <!-- Net Profit -->
-                    <div class="bg-gradient-to-br from-purple-500 via-purple-600 to-pink-600 overflow-hidden shadow-lg sm:rounded-lg p-6 text-white transform transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-purple-500/50 animate-fade-in-up animation-delay-200">
-                        <div class="flex justify-between items-start">
-                            <div class="flex-1">
-                                <p class="text-purple-100 text-sm font-medium">Laba Bersih</p>
-                                <p class="text-3xl font-bold mt-2 animate-number-grow">{{ formatCurrency(stats.netProfit) }}</p>
-                                <p class="text-purple-100 text-xs mt-2">Setelah biaya operasional</p>
+                        <div class="relative z-10 flex justify-between items-start">
+                            <div class="bg-white/10 backdrop-blur-md p-4 rounded-2xl border border-white/20 shadow-lg">
+                                <svg class="w-8 h-8 text-emerald-100" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                             </div>
-                            <div class="text-5xl opacity-20 animate-float animation-delay-400">💎</div>
+                            <span class="px-4 py-1.5 rounded-full bg-black/20 backdrop-blur-md border border-white/10 text-emerald-100 text-xs font-semibold tracking-wider uppercase shadow-sm">
+                                Pencatatan Bulan Ini
+                            </span>
                         </div>
-                        <div class="absolute bottom-0 right-0 w-20 h-20 bg-white/10 rounded-full -mr-10 -mb-10"></div>
-                    </div>
 
-                    <!-- Total Students -->
-                    <div class="bg-gradient-to-br from-orange-500 via-orange-600 to-red-600 overflow-hidden shadow-lg sm:rounded-lg p-6 text-white transform transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-orange-500/50 animate-fade-in-up animation-delay-300">
-                        <div class="flex justify-between items-start">
-                            <div class="flex-1">
-                                <p class="text-orange-100 text-sm font-medium">Total Siswa</p>
-                                <p class="text-3xl font-bold mt-2 animate-number-grow">{{ stats.totalStudents }}</p>
-                                <p class="text-orange-100 text-xs mt-2">{{ stats.activeStudents }} dengan saldo aktif</p>
-                            </div>
-                            <div class="text-5xl opacity-20 animate-float animation-delay-600">👨‍🎓</div>
-                        </div>
-                        <div class="absolute bottom-0 right-0 w-20 h-20 bg-white/10 rounded-full -mr-10 -mb-10"></div>
-                    </div>
-                </div>
-
-                <!-- Secondary Stats Row -->
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <!-- Product Stats -->
-                    <div class="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm overflow-hidden shadow-lg sm:rounded-lg p-6 border border-purple-200/50 dark:border-purple-700/50 transform transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-purple-500/20 animate-fade-in-up animation-delay-400">
-                        <h3 class="font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
-                            <span class="text-2xl animate-float">📦</span>
-                            <span>Inventaris Produk</span>
-                        </h3>
-                        <div class="space-y-3">
-                            <div class="flex justify-between items-center">
-                                <span class="text-gray-600 dark:text-gray-400">Total Produk</span>
-                                <span class="font-bold text-gray-900 dark:text-gray-100">{{ stats.totalProducts }}</span>
-                            </div>
-                            <div class="flex justify-between items-center">
-                                <span class="text-gray-600 dark:text-gray-400">Stok Menipis</span>
-                                <span class="font-bold text-yellow-600">{{ stats.lowStockProducts }}</span>
-                            </div>
-                            <div class="flex justify-between items-center">
-                                <span class="text-gray-600 dark:text-gray-400">Stok Habis</span>
-                                <span class="font-bold text-red-600">{{ stats.outOfStockProducts }}</span>
+                        <div class="relative z-10 mt-8">
+                            <p class="text-emerald-100/80 text-sm font-medium uppercase tracking-widest mb-2">Pendapatan Bulan Ini</p>
+                            <h2 class="text-4xl sm:text-5xl lg:text-5xl font-extrabold text-white drop-shadow-xl animate-number-grow leading-tight">{{ formatCurrency(stats.monthRevenue) }}</h2>
+                            
+                            <!-- Abstract Chart Bars -->
+                            <div class="mt-8 flex items-end h-12 gap-2 w-2/3 lg:w-1/2 opacity-80">
+                                <div class="w-full bg-white/20 rounded-t-md h-[40%] group-hover:h-[50%] transition-all duration-500"></div>
+                                <div class="w-full bg-white/20 rounded-t-md h-[60%] group-hover:h-[75%] transition-all duration-500 delay-75"></div>
+                                <div class="w-full bg-white/20 rounded-t-md h-[50%] group-hover:h-[65%] transition-all duration-500 delay-100"></div>
+                                <div class="w-full bg-emerald-300 rounded-t-md h-[80%] group-hover:h-[100%] transition-all duration-500 delay-150 shadow-[0_0_15px_rgba(110,231,183,0.8)]"></div>
                             </div>
                         </div>
-                        <Link v-if="hasPermission('module_products')" :href="route('products.index')" class="mt-4 block text-center text-sm text-indigo-600 hover:text-indigo-800">
-                            Lihat Semua Produk →
-                        </Link>
                     </div>
 
-                    <!-- Student Balance Stats -->
-                    <div class="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm overflow-hidden shadow-lg sm:rounded-lg p-6 border border-purple-200/50 dark:border-purple-700/50 transform transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-purple-500/20 animate-fade-in-up animation-delay-500">
-                        <h3 class="font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
-                            <span class="text-2xl animate-float animation-delay-200">💳</span>
-                            <span>Saldo Siswa</span>
-                        </h3>
-                        <div class="space-y-3">
-                            <div>
-                                <span class="text-gray-600 dark:text-gray-400 text-sm">Total Saldo Seluruh Siswa</span>
-                                <p class="font-bold text-2xl text-green-600 dark:text-green-400 mt-1">
-                                    {{ formatCurrency(stats.totalStudentBalance) }}
-                                </p>
+                    <!-- Today's Revenue (WIDE BENTO - Span 2x1) -->
+                    <div class="relative overflow-hidden sm:rounded-[2xl] p-6 text-white lg:col-span-2 lg:row-span-1 bg-blue-950/60 backdrop-blur-xl border border-blue-500/30 shadow-[0_8px_30px_rgba(59,130,246,0.15)] group transform transition-all duration-300 hover:-translate-y-1 hover:border-blue-400/50 flex flex-col justify-center animate-fade-in-up animation-delay-100">
+                        <div class="absolute inset-0 bg-gradient-to-r from-blue-600/10 to-transparent pointer-events-none"></div>
+                        <div class="relative z-10 flex justify-between items-center gap-6">
+                            <div class="min-w-0">
+                                <p class="text-blue-200/80 text-xs font-semibold uppercase tracking-widest mb-1">Penjualan Hari Ini</p>
+                                <p class="text-3xl font-bold text-white drop-shadow-md animate-number-grow">{{ formatCurrency(stats.todayRevenue) }}</p>
                             </div>
-                            <div class="pt-3 border-t border-gray-200 dark:border-gray-700">
-                                <div class="flex justify-between items-center">
-                                    <span class="text-gray-600 dark:text-gray-400">Siswa Aktif</span>
-                                    <span class="font-bold text-gray-900 dark:text-gray-100">{{ stats.activeStudents }}/{{ stats.totalStudents }}</span>
+                            <div class="flex items-center gap-4 shrink-0">
+                                <div class="text-right hidden sm:block">
+                                    <p class="text-blue-100 font-medium text-lg">{{ stats.todayTransactions }}</p>
+                                    <p class="text-blue-300/70 text-[10px] uppercase tracking-wider">Transaksi</p>
+                                </div>
+                                <div class="shrink-0 bg-gradient-to-br from-blue-500 to-indigo-600 p-4 rounded-2xl shadow-lg border border-blue-400/40 text-white animate-float">
+                                    <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
                                 </div>
                             </div>
                         </div>
-                        <Link v-if="hasPermission('module_transactions')" :href="route('transactions.topup.form')" class="mt-4 block text-center text-sm text-indigo-600 hover:text-indigo-800">
-                            Top-up Saldo →
-                        </Link>
                     </div>
 
-                    <!-- Voucher Stats -->
-                    <div class="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm overflow-hidden shadow-lg sm:rounded-lg p-6 border border-purple-200/50 dark:border-purple-700/50 transform transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-purple-500/20 animate-fade-in-up animation-delay-600">
-                        <h3 class="font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
-                            <span class="text-2xl animate-float animation-delay-400">🎫</span>
-                            <span>Voucher</span>
-                        </h3>
-                        <div class="space-y-3">
-                            <div class="flex justify-between items-center">
-                                <span class="text-gray-600 dark:text-gray-400">Tersedia</span>
-                                <span class="font-bold text-green-600">{{ stats.availableVouchers }}</span>
+                    <!-- Laba Bersih (SQUARE BENTO - Span 1x1) -->
+                    <div class="relative overflow-hidden sm:rounded-[2xl] p-6 text-white lg:col-span-1 lg:row-span-1 bg-purple-950/60 backdrop-blur-xl border border-purple-500/30 shadow-[0_8px_30px_rgba(168,85,247,0.15)] group transform transition-all duration-300 hover:-translate-y-1 hover:border-purple-400/50 flex flex-col justify-between animate-fade-in-up animation-delay-200">
+                        <div class="absolute -right-10 -top-10 w-32 h-32 bg-purple-500/20 rounded-full blur-2xl pointer-events-none"></div>
+                        <div class="relative z-10 flex justify-between items-start mb-4">
+                            <div class="bg-purple-500/20 p-3 rounded-xl border border-purple-400/30 text-purple-300">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>
                             </div>
-                            <div class="flex justify-between items-center">
-                                <span class="text-gray-600 dark:text-gray-400">Sudah Digunakan</span>
-                                <span class="font-bold text-gray-600">{{ stats.usedVouchers }}</span>
-                            </div>
+                            <span class="text-purple-300/60 text-[10px] uppercase tracking-wider">Bulan Ini</span>
                         </div>
-                        <div v-if="hasPermission('module_vouchers')" class="mt-4 space-y-2">
-                            <Link :href="route('vouchers.create')" class="block text-center text-sm text-indigo-600 hover:text-indigo-800">
-                                Generate Voucher →
-                            </Link>
-                            <Link :href="route('vouchers.redeem.form')" class="block text-center text-sm text-green-600 hover:text-green-800">
-                                Redeem Voucher →
-                            </Link>
+                        <div class="relative z-10">
+                            <p class="text-2xl font-bold text-white drop-shadow-md animate-number-grow">{{ formatCurrency(stats.netProfit) }}</p>
+                            <p class="text-purple-200/80 text-xs font-medium uppercase tracking-wider mt-1">Laba Bersih</p>
                         </div>
                     </div>
+
+                    <!-- Total Siswa (SQUARE BENTO - Span 1x1) -->
+                    <div class="relative overflow-hidden sm:rounded-[2xl] p-6 pb-8 text-white lg:col-span-1 lg:row-span-1 bg-orange-950/60 backdrop-blur-xl border border-orange-500/30 shadow-[0_8px_30px_rgba(249,115,22,0.15)] group transform transition-all duration-300 hover:-translate-y-1 hover:border-orange-400/50 flex flex-col justify-between animate-fade-in-up animation-delay-300">
+                        <div class="absolute -left-10 -bottom-10 w-32 h-32 bg-orange-500/20 rounded-full blur-2xl pointer-events-none"></div>
+                        <div class="relative z-10 flex justify-between items-start mb-4">
+                            <div class="bg-orange-500/20 p-3 rounded-xl border border-orange-400/30 text-orange-300">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+                            </div>
+                        </div>
+                        <div class="relative z-10">
+                            <p class="text-2xl font-bold text-white drop-shadow-md animate-number-grow">{{ stats.totalStudents }}</p>
+                            <p class="text-orange-200/80 text-[10px] font-medium uppercase tracking-wider mt-1 mb-1">Total Siswa</p>
+                            <p class="text-orange-300/60 text-[10px]">Saldo: {{ formatCurrency(stats.totalStudentBalance) }}</p>
+                        </div>
+                    </div>
+
                 </div>
 
                 <!-- Professional Charts Row -->
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     <!-- Sales Trend Chart (Bar) -->
-                    <div class="lg:col-span-2 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm overflow-hidden shadow-lg sm:rounded-lg p-6 border border-purple-200/50 dark:border-purple-700/50 transform transition-all duration-300 hover:shadow-2xl hover:shadow-purple-500/20">
-                        <div class="flex justify-between items-center mb-4">
-                            <h3 class="font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
-                                <span class="text-2xl animate-float">📊</span>
-                                <span>Trend Penjualan 7 Hari Terakhir</span>
-                            </h3>
-                        </div>
-                        <div class="h-80">
-                            <Bar v-if="salesChart && salesChart.length > 0" :data="salesChartData" :options="salesChartOptions" />
-                            <div v-else class="flex items-center justify-center h-full text-gray-500 dark:text-gray-400">
-                                Belum ada data penjualan
+                    <div class="lg:col-span-2 bg-slate-900/60 backdrop-blur-md overflow-hidden sm:rounded-2xl p-6 border border-slate-700/50 shadow-xl relative animate-fade-in-up animation-delay-400">
+                        <div class="absolute inset-0 bg-gradient-to-b from-blue-500/5 to-transparent z-0"></div>
+                        <div class="relative z-10">
+                            <div class="flex justify-between items-center mb-6">
+                                <h3 class="font-semibold text-slate-100 flex items-center gap-3">
+                                    <div class="p-2 bg-slate-700/50 rounded-lg border border-slate-600/50">📊</div>
+                                    <span>Trend Penjualan 7 Hari Terakhir</span>
+                                </h3>
+                            </div>
+                            <div class="h-80">
+                                <Bar v-if="salesChart && salesChart.length > 0" :data="salesChartData" :options="{ ...salesChartOptions, plugins: { legend: { display: false } }, scales: { x: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94a3b8' } }, y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94a3b8', callback: (value) => 'Rp ' + (value / 1000) + 'K' } } } }" />
+                                <div v-else class="flex items-center justify-center h-full text-slate-500">
+                                    Belum ada data penjualan
+                                </div>
                             </div>
                         </div>
                     </div>
 
                     <!-- Stock Status Pie Chart -->
-                    <div class="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm overflow-hidden shadow-lg sm:rounded-lg p-6 border border-purple-200/50 dark:border-purple-700/50 transform transition-all duration-300 hover:shadow-2xl hover:shadow-purple-500/20">
-                        <div class="flex justify-between items-center mb-4">
-                            <h3 class="font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
-                                <span class="text-2xl animate-float animation-delay-200">🎯</span>
-                                <span>Status Stok</span>
-                            </h3>
-                        </div>
-                        <div class="h-80 flex items-center justify-center">
-                            <Doughnut v-if="stats && stats.totalProducts > 0" :data="stockChartData" :options="stockChartOptions" />
-                            <div v-else class="text-gray-500 dark:text-gray-400">
-                                Belum ada data produk
+                    <div class="bg-slate-900/60 backdrop-blur-md overflow-hidden sm:rounded-2xl p-6 border border-slate-700/50 shadow-xl relative animate-fade-in-up animation-delay-500">
+                        <div class="absolute inset-0 bg-gradient-to-b from-emerald-500/5 to-transparent z-0"></div>
+                        <div class="relative z-10">
+                            <div class="flex justify-between items-center mb-6">
+                                <h3 class="font-semibold text-slate-100 flex items-center gap-3">
+                                    <div class="p-2 bg-slate-700/50 rounded-lg border border-slate-600/50">🎯</div>
+                                    <span>Status Stok</span>
+                                </h3>
                             </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Top Products Chart -->
-                <div class="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm overflow-hidden shadow-lg sm:rounded-lg p-6 border border-purple-200/50 dark:border-purple-700/50 transform transition-all duration-300 hover:shadow-2xl hover:shadow-purple-500/20">
-                    <div class="flex justify-between items-center mb-4">
-                        <h3 class="font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
-                            <span class="text-2xl animate-float animation-delay-300">🏆</span>
-                            <span>Top 5 Produk Terlaris Bulan Ini</span>
-                        </h3>
-                        <Link v-if="hasPermission('module_reports_sales')" :href="route('reports.sales')" class="text-sm text-indigo-600 hover:text-indigo-800">
-                            Lihat Laporan Lengkap →
-                        </Link>
-                    </div>
-                    <div class="h-80">
-                        <Bar v-if="topProducts && topProducts.length > 0" :data="topProductsChartData" :options="topProductsChartOptions" />
-                        <div v-else class="flex items-center justify-center h-full text-gray-500 dark:text-gray-400">
-                            Belum ada penjualan bulan ini
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Low Stock Alert & Recent Transactions -->
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <!-- Low Stock Alert -->
-                    <div class="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm overflow-hidden shadow-lg sm:rounded-lg p-6 border border-red-200/50 dark:border-red-700/50 transform transition-all duration-300 hover:shadow-2xl hover:shadow-red-500/20">
-                        <div class="flex justify-between items-center mb-4">
-                            <h3 class="font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
-                                <span class="text-red-500 animate-pulse">⚠️</span>
-                                <span>Stok Menipis (Perlu Restock)</span>
-                            </h3>
-                            <Link v-if="hasPermission('module_stock_ins')" :href="route('stock-ins.create')" class="text-sm text-indigo-600 hover:text-indigo-800">
-                                + Tambah Stok
-                            </Link>
-                        </div>
-                        <div class="space-y-2">
-                            <div v-if="lowStockList.length === 0" class="text-center text-gray-500 dark:text-gray-400 py-8">
-                                ✅ Semua produk stoknya aman
-                            </div>
-                            <div v-for="product in lowStockList" :key="product.id" class="flex justify-between items-center p-3 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700">
-                                <div>
-                                    <p class="font-semibold text-gray-900 dark:text-gray-100">{{ product.name }}</p>
-                                    <p class="text-xs text-gray-600 dark:text-gray-400">{{ product.category.name }}</p>
+                            <div class="h-80 flex items-center justify-center">
+                                <Doughnut v-if="stats && stats.totalProducts > 0" :data="stockChartData" :options="{ ...stockChartOptions, plugins: { legend: { position: 'right', labels: { color: '#e2e8f0', padding: 20, font: { size: 12 } } } }, cutout: '70%', elements: { arc: { borderWidth: 0 } } }" />
+                                <div v-else class="text-slate-500">
+                                    Belum ada data produk
                                 </div>
-                                <div class="text-right">
-                                    <span :class="[
-                                        'px-3 py-1 rounded-full text-sm font-bold',
-                                        product.stock === 0 ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200' :
-                                        product.stock <= 5 ? 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200' :
-                                        'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
-                                    ]">
-                                        {{ product.stock === 0 ? 'HABIS' : product.stock + ' unit' }}
-                                    </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Low Stock Alert & Student Saldo -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Low Stock Alert -->
+                    <div class="bg-slate-900/60 backdrop-blur-md overflow-hidden sm:rounded-2xl p-6 border border-slate-700/50 shadow-xl animate-fade-in-up animation-delay-600 relative">
+                        <div class="absolute inset-0 bg-gradient-to-b from-red-500/5 to-transparent z-0"></div>
+                        <div class="relative z-10">
+                            <div class="flex justify-between items-center mb-6">
+                                <h3 class="font-semibold text-slate-100 flex items-center gap-3">
+                                    <div class="p-2 bg-red-900/30 rounded-lg border border-red-500/30 text-red-400">⚠️</div>
+                                    <span>Stok Menipis (Perlu Restock)</span>
+                                </h3>
+                                <Link v-if="hasPermission('stock_ins.create')" :href="route('stock-ins.create')" class="text-xs px-3 py-1.5 bg-slate-700 hover:bg-slate-600 text-slate-200 rounded-md transition border border-slate-600">
+                                    + Tambah Stok
+                                </Link>
+                            </div>
+                            <div class="space-y-3">
+                                <div v-if="lowStockList.length === 0" class="text-center text-slate-400 py-8">
+                                    ✅ Semua produk stoknya aman
+                                </div>
+                                <div v-for="product in lowStockList" :key="product.id" class="flex justify-between items-center p-4 bg-slate-900/50 border border-slate-700/50 rounded-xl hover:bg-slate-700/30 transition shadow-inner">
+                                    <div>
+                                        <p class="font-medium text-slate-200">{{ product.name }}</p>
+                                        <p class="text-xs text-slate-400 mt-1">{{ product.category.name }}</p>
+                                    </div>
+                                    <div class="text-right">
+                                        <span :class="[
+                                            'px-3 py-1.5 rounded-lg text-xs font-bold border',
+                                            product.stock === 0 ? 'bg-red-900/40 text-red-400 border-red-500/30' :
+                                            product.stock <= 5 ? 'bg-orange-900/40 text-orange-400 border-orange-500/30' :
+                                            'bg-yellow-900/40 text-yellow-400 border-yellow-500/30'
+                                        ]">
+                                            {{ product.stock === 0 ? 'HABIS' : product.stock + ' unit' }}
+                                        </span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
 
                     <!-- Recent Transactions -->
-                    <div class="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm overflow-hidden shadow-lg sm:rounded-lg p-6 border border-green-200/50 dark:border-green-700/50 transform transition-all duration-300 hover:shadow-2xl hover:shadow-green-500/20">
-                        <div class="flex justify-between items-center mb-4">
-                            <h3 class="font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
-                                <span class="text-2xl animate-float animation-delay-100">📝</span>
-                                <span>Transaksi Terbaru</span>
-                            </h3>
-                            <Link v-if="hasPermission('module_transactions')" :href="route('transactions.index')" class="text-sm text-indigo-600 hover:text-indigo-800">
-                                Lihat Semua →
-                            </Link>
-                        </div>
-                        <div class="space-y-2">
-                            <div v-if="recentTransactions.length === 0" class="text-center text-gray-500 dark:text-gray-400 py-8">
-                                Belum ada transaksi
+                    <div class="bg-slate-900/60 backdrop-blur-md overflow-hidden sm:rounded-2xl p-6 border border-slate-700/50 shadow-xl animate-fade-in-up animation-delay-600 relative">
+                        <div class="absolute inset-0 bg-gradient-to-b from-purple-500/5 to-transparent z-0"></div>
+                        <div class="relative z-10">
+                            <div class="flex justify-between items-center mb-6">
+                                <h3 class="font-semibold text-slate-100 flex items-center gap-3">
+                                    <div class="p-2 bg-slate-700/50 rounded-lg border border-slate-600/50">📝</div>
+                                    <span>Transaksi Terbaru</span>
+                                </h3>
+                                <Link v-if="hasPermission('transactions.view')" :href="route('transactions.index')" class="text-xs px-3 py-1.5 bg-slate-700 hover:bg-slate-600 text-slate-200 rounded-md transition border border-slate-600">
+                                    Lihat Semua →
+                                </Link>
                             </div>
-                            <div v-for="transaction in recentTransactions" :key="transaction.id" class="flex justify-between items-center p-3 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700">
-                                <div class="flex-1">
-                                    <div class="flex items-center gap-2">
-                                        <p class="font-semibold text-sm text-gray-900 dark:text-gray-100">{{ transaction.student.user.name }}</p>
+                            <div class="space-y-3">
+                                <div v-if="recentTransactions.length === 0" class="text-center text-slate-400 py-8">
+                                    Belum ada transaksi
+                                </div>
+                                <div v-for="transaction in recentTransactions" :key="transaction.id" class="flex justify-between items-center p-4 bg-slate-900/50 border border-slate-700/50 rounded-xl hover:bg-slate-700/30 transition shadow-inner">
+                                    <div class="flex-1">
+                                        <div class="flex items-center gap-3">
+                                            <div class="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center text-xs border border-slate-600 text-slate-300">
+                                                👤
+                                            </div>
+                                            <div>
+                                                <p class="font-medium text-sm text-slate-200">{{ transaction.student.user.name }}</p>
+                                                <p class="text-xs text-slate-400 mt-0.5 truncate max-w-[150px]">{{ transaction.description }}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="text-right ml-4 flex flex-col items-end">
+                                        <p class="font-bold text-sm" :class="['topup', 'credit', 'voucher', 'redeem', 'return'].includes(transaction.type) ? 'text-emerald-400' : 'text-rose-400'">
+                                            {{ ['topup', 'credit', 'voucher', 'redeem', 'return'].includes(transaction.type) ? '+' : '-' }}{{ formatCurrency(transaction.amount) }}
+                                        </p>
                                         <span v-if="transaction.transaction_method" :class="[
-                                            'px-2 py-0.5 rounded text-xs font-medium',
-                                            transaction.transaction_method === 'manual' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' :
-                                            transaction.transaction_method === 'rfid' ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400' :
-                                            transaction.transaction_method === 'barcode' ? 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400' :
-                                            transaction.transaction_method === 'voucher' ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400' :
-                                            'bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-400'
+                                            'px-2 py-0.5 mt-1 rounded text-[10px] font-medium border border-transparent',
+                                            transaction.transaction_method === 'manual' ? 'bg-blue-900/30 text-blue-300 border-blue-500/20' :
+                                            transaction.transaction_method === 'rfid' ? 'bg-purple-900/30 text-purple-300 border-purple-500/20' :
+                                            transaction.transaction_method === 'barcode' ? 'bg-orange-900/30 text-orange-300 border-orange-500/20' :
+                                            transaction.transaction_method === 'voucher' ? 'bg-yellow-900/30 text-yellow-300 border-yellow-500/20' :
+                                            'bg-slate-700 text-slate-300'
                                         ]">
                                             {{ transaction.transaction_method === 'manual' ? '✍️ Manual' :
                                                transaction.transaction_method === 'rfid' ? '📡 RFID' :
@@ -449,44 +405,47 @@ const topProductsChartOptions = {
                                             }}
                                         </span>
                                     </div>
-                                    <p class="text-xs text-gray-600 dark:text-gray-400 truncate mt-1">{{ transaction.description }}</p>
-                                </div>
-                                <div class="text-right ml-4">
-                                    <p class="font-bold text-sm" :class="getTypeColor(transaction.type)">
-                                        {{ ['topup', 'credit', 'voucher', 'redeem', 'return'].includes(transaction.type) ? '+' : '-' }}{{ formatCurrency(transaction.amount) }}
-                                    </p>
-                                    <p class="text-xs text-gray-500 dark:text-gray-400">
-                                        {{ new Date(transaction.created_at).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) }}
-                                    </p>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Quick Links -->
-                <div class="bg-gradient-to-r from-indigo-500 via-purple-600 to-pink-600 overflow-hidden shadow-lg sm:rounded-lg p-6 text-white transform transition-all duration-300 hover:shadow-2xl hover:shadow-purple-500/50 border border-purple-400/30">
-                    <h3 class="font-semibold text-xl mb-4 flex items-center gap-2">
-                        <span class="animate-pulse">⚡</span>
+                <!-- Quick Links - Glossy SaaS Dock -->
+                <div class="mt-8 pt-4 pb-4">
+                    <p class="text-xs text-slate-400 font-semibold mb-4 ml-2 uppercase tracking-widest flex items-center gap-2">
                         <span>Quick Actions</span>
-                    </h3>
-                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                        <Link v-if="hasPermission('module_pos')" :href="route('kasir.pos.index')" class="bg-white/20 hover:bg-white/30 backdrop-blur-sm rounded-lg p-4 text-center transition-all duration-300 transform hover:scale-110 hover:shadow-lg group">
-                            <div class="text-3xl mb-2 group-hover:scale-125 transition-transform duration-300">🛒</div>
-                            <div class="font-semibold">POS / Kasir</div>
-                        </Link>
-                        <Link v-if="hasPermission('module_transactions')" :href="route('transactions.topup.form')" class="bg-white/20 hover:bg-white/30 backdrop-blur-sm rounded-lg p-4 text-center transition-all duration-300 transform hover:scale-110 hover:shadow-lg group">
-                            <div class="text-3xl mb-2 group-hover:scale-125 transition-transform duration-300">💰</div>
-                            <div class="font-semibold">Top-up Saldo</div>
-                        </Link>
-                        <Link v-if="hasPermission('module_stock_ins')" :href="route('stock-ins.create')" class="bg-white/20 hover:bg-white/30 backdrop-blur-sm rounded-lg p-4 text-center transition-all duration-300 transform hover:scale-110 hover:shadow-lg group">
-                            <div class="text-3xl mb-2 group-hover:scale-125 transition-transform duration-300">📦</div>
-                            <div class="font-semibold">Tambah Stok</div>
-                        </Link>
-                        <Link v-if="hasPermission('module_expenses')" :href="route('expenses.create')" class="bg-white/20 hover:bg-white/30 backdrop-blur-sm rounded-lg p-4 text-center transition-all duration-300 transform hover:scale-110 hover:shadow-lg group">
-                            <div class="text-3xl mb-2 group-hover:scale-125 transition-transform duration-300">💸</div>
-                            <div class="font-semibold">Catat Pengeluaran</div>
-                        </Link>
+                    </p>
+                    <div class="bg-gradient-to-r from-indigo-500/20 via-purple-600/20 to-pink-600/20 backdrop-blur-xl border border-white/10 rounded-3xl p-4 shadow-2xl">
+                        <div class="flex flex-wrap md:flex-nowrap justify-around gap-4 md:gap-8">
+                            <Link :href="route('products.index')" class="flex flex-col items-center gap-3 transition-transform duration-300 hover:scale-110 group w-32">
+                                <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-400 to-blue-600 shadow-[0_0_20px_rgba(59,130,246,0.5)] group-hover:shadow-[0_0_30px_rgba(59,130,246,0.8)] flex items-center justify-center text-white border border-white/20">
+                                    <span class="text-3xl">🛍️</span>
+                                </div>
+                                <span class="text-xs font-semibold text-slate-200 text-center drop-shadow-md">Data Produk</span>
+                            </Link>
+                            
+                            <Link :href="route('transactions.topup.form')" class="flex flex-col items-center gap-3 transition-transform duration-300 hover:scale-110 group w-32">
+                                <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-emerald-400 to-emerald-600 shadow-[0_0_20px_rgba(16,185,129,0.5)] group-hover:shadow-[0_0_30px_rgba(16,185,129,0.8)] flex items-center justify-center text-white border border-white/20">
+                                    <span class="text-3xl">💰</span>
+                                </div>
+                                <span class="text-xs font-semibold text-slate-200 text-center drop-shadow-md">Top-up Saldo</span>
+                            </Link>
+
+                            <Link :href="route('stock-ins.create')" class="flex flex-col items-center gap-3 transition-transform duration-300 hover:scale-110 group w-32">
+                                <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-purple-400 to-purple-600 shadow-[0_0_20px_rgba(168,85,247,0.5)] group-hover:shadow-[0_0_30px_rgba(168,85,247,0.8)] flex items-center justify-center text-white border border-white/20">
+                                    <span class="text-3xl">📦</span>
+                                </div>
+                                <span class="text-xs font-semibold text-slate-200 text-center drop-shadow-md">Tambah Stok</span>
+                            </Link>
+
+                            <Link :href="route('reports.stock-adjustments')" class="flex flex-col items-center gap-3 transition-transform duration-300 hover:scale-110 group w-32">
+                                <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-rose-400 to-rose-600 shadow-[0_0_20px_rgba(244,63,94,0.5)] group-hover:shadow-[0_0_30px_rgba(244,63,94,0.8)] flex items-center justify-center text-white border border-white/20">
+                                    <span class="text-3xl">📝</span>
+                                </div>
+                                <span class="text-xs font-semibold text-slate-200 text-center drop-shadow-md leading-tight">Laporan<br>Penyesuaian Stok</span>
+                            </Link>
+                        </div>
                     </div>
                 </div>
 

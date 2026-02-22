@@ -29,46 +29,6 @@ class DashboardController extends Controller
             return redirect()->route('teacher.dashboard');
         }
 
-        // Kasir Dashboard - Shows kasir-specific view
-        if ($user->role === 'kasir') {
-            $today = Carbon::today();
-            $todaySales = Sale::whereDate('created_at', $today)->get();
-
-            // Sales by this kasir
-            $mySales = Sale::where('created_by', $user->id)
-                ->whereDate('created_at', $today)
-                ->get();
-
-            $lowStockList = Product::with('category')
-                ->where('stock', '<=', config('business.inventory.low_stock_threshold', 10))
-                ->orderBy('stock', 'asc')
-                ->limit(10)
-                ->get();
-
-            $recentSales = Sale::with(['saleItems', 'creator'])
-                ->whereDate('created_at', $today)
-                ->latest()
-                ->limit(10)
-                ->get();
-
-            return Inertia::render('Kasir/Dashboard', [
-                'stats' => [
-                    'todayRevenue' => $todaySales->sum('total'),
-                    'todayTransactions' => $todaySales->count(),
-                    'myRevenue' => $mySales->sum('total'),
-                    'myTransactions' => $mySales->count(),
-                    'totalProducts' => Product::count(),
-                    'totalCategories' => \App\Models\Category::count(),
-                    'lowStockCount' => Product::where('stock', '<=', config('business.inventory.low_stock_threshold', 10))->count(),
-                    'outOfStockProducts' => Product::where('stock', '<=', config('business.inventory.out_of_stock_threshold', 0))->count(),
-                ],
-                'recentSales' => $recentSales,
-                'lowStockList' => $lowStockList,
-            ]);
-        }
-
-        // Admin/Master Dashboard - Full unified view
-
         // Today's sales statistics
         $today = Carbon::today();
         $todaySales = Sale::whereDate('created_at', $today)->get();
@@ -148,7 +108,7 @@ class DashboardController extends Controller
         $grossProfit = $monthRevenue - $totalCOGS;
         $netProfit = $grossProfit - $monthExpenses;
 
-        return Inertia::render('Dashboard', [
+        $viewData = [
             'stats' => [
                 // Today
                 'todayRevenue' => $todayRevenue,
@@ -178,6 +138,14 @@ class DashboardController extends Controller
             'topProducts' => $topProducts,
             'lowStockList' => $lowStockList,
             'salesChart' => $salesChart,
-        ]);
+        ];
+
+        // Kasir Dashboard - Shows kasir-specific view
+        if ($user->role === 'kasir') {
+            return Inertia::render('Kasir/Dashboard', $viewData);
+        }
+
+        // Admin/Master Dashboard - Full unified view
+        return Inertia::render('Dashboard', $viewData);
     }
 }

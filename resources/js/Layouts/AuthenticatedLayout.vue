@@ -610,7 +610,7 @@ const closeMobileMenu = () => {
         </div>
 
         <!-- Desktop Header -->
-        <header v-if="$slots.header" class="sticky top-0 z-20 bg-gradient-to-r from-purple-900/95 via-indigo-900/95 to-blue-900/95 border-b border-purple-500/30 shadow-lg shadow-purple-500/10 backdrop-blur-md hidden lg:block">
+        <header v-if="$slots.header" class="sticky top-0 z-40 bg-gradient-to-r from-purple-900/95 via-indigo-900/95 to-blue-900/95 border-b border-purple-500/30 shadow-lg shadow-purple-500/10 backdrop-blur-md hidden lg:block">
             <div class="px-4 lg:px-8 py-3 text-white flex justify-between items-center">
                 <div class="flex items-center gap-6">
                     <div>

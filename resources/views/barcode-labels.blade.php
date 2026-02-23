@@ -501,7 +501,6 @@
                         }, 500);
 
                         // Log success
-                        console.log('[Print] Print dialog dibuka:', new Date().toLocaleString());
 
                     } catch (printError) {
                         // Hide loading
@@ -529,12 +528,10 @@
             // Detect if printer is not connected (after print dialog)
             // This is a workaround since we can't directly detect printer connection
             window.onafterprint = function() {
-                console.log('[Print] Print selesai atau dibatalkan');
                 loadingOverlay.classList.remove('active');
             };
 
             window.onbeforeprint = function() {
-                console.log('[Print] Memulai proses print...');
             };
         }
 

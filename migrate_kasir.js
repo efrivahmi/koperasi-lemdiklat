@@ -56,7 +56,6 @@ function processDirectory(srcPath, targetPath) {
 }
 
 folders.forEach(folder => {
-    console.log("Copying and processing", folder);
     const srcDir = path.join(sourceBase, folder);
     const targetDir = path.join(targetBase, folder);
     if (fs.existsSync(srcDir)) {
@@ -65,5 +64,3 @@ folders.forEach(folder => {
         console.warn(`Source folder does not exist: ${srcDir}`);
     }
 });
-
-console.log("Migration complete!");

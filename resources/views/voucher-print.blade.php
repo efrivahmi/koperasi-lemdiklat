@@ -467,7 +467,6 @@
 
         function initBarcodes() {
             attemptCount++;
-            console.log('Barcode initialization attempt #' + attemptCount);
 
             if (typeof JsBarcode === 'undefined') {
                 console.warn('JsBarcode library not loaded yet, attempt ' + attemptCount);
@@ -483,7 +482,6 @@
             }
 
             const barcodes = document.querySelectorAll('.barcode');
-            console.log('Found ' + barcodes.length + ' barcodes to generate');
 
             let successCount = 0;
             let errorCount = 0;
@@ -511,7 +509,6 @@
                             }
                         }
                     });
-                    console.log('Barcode #' + index + ' (' + code + ') generated successfully');
                     successCount++;
                 } catch (e) {
                     console.error('Error generating barcode #' + index + ':', e);
@@ -523,8 +520,6 @@
                     errorCount++;
                 }
             });
-
-            console.log('Barcode generation completed: ' + successCount + ' success, ' + errorCount + ' errors');
         }
 
         function showBarcodeFallback() {

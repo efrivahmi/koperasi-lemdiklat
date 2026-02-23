@@ -106,9 +106,14 @@ class UserController extends Controller
      */
     public function index(Request $request)
     {
-        // Hanya tampilkan Admin dan Kasir (exclude Siswa/Guru jika perlu)
+        $allowedRoles = ['admin', 'kasir'];
+        if (auth()->user()->role === 'master') {
+            $allowedRoles[] = 'master';
+        }
+
+        // Hanya tampilkan role yang diizinkan (exclude Siswa/Guru secara otomatis)
         $query = User::with(['creator', 'updater'])
-                     ->whereIn('role', ['admin', 'kasir']);
+                     ->whereIn('role', $allowedRoles);
 
         if ($request->has('search')) {
             $search = $request->search;
@@ -143,17 +148,22 @@ class UserController extends Controller
      */
     public function store(Request $request)
     {
+        $allowedRoles = ['admin', 'kasir'];
+        if (auth()->user()->role === 'master') {
+            $allowedRoles[] = 'master';
+        }
+
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
             'password' => ['required', 'string', 'min:8', 'confirmed'],
-            'role' => 'required|in:admin,kasir',
+            'role' => 'required|in:' . implode(',', $allowedRoles),
             'permissions' => 'nullable|array', 
         ]);
 
         // Proses Permission: ubah dari ['key1', 'key2'] jadi ['key1'=>true, 'key2'=>true]
         $permissionsToSave = [];
-        if (in_array($validated['role'], ['admin', 'kasir']) && !empty($validated['permissions'])) {
+        if (in_array($validated['role'], ['admin', 'kasir', 'master']) && !empty($validated['permissions'])) {
             foreach ($validated['permissions'] as $perm) {
                 $permissionsToSave[$perm] = true;
             }
@@ -179,6 +189,11 @@ class UserController extends Controller
         if ($user->role === 'siswa') {
             return redirect()->route('users.index');
         }
+        
+        // Prevent non-masters from viewing master accounts
+        if ($user->role === 'master' && auth()->user()->role !== 'master') {
+            abort(403, 'Unauthorized access to master account.');
+        }
 
         return Inertia::render('Admin/Users/Show', [
             'user' => $user->load(['creator', 'updater']),
@@ -196,6 +211,11 @@ class UserController extends Controller
             return redirect()->route('users.index')->with('error', 'Edit siswa melalui menu Siswa.');
         }
 
+        // Prevent non-masters from editing master accounts
+        if ($user->role === 'master' && auth()->user()->role !== 'master') {
+            abort(403, 'Unauthorized access to master account.');
+        }
+
         return Inertia::render('Admin/Users/Edit', [
             'user' => $user,
             'availablePermissions' => $this->getGranularPermissions(),
@@ -210,11 +230,21 @@ class UserController extends Controller
     {
         if ($user->role === 'siswa') abort(404);
 
+        // Prevent non-masters from updating master accounts
+        if ($user->role === 'master' && auth()->user()->role !== 'master') {
+            abort(403, 'Unauthorized access to master account.');
+        }
+
+        $allowedRoles = ['admin', 'kasir'];
+        if (auth()->user()->role === 'master') {
+            $allowedRoles[] = 'master';
+        }
+
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'email' => ['required', 'string', 'email', 'max:255', Rule::unique('users')->ignore($user->id)],
             'password' => ['nullable', 'string', 'min:8', 'confirmed'],
-            'role' => 'required|in:admin,kasir',
+            'role' => 'required|in:' . implode(',', $allowedRoles),
             'permissions' => 'nullable|array',
         ]);
 
@@ -230,7 +260,7 @@ class UserController extends Controller
 
         // Proses Permission Update
         $permissionsToSave = [];
-        if ($request->has('permissions') && in_array($validated['role'], ['admin', 'kasir'])) {
+        if ($request->has('permissions') && in_array($validated['role'], ['admin', 'kasir', 'master'])) {
             foreach ($request->permissions as $perm) {
                 $permissionsToSave[$perm] = true;
             }
@@ -249,6 +279,11 @@ class UserController extends Controller
     {
         if ($user->id === auth()->id()) {
             return back()->with('error', 'Tidak dapat menghapus akun sendiri.');
+        }
+        
+        // Prevent non-masters from deleting master accounts
+        if ($user->role === 'master' && auth()->user()->role !== 'master') {
+            abort(403, 'Unauthorized access to master account.');
         }
         if ($user->role === 'siswa') {
              return back()->with('error', 'Akun siswa tidak dapat dihapus melalui halaman ini.');

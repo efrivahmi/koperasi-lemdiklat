@@ -111,7 +111,7 @@ const submit = () => {
                                 <select id="role" v-model="form.role" class="w-full bg-slate-900/70 border-slate-600 text-white focus:border-indigo-500 focus:ring-indigo-500 rounded-lg shadow-sm py-2 transition-colors" required>
                                     <option value="admin">Admin</option>
                                     <option value="kasir">Staf Koperasi (Kasir)</option>
-                                    <option value="master">Master (Super Admin)</option>
+                                    <option v-if="$page.props.auth.user.role === 'master'" value="master">Master (Super Admin)</option>
                                 </select>
                                 <InputError :message="form.errors.role" class="mt-2" />
                             </div>

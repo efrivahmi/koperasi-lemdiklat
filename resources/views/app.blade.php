@@ -3,6 +3,8 @@
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="description" content="Sistem Informasi Koperasi Sekolah Terintegrasi SMA Taruna Nusantara Indonesia">
+        <meta name="theme-color" content="#4f46e5">
 
         <title inertia>{{ config('app.name', 'Laravel') }}</title>
 

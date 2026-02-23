@@ -154,7 +154,14 @@ onUnmounted(() => {
 </script>
 
 <template>
-    <Head title="Koperasi Lemdiklat Taruna Nusantara Indonesia - Sistem Manajemen Koperasi Modern" />
+    <Head>
+        <title>Koperasi Lemdiklat Taruna Nusantara Indonesia - Sistem Manajemen Koperasi Modern</title>
+        <meta head-key="description" name="description" content="Platform koperasi digital modern untuk SMA Taruna Nusantara Indonesia. Dilengkapi teknologi RFID, POS kasir, manajemen stok, dan sistem voucher untuk transaksi cepat." />
+        <meta head-key="keywords" name="keywords" content="koperasi sekolah, sistem kasir, POS koperasi, RFID siswa, cashless sekolah, lemdiklat, taruna nusantara indonesia, aplikasi koperasi pintar, point of sale" />
+        <meta head-key="og:title" property="og:title" content="Koperasi Lemdiklat Taruna Nusantara Indonesia" />
+        <meta head-key="og:description" property="og:description" content="Platform manajemen koperasi revolusioner dengan RFID, cashless payment, dan real-time analytics." />
+        <meta head-key="og:type" property="og:type" content="website" />
+    </Head>
 
     <div class="min-h-screen galaxy-bg text-white relative flex flex-col overflow-x-hidden">
         <!-- Planets / Abstract Background Shapes -->

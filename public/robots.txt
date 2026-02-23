@@ -1,2 +1,18 @@
 User-agent: *
-Disallow:
+Disallow: /admin/
+Disallow: /master/
+Disallow: /staf-koperasi/
+Disallow: /stafkoperasi/
+Disallow: /siswa/
+Disallow: /student/
+Disallow: /guru/
+Disallow: /teacher/
+Disallow: /api/
+Disallow: /login
+Disallow: /register
+Disallow: /password/
+Disallow: /dashboard
+Allow: /
+
+# Mengarahkan mesin pencari ke sitemap
+Sitemap: https://koperasi.lemdiklattarunanusantaraindonesia.id/sitemap.xml

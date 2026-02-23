@@ -17,7 +17,10 @@ class SocialAuthController extends Controller
      */
     public function redirectToGoogle()
     {
-        return Socialite::driver('google')->redirect();
+        return Socialite::driver('google')
+            ->stateless()
+            ->with(['prompt' => 'select_account'])
+            ->redirect();
     }
 
     /**
@@ -28,7 +31,15 @@ class SocialAuthController extends Controller
     public function handleGoogleCallback()
     {
         try {
-            $googleUser = Socialite::driver('google')->user();
+            // Use stateless to avoid InvalidStateException caused by 127.0.0.1 vs localhost mismatches
+            $socialiteDriver = Socialite::driver('google')->stateless();
+            
+            // Bypass SSL verification for local development (fixing cURL error 60)
+            if (app()->environment('local')) {
+                $socialiteDriver->setHttpClient(new \GuzzleHttp\Client(['verify' => false]));
+            }
+            
+            $googleUser = $socialiteDriver->user();
 
             // Find existing user by google_id or email
             $user = User::where('google_id', $googleUser->id)
@@ -45,19 +56,11 @@ class SocialAuthController extends Controller
                 return redirect()->intended(route('dashboard', absolute: false));
             }
 
-            // Create new user if not found
-            $newUser = User::create([
-                'name' => $googleUser->name,
-                'email' => $googleUser->email,
-                'google_id' => $googleUser->id,
-                'password' => bcrypt(Str::random(16)), // Random password for social logins
-                'role' => 'siswa', // Default role; adjust as needed
-            ]);
-
-            Auth::login($newUser);
-            return redirect()->intended(route('dashboard', absolute: false));
+            // User not found in system - prevent registration
+            return redirect('/login')->with('status', 'Akun Anda belum terdaftar di sistem. Silakan hubungi Administrator.');
 
         } catch (\Exception $e) {
+            \Log::error('Google OAuth Error: ' . $e->getMessage() . ' | Trace: ' . $e->getTraceAsString());
             return redirect('/login')->with('status', 'Gagal login menggunakan Google. Silakan coba lagi.');
         }
     }

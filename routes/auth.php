@@ -28,8 +28,8 @@ Route::middleware('guest')->group(function () {
     Route::get('auth/google/callback', [\App\Http\Controllers\Auth\SocialAuthController::class, 'handleGoogleCallback'])
         ->name('auth.google.callback');
 
-    Route::get('forgot-password', [\App\Http\Controllers\Auth\OtpPasswordResetController::class, 'showVerifyForm'])
-        ->name('password.request'); // Fallback naming to not break existing links if any
+    Route::get('forgot-password', [PasswordResetLinkController::class, 'create'])
+        ->name('password.request');
 
     Route::post('forgot-password', [\App\Http\Controllers\Auth\OtpPasswordResetController::class, 'sendOtp'])
         ->name('password.email');

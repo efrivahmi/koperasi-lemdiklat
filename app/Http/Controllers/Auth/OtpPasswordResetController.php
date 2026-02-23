@@ -37,6 +37,7 @@ class OtpPasswordResetController extends Controller
         // Send Email
         Mail::to($email)->send(new SendOtpResetMail($otp));
 
+        // Use Inertia::location or redirect correctly for Vue
         return redirect()->route('password.verify.show', ['email' => $email])
                          ->with('status', 'Kode 6 digit telah dikirim ke email Anda.');
     }

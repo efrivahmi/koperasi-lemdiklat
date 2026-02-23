@@ -2,6 +2,7 @@
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
 import { Link, usePage, router } from '@inertiajs/vue3';
 import ThemeToggle from '@/Components/ThemeToggle.vue';
+import CookieConsent from '@/Components/CookieConsent.vue';
 
 const props = defineProps({
     mobileTitle: {
@@ -703,6 +704,9 @@ const closeMobileMenu = () => {
         <main class="relative p-4 lg:p-6">
             <slot />
         </main>
+
+        <!-- Global Cookie Consent -->
+        <CookieConsent />
     </div>
 </div>
 </template>

@@ -61,7 +61,7 @@ onMounted(() => {
                     <span class="galaxy-text">Lupa Password?</span>
                 </h1>
                 <p class="text-gray-300 text-sm max-w-md mx-auto">
-                    Tidak masalah! Masukkan email Anda dan kami akan mengirimkan link reset password.
+                    Tidak masalah! Masukkan email Anda dan kami akan mengirimkan kode OTP 6 digit.
                 </p>
             </div>
 
@@ -100,7 +100,7 @@ onMounted(() => {
                         :disabled="form.processing"
                         class="w-full galaxy-btn py-3 text-lg font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                        <span v-if="!form.processing">Kirim Link Reset Password</span>
+                        <span v-if="!form.processing">Kirim Kode OTP</span>
                         <span v-else class="flex items-center justify-center">
                             <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>

@@ -22,17 +22,23 @@ Route::middleware('guest')->group(function () {
 
     Route::post('login', [AuthenticatedSessionController::class, 'store']);
 
-    Route::get('forgot-password', [PasswordResetLinkController::class, 'create'])
-        ->name('password.request');
+    // Socialite Routes
+    Route::get('auth/google', [\App\Http\Controllers\Auth\SocialAuthController::class, 'redirectToGoogle'])
+        ->name('auth.google');
+    Route::get('auth/google/callback', [\App\Http\Controllers\Auth\SocialAuthController::class, 'handleGoogleCallback'])
+        ->name('auth.google.callback');
 
-    Route::post('forgot-password', [PasswordResetLinkController::class, 'store'])
+    Route::get('forgot-password', [\App\Http\Controllers\Auth\OtpPasswordResetController::class, 'showVerifyForm'])
+        ->name('password.request'); // Fallback naming to not break existing links if any
+
+    Route::post('forgot-password', [\App\Http\Controllers\Auth\OtpPasswordResetController::class, 'sendOtp'])
         ->name('password.email');
 
-    Route::get('reset-password/{token}', [NewPasswordController::class, 'create'])
-        ->name('password.reset');
+    Route::get('verify-otp', [\App\Http\Controllers\Auth\OtpPasswordResetController::class, 'showVerifyForm'])
+        ->name('password.verify.show');
 
-    Route::post('reset-password', [NewPasswordController::class, 'store'])
-        ->name('password.store');
+    Route::post('verify-otp', [\App\Http\Controllers\Auth\OtpPasswordResetController::class, 'verifyOtpAndReset'])
+        ->name('password.verify.store');
 });
 
 Route::middleware('auth')->group(function () {

@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Validation\Rules\Password;
 
 class OtpPasswordResetController extends Controller
 {
@@ -19,7 +20,10 @@ class OtpPasswordResetController extends Controller
      */
     public function sendOtp(Request $request)
     {
-        $request->validate(['email' => 'required|email|exists:users,email']);
+        $request->validate(
+            ['email' => 'required|email|exists:users,email'],
+            ['email.exists' => 'Email anda belum terdaftar!']
+        );
 
         $email = $request->email;
         $otp = (string) random_int(100000, 999999);
@@ -60,7 +64,21 @@ class OtpPasswordResetController extends Controller
         $request->validate([
             'email' => 'required|email|exists:users,email',
             'otp' => 'required|string|size:6',
-            'password' => 'required|string|min:8|confirmed',
+            'password' => [
+                'required', 
+                'string', 
+                'confirmed',
+                Password::min(8)
+                    ->mixedCase()
+                    ->numbers()
+                    ->symbols(),
+            ],
+        ], [
+            'password.confirmed' => 'Password baru harus sama.',
+            'password.min' => 'Password harus memiliki minimal 8 karakter.',
+            'password.mixed' => 'Password harus mengandung huruf besar dan kecil.',
+            'password.numbers' => 'Password harus mengandung angka.',
+            'password.symbols' => 'Password harus mengandung simbol khusus.',
         ]);
 
         $record = DB::table('password_reset_tokens')->where('email', $request->email)->first();
@@ -83,12 +101,20 @@ class OtpPasswordResetController extends Controller
         // Verify the PIN
         if (!Hash::check($request->otp, $record->token)) {
             throw ValidationException::withMessages([
-                'otp' => ['Kode OTP salah. Silakan periksa kembali email Anda.'],
+                'otp' => ['Kode OTP yang anda masukan salah, cek email kembali!'],
             ]);
         }
 
         // Update password
         $user = User::where('email', $request->email)->first();
+
+        // Ensure new password is not the same as the old password
+        if (Hash::check($request->password, $user->password)) {
+            throw ValidationException::withMessages([
+                'password' => ['Password baru harus berbeda, tidak boleh menggunakan password sebelumnya.'],
+            ]);
+        }
+
         $user->forceFill([
             'password' => Hash::make($request->password)
         ])->save();

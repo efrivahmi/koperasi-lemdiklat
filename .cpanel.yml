@@ -1,7 +1,7 @@
 ---
 deployment:
   tasks:
-    # --- VARIABEL PATH (Sesuai Screenshot) ---
+    # --- VARIABEL PATH ---
     - export DEPLOYPATH=/home/lemg1635/koperasi/
     - export PUBLICPATH=/home/lemg1635/public_html/koperasi/
 

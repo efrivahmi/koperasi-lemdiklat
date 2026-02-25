@@ -3,6 +3,7 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
 import InputError from '@/Components/InputError.vue';
 import SearchableSelect from '@/Components/SearchableSelect.vue';
+import CameraScanner from '@/Components/CameraScanner.vue';
 import { ref, computed, watch } from 'vue';
 import { FLAT_UNITS, getUnitsByGroup } from '@/Constants/Units';
 
@@ -107,6 +108,11 @@ const submit = () => {
         form.put(route('products.update', props.product.id));
     }
 };
+
+const showScanner = ref(false);
+const handleScan = (scannedText) => {
+    form.barcode = scannedText;
+};
 </script>
 
 <template>
@@ -193,16 +199,27 @@ const submit = () => {
 
                                     <div class="space-y-2">
                                         <label for="barcode" class="block text-sm font-medium text-slate-300">Barcode / SKU</label>
-                                         <div class="relative">
-                                             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                                <svg class="h-5 w-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"/></svg>
+                                         <div class="flex gap-2 relative">
+                                            <div class="relative flex-1">
+                                                 <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                                    <svg class="h-5 w-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"/></svg>
+                                                </div>
+                                                <input
+                                                    id="barcode"
+                                                    type="text"
+                                                    v-model="form.barcode"
+                                                    class="block w-full pl-10 pr-4 py-3 bg-slate-900/50 border border-slate-600 rounded-lg text-white placeholder-slate-500 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all font-mono"
+                                                />
                                             </div>
-                                            <input
-                                                id="barcode"
-                                                type="text"
-                                                v-model="form.barcode"
-                                                class="block w-full pl-10 pr-4 py-3 bg-slate-900/50 border border-slate-600 rounded-lg text-white placeholder-slate-500 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all font-mono"
-                                            />
+                                            <button 
+                                                type="button" 
+                                                @click="showScanner = true"
+                                                class="px-4 py-2 bg-pink-600/20 text-pink-400 border border-pink-500/30 rounded-lg hover:bg-pink-600 hover:text-white transition-all flex items-center justify-center gap-2 group whitespace-nowrap"
+                                                title="Scan Barcode via Kamera"
+                                            >
+                                                <svg class="w-5 h-5 group-hover:scale-110 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                                                <span class="sr-only lg:not-sr-only text-sm font-medium">Scan</span>
+                                            </button>
                                         </div>
                                          <InputError :message="form.errors.barcode" />
                                     </div>
@@ -378,4 +395,10 @@ const submit = () => {
             </div>
         </div>
     </AuthenticatedLayout>
+    <CameraScanner 
+        :show="showScanner" 
+        title="Scan Barcode Produk" 
+        @close="showScanner = false" 
+        @scan="handleScan" 
+    />
 </template>

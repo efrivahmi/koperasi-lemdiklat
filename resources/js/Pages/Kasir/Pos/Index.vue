@@ -2,6 +2,7 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue'; // Imported but utilized differently if needed, mostly we go custom
 import LoadingOverlay from '@/Components/LoadingOverlay.vue';
 import SearchableSelect from '@/Components/SearchableSelect.vue';
+import CameraScanner from '@/Components/CameraScanner.vue';
 import { Head, Link, usePage } from '@inertiajs/vue3';
 import { ref, computed, onMounted, onUnmounted, nextTick, watch } from 'vue';
 import axios from 'axios';
@@ -42,6 +43,9 @@ const visibleCount = ref(30);
 const itemsPerPage = 30;
 const showCategoryModal = ref(false);
 const activeMegaMenuCategory = ref(null); // For Tokopedia-style hover effect
+
+const showScanner = ref(false);
+const scannerMode = ref('product'); // 'product' or 'student'
 
 const currentTime = ref(new Date());
 let timeInterval;
@@ -315,6 +319,16 @@ const handleBarcodeScan = async (code) => {
         if (response.data.success) addToCart(response.data.product);
     } catch (error) { showNotification('Produk 404', 'error'); }
 };
+
+const handleCameraScan = async (scannedText) => {
+    if (scannerMode.value === 'product') {
+        await handleBarcodeScan(scannedText);
+    } else if (scannerMode.value === 'student') {
+        await handleRfidScan(scannedText);
+    }
+    showScanner.value = false;
+};
+
 const handleGlobalKeydown = (e) => {
      if (!['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement.tagName)) {
          document.getElementById('hidden-scanner-input')?.focus();
@@ -415,9 +429,14 @@ onUnmounted(() => {
                             <input
                                 v-model="searchQuery"
                                 type="text"
-                                class="block w-full pl-10 pr-4 py-2.5 border border-purple-500/30 rounded-xl leading-5 bg-white/10 text-white placeholder-purple-200/50 focus:outline-none focus:bg-white/20 focus:ring-2 focus:ring-purple-500 sm:text-sm transition-all shadow-lg backdrop-blur-sm placeholder:italic"
+                                class="block w-full pl-10 pr-12 py-2.5 border border-purple-500/30 rounded-xl leading-5 bg-white/10 text-white placeholder-purple-200/50 focus:outline-none focus:bg-white/20 focus:ring-2 focus:ring-purple-500 sm:text-sm transition-all shadow-lg backdrop-blur-sm placeholder:italic"
                                 placeholder="Cari produk (Nama / Barcode)..."
                             />
+                            <div class="absolute inset-y-0 right-0 pr-2 flex items-center">
+                                <button @click="scannerMode = 'product'; showScanner = true" class="p-1.5 bg-pink-600/20 text-pink-400 hover:bg-pink-600 hover:text-white rounded-lg transition-colors border border-pink-500/30" title="Scan Barcode via Kamera">
+                                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -699,9 +718,14 @@ onUnmounted(() => {
                                             </div>
                                             <span class="text-blue-500">Change ></span>
                                         </div>
-                                        <button v-else @click="showStudentModal = true" class="w-full py-3 bg-blue-600/10 text-blue-300 border border-blue-500/30 rounded-xl font-bold text-sm hover:bg-blue-600/20 border-dashed transition-all">
-                                            + Pilih Member Siswa
-                                        </button>
+                                        <div v-else class="flex gap-2">
+                                            <button @click="showStudentModal = true" class="flex-1 py-3 bg-blue-600/10 text-blue-300 border border-blue-500/30 rounded-xl font-bold text-sm hover:bg-blue-600/20 border-dashed transition-all">
+                                                + Pilih Member
+                                            </button>
+                                            <button @click="scannerMode = 'student'; showScanner = true" class="w-12 flex items-center justify-center bg-blue-600/20 text-blue-400 border border-blue-500/50 rounded-xl hover:bg-blue-600 hover:text-white transition-all transform hover:scale-105" title="Scan QR Kartu Member">
+                                                <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                                            </button>
+                                        </div>
                                     </div>
 
                                     <button @click="processCheckout(false)" :disabled="cart.length === 0" class="w-full py-4 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white font-bold rounded-xl transition-all shadow-lg shadow-purple-500/20 transform hover:scale-[1.02] active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed">
@@ -844,6 +868,14 @@ onUnmounted(() => {
         </div>
 
     </div>
+
+    <!-- Camera Scanner Component -->
+    <CameraScanner 
+        :show="showScanner" 
+        :title="scannerMode === 'product' ? 'Scan Barcode Produk' : 'Scan QR Kartu Member'" 
+        @close="showScanner = false" 
+        @scan="handleCameraScan" 
+    />
 </template>
 
 <style scoped>

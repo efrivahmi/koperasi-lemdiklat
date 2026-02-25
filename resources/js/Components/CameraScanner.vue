@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, onUnmounted, nextTick } from 'vue';
+import { ref, onMounted, onUnmounted, nextTick, watch } from 'vue';
 import { Html5QrcodeScanner, Html5QrcodeSupportedFormats } from 'html5-qrcode';
 
 const props = defineProps({
@@ -85,9 +85,19 @@ const onScanFailure = (error) => {
 
 // Start scanning when component is mounted ONLY IF 'show' is true
 // But usually we control visibility via v-if in the parent
+// Start scanning when component is mounted ONLY IF 'show' is true
+// But usually we control visibility via v-if in the parent
 onMounted(() => {
     if (props.show) {
         startScanning();
+    }
+});
+
+watch(() => props.show, (newVal) => {
+    if (newVal) {
+        startScanning();
+    } else {
+        stopScanning();
     }
 });
 

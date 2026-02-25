@@ -56,6 +56,7 @@ const currentPage = ref(1);
 const lastPage = ref(1);
 const internalHasNextPage = ref(false);
 const triggerRef = ref(null);
+const listContainer = ref(null);
 const observer = ref(null);
 const sentinel = ref(null);
 

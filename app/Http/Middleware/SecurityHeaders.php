@@ -23,13 +23,13 @@ class SecurityHeaders
 
         // Content Security Policy (CSP)
         $csp = "default-src 'self'; " .
-            "script-src 'self' 'unsafe-inline' 'unsafe-eval' http://127.0.0.1:5173 https://koperasi.lemdiklattarunanusantaraindonesia.id {$viteUrl} https://cdn.jsdelivr.net; " .
-            "script-src-elem 'self' 'unsafe-inline' http://127.0.0.1:5173 https://koperasi.lemdiklattarunanusantaraindonesia.id {$viteUrl} https://cdn.jsdelivr.net; " .
+            "script-src 'self' 'unsafe-inline' 'unsafe-eval' http://127.0.0.1:5173 http://127.0.0.1:5174 {$viteUrl} https://cdn.jsdelivr.net; " .
+            "script-src-elem 'self' 'unsafe-inline' http://127.0.0.1:5173 http://127.0.0.1:5174 {$viteUrl} https://cdn.jsdelivr.net; " .
             "style-src 'self' 'unsafe-inline' https://fonts.bunny.net https://fonts.googleapis.com; " .
             "style-src-elem 'self' 'unsafe-inline' https://fonts.bunny.net https://fonts.googleapis.com; " .
             "img-src 'self' data: blob: https:; " .
             "font-src 'self' data: https://fonts.bunny.net https://fonts.gstatic.com; " .
-            "connect-src 'self' http://127.0.0.1:5173 ws://127.0.0.1:5173 wss://koperasi.lemdiklattarunanusantaraindonesia.id {$viteUrl}; " .
+            "connect-src 'self' http://127.0.0.1:5173 http://127.0.0.1:5174 ws://127.0.0.1:5173 ws://127.0.0.1:5174 {$viteUrl}; " .
             "frame-ancestors 'none';";
 
         $response->headers->set('Content-Security-Policy', $csp);

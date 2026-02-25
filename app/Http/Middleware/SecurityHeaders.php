@@ -29,7 +29,7 @@ class SecurityHeaders
             "style-src-elem 'self' 'unsafe-inline' https://fonts.bunny.net https://fonts.googleapis.com; " .
             "img-src 'self' data: blob: https:; " .
             "font-src 'self' data: https://fonts.bunny.net https://fonts.gstatic.com; " .
-            "connect-src 'self' {$viteUrl}; " .
+            "connect-src 'self' ws://127.0.0.1:5173 wss://koperasi.lemdiklattarunanusantaraindonesia.id {$viteUrl}; " .
             "frame-ancestors 'none';";
 
         $response->headers->set('Content-Security-Policy', $csp);

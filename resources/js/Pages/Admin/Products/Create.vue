@@ -90,9 +90,12 @@ const handleScan = async (scannedText) => {
             const response = await axios.get(route('api.external-barcode', scannedText));
             if (response.data && response.data.success && response.data.product_name) {
                 form.name = response.data.product_name;
+            } else {
+                alert(`Barcode ${scannedText} tidak ditemukan di database global (Open Food Facts). Silahkan masukkan nama produk secara manual.`);
             }
         } catch (error) {
             console.error('External API lookup failed:', error);
+            alert('Gagal menghubungi server database pencarian produk. Silahkan ketik manual.');
         } finally {
             isFetchingProduct.value = false;
         }
@@ -199,6 +202,8 @@ const handleScan = async (scannedText) => {
                                                     v-model="form.barcode"
                                                     class="block w-full pl-10 pr-4 py-3 bg-slate-900/50 border border-slate-600 rounded-lg text-white placeholder-slate-500 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all font-mono"
                                                     placeholder="Scan atau ketik kode..."
+                                                    @keyup.enter.prevent="handleScan(form.barcode)"
+                                                    @blur="form.barcode ? handleScan(form.barcode) : null"
                                                 />
                                             </div>
                                             <button 

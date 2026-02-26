@@ -5,6 +5,7 @@ import InputError from '@/Components/InputError.vue';
 import SearchableSelect from '@/Components/SearchableSelect.vue';
 import CameraScanner from '@/Components/CameraScanner.vue';
 import { ref, computed, watch } from 'vue';
+import axios from 'axios';
 
 import { FLAT_UNITS, getUnitsByGroup } from '@/Constants/Units';
 
@@ -78,8 +79,24 @@ const submit = () => {
 };
 
 const showScanner = ref(false);
-const handleScan = (scannedText) => {
+const isFetchingProduct = ref(false);
+
+const handleScan = async (scannedText) => {
     form.barcode = scannedText;
+    
+    if (scannedText) {
+        isFetchingProduct.value = true;
+        try {
+            const response = await axios.get(route('api.external-barcode', scannedText));
+            if (response.data && response.data.success && response.data.product_name) {
+                form.name = response.data.product_name;
+            }
+        } catch (error) {
+            console.error('External API lookup failed:', error);
+        } finally {
+            isFetchingProduct.value = false;
+        }
+    }
 };
 </script>
 
@@ -167,7 +184,10 @@ const handleScan = (scannedText) => {
                                     </div>
 
                                     <div class="space-y-2">
-                                        <label for="barcode" class="block text-sm font-medium text-slate-300">Barcode / SKU</label>
+                                        <div class="flex justify-between items-end">
+                                            <label for="barcode" class="block text-sm font-medium text-slate-300">Barcode / SKU</label>
+                                            <span v-if="isFetchingProduct" class="text-xs text-indigo-400 animate-pulse">Mencari detail produk...</span>
+                                        </div>
                                         <div class="flex gap-2 relative">
                                             <div class="relative flex-1">
                                                  <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">

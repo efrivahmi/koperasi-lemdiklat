@@ -287,6 +287,30 @@ class ProductController extends Controller
     }
 
     /**
+     * Lookup barcode from Open Food Facts API
+     */
+    public function externalBarcodeLookup($barcode)
+    {
+        try {
+            // Using a 5-second timeout so it doesn't hang if the API is slow
+            $response = \Illuminate\Support\Facades\Http::timeout(5)->get("https://world.openfoodfacts.org/api/v0/product/{$barcode}.json");
+            
+            if ($response->successful() && $response->json('status') === 1) {
+                $product = $response->json('product');
+                return response()->json([
+                    'success' => true,
+                    // Try to get the name, preferring Indonesian, then English, then default
+                    'product_name' => $product['product_name_id'] ?? $product['product_name'] ?? $product['product_name_en'] ?? null,
+                ]);
+            }
+            
+            return response()->json(['success' => false, 'message' => 'Product not found in Open Food Facts database.']);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => 'Connected to external API failed.']);
+        }
+    }
+
+    /**
      * API Search for Lazy Loading
      */
     public function apiSearch(Request $request)

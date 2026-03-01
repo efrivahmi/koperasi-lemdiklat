@@ -59,9 +59,16 @@ class SocialAuthController extends Controller
             // User not found in system - prevent registration
             return redirect('/login')->with('status', 'Akun Anda belum terdaftar di sistem. Silakan hubungi Administrator.');
 
+        } catch (\GuzzleHttp\Exception\ClientException $e) {
+            \Log::error('Google OAuth Client Error: ' . $e->getMessage());
+            $responseBody = $e->getResponse() ? $e->getResponse()->getBody()->getContents() : 'No response body';
+            return redirect('/login')->with('status', 'Gagal konfigurasi Google: ' . $e->getMessage() . '. Detail: ' . $responseBody);
+        } catch (\Laravel\Socialite\Two\InvalidStateException $e) {
+            \Log::error('Google OAuth InvalidState Error: ' . $e->getMessage());
+            return redirect('/login')->with('status', 'Sesi login tidak valid. Pastikan domain URL sama dengan yang didaftarkan (HTTPS).');
         } catch (\Exception $e) {
             \Log::error('Google OAuth Error: ' . $e->getMessage() . ' | Trace: ' . $e->getTraceAsString());
-            return redirect('/login')->with('status', 'Gagal login menggunakan Google. Silakan coba lagi.');
+            return redirect('/login')->with('status', 'Gagal terhubung dengan Google. Error: ' . $e->getMessage());
         }
     }
 }

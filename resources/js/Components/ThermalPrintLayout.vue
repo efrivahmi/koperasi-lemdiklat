@@ -73,11 +73,14 @@ defineProps({
         top: 0;
         width: 58mm; /* Standard thermal paper width */
         padding: 0 2mm; /* Small padding */
-        font-family: 'Courier New', monospace; /* Monospace for alignment */
-        font-size: 10px;
-        line-height: 1.2;
+        font-family: Arial, Helvetica, sans-serif; /* Bold sans-serif for thermal readability */
+        font-size: 12px;
+        font-weight: bold;
+        line-height: 1.3;
         color: black;
         background: white;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
     }
     
     /* Ensure tables inside take full width */

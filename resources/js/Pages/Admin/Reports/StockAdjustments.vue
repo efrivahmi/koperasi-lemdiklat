@@ -596,42 +596,29 @@ const printThermal = () => {
             <div style="font-weight: bold; font-size: 12px; text-align: center; margin-bottom: 5px;">DETAIL ITEM</div>
             <div style="border-bottom: 1px dashed black; margin-bottom: 6px;"></div>
 
-            <div v-for="(item, index) in adjustments.data" :key="item.id" style="margin-bottom: 6px; padding-bottom: 4px; border-bottom: 1px dashed #eee;">
+            <div v-for="(item, index) in adjustments.data" :key="item.id" style="margin-bottom: 8px; padding-bottom: 6px; border-bottom: 1px dashed #000;">
                 <!-- Product Name -->
-                <div style="font-weight: bold; font-size: 11px; margin-bottom: 2px;">
-                    {{ index + 1 }}. {{ item.product?.name || '-' }} 
-                    <span style="font-weight: normal; font-size: 10px;">({{ item.type === 'addition' ? '+' : '-' }})</span>
+                <div style="font-weight: bold; font-size: 13px; margin-bottom: 3px;">
+                    {{ index + 1 }}. {{ item.product?.name || '-' }}
                 </div>
 
-                <!-- Quantity, Price, Amount -->
-                <div style="display: flex; justify-content: space-between; font-size: 11px;">
+                <!-- Customer Name -->
+                <div style="font-size: 12px; margin-bottom: 3px;">
+                    Pelanggan: {{ item.client_name || '-' }}
+                </div>
+
+                <!-- Quantity x Price = Amount -->
+                <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: bold;">
                     <span>{{ Math.abs(item.quantity_adjusted) }} x {{ formatCurrency(item.product?.harga_beli || 0) }}</span>
                     <span>{{ formatCurrency(Math.abs(item.quantity_adjusted) * (item.product?.harga_beli || 0)) }}</span>
                 </div>
             </div>
 
-            <!-- Summary -->
-            <div style="margin-top: 8px; border-top: 1px dashed black; padding-top: 6px;">
-                <div style="font-weight: bold; font-size: 12px; text-align: center; margin-bottom: 4px;">RINGKASAN</div>
-                <div style="display: flex; justify-content: space-between; font-size: 11px;">
-                    <span>Total Penyesuaian:</span>
-                    <span style="font-weight: bold;">{{ summary.total_adjustments }} item</span>
-                </div>
-                <div style="display: flex; justify-content: space-between; font-size: 11px;">
-                    <span>Penambahan:</span>
-                    <span style="font-weight: bold;">{{ summary.additions_count }} (+{{ summary.total_additions }})</span>
-                </div>
-                <div style="display: flex; justify-content: space-between; font-size: 11px;">
-                    <span>Pengurangan:</span>
-                    <span style="font-weight: bold;">{{ summary.deductions_count }} (-{{ summary.total_deductions }})</span>
-                </div>
-            </div>
-
             <!-- Grand Total -->
-            <div style="margin-top: 5px; border-top: 1px dotted #999; padding-top: 5px;">
-                <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: bold;">
-                    <span>TOTAL LABA/RUGI:</span>
-                    <span>{{ formatCurrency(adjustments.data.reduce((sum, item) => sum + (item.profit_loss_impact || 0), 0)) }}</span>
+            <div style="margin-top: 8px; border-top: 2px solid black; padding-top: 6px;">
+                <div style="display: flex; justify-content: space-between; font-size: 14px; font-weight: bold;">
+                    <span>GRAND TOTAL:</span>
+                    <span>{{ formatCurrency(adjustments.data.reduce((sum, item) => sum + (Math.abs(item.quantity_adjusted) * (item.product?.harga_beli || 0)), 0)) }}</span>
                 </div>
             </div>
         </ThermalPrintLayout>

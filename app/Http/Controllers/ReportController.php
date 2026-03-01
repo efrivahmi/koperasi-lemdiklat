@@ -611,7 +611,7 @@ class ReportController extends Controller
             });
 
             // Calculate summary with profit/loss impact
-            $allAdjustmentsQuery = StockAdjustment::with('product');
+            $allAdjustmentsQuery = StockAdjustment::with(['product.category']);
 
             if ($dateFrom && $dateTo) {
                 $allAdjustmentsQuery->whereBetween('created_at', [$dateFrom . ' 00:00:00', $dateTo . ' 23:59:59']);
@@ -772,6 +772,24 @@ class ReportController extends Controller
                     'search' => $request->search ?? '',
                     'client_name' => $request->client_name ?? '',
                 ],
+                // All items for thermal print (no pagination limit)
+                'printItems' => $allAdjustments->map(function ($adj) {
+                    return [
+                        'id' => $adj->id,
+                        'product' => $adj->product ? [
+                            'name' => $adj->product->name,
+                            'barcode' => $adj->product->barcode,
+                            'harga_beli' => $adj->product->harga_beli,
+                            'harga_jual' => $adj->product->harga_jual,
+                            'unit' => $adj->product->unit,
+                            'category' => $adj->product->category ? ['name' => $adj->product->category->name] : null,
+                        ] : null,
+                        'type' => $adj->type,
+                        'quantity_adjusted' => $adj->quantity_adjusted,
+                        'client_name' => $adj->client_name,
+                        'created_at' => $adj->created_at->toISOString(),
+                    ];
+                })->values(),
             ]);
 
         } catch (\Exception $e) {
@@ -812,7 +830,8 @@ class ReportController extends Controller
                     'search' => '',
                     'client_name' => '',
                 ],
-                'error' => 'Gagal memuat laporan: ' . $e->getMessage()
+                'error' => 'Gagal memuat laporan: ' . $e->getMessage(),
+                'printItems' => [],
             ]);
         }
     }

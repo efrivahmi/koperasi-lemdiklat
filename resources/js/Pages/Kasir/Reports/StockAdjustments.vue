@@ -14,6 +14,7 @@ const props = defineProps({
     adjusters: Array,
     filters: Object,
     error: String,
+    printItems: Array,
 });
 
 // Smart customer name logic
@@ -596,7 +597,7 @@ const printThermal = () => {
             <div style="font-weight: bold; font-size: 12px; text-align: center; margin-bottom: 5px;">DETAIL ITEM</div>
             <div style="border-bottom: 1px dashed black; margin-bottom: 6px;"></div>
 
-            <div v-for="(item, index) in adjustments.data" :key="item.id" style="margin-bottom: 8px; padding-bottom: 6px; border-bottom: 1px dashed #000;">
+            <div v-for="(item, index) in printItems" :key="'print-' + item.id" style="margin-bottom: 8px; padding-bottom: 6px; border-bottom: 1px dashed #000;">
                 <!-- Product Name -->
                 <div style="font-weight: bold; font-size: 13px; margin-bottom: 3px;">
                     {{ index + 1 }}. {{ item.product?.name || '-' }}
@@ -618,7 +619,7 @@ const printThermal = () => {
             <div style="margin-top: 8px; border-top: 2px solid black; padding-top: 6px;">
                 <div style="display: flex; justify-content: space-between; font-size: 14px; font-weight: bold;">
                     <span>GRAND TOTAL:</span>
-                    <span>{{ formatCurrency(adjustments.data.reduce((sum, item) => sum + (Math.abs(item.quantity_adjusted) * (item.product?.harga_beli || 0)), 0)) }}</span>
+                    <span>{{ formatCurrency((printItems || []).reduce((sum, item) => sum + (Math.abs(item.quantity_adjusted) * (item.product?.harga_beli || 0)), 0)) }}</span>
                 </div>
             </div>
         </ThermalPrintLayout>

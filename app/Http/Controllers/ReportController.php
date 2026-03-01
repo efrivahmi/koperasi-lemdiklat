@@ -35,11 +35,17 @@ class ReportController extends Controller
 
             $query = Sale::with(['student.user', 'saleItems.product', 'creator', 'updater']);
 
-            // Default date range (this month)
-            $dateFrom = $request->date_from ?? Carbon::now()->startOfMonth()->format('Y-m-d');
-            $dateTo = $request->date_to ?? Carbon::now()->format('Y-m-d');
+            // Remove default date range
+            $dateFrom = $request->date_from;
+            $dateTo = $request->date_to;
 
-            $query->whereBetween('created_at', [$dateFrom . ' 00:00:00', $dateTo . ' 23:59:59']);
+            if ($dateFrom && $dateTo) {
+                $query->whereBetween('created_at', [$dateFrom . ' 00:00:00', $dateTo . ' 23:59:59']);
+            } elseif ($dateFrom) {
+                $query->where('created_at', '>=', $dateFrom . ' 00:00:00');
+            } elseif ($dateTo) {
+                $query->where('created_at', '<=', $dateTo . ' 23:59:59');
+            }
 
             // Filter by payment method
             if ($request->has('payment_method') && $request->payment_method) {
@@ -59,7 +65,15 @@ class ReportController extends Controller
             $sales = $query->latest()->paginate(20);
 
             // Calculate summary
-            $allSales = Sale::whereBetween('created_at', [$dateFrom . ' 00:00:00', $dateTo . ' 23:59:59'])->get();
+            $allSalesQuery = Sale::query();
+            if ($dateFrom && $dateTo) {
+                $allSalesQuery->whereBetween('created_at', [$dateFrom . ' 00:00:00', $dateTo . ' 23:59:59']);
+            } elseif ($dateFrom) {
+                $allSalesQuery->where('created_at', '>=', $dateFrom . ' 00:00:00');
+            } elseif ($dateTo) {
+                $allSalesQuery->where('created_at', '<=', $dateTo . ' 23:59:59');
+            }
+            $allSales = $allSalesQuery->get();
             $summary = [
                 'total_sales' => $allSales->count(),
                 'total_revenue' => $allSales->sum('total'),
@@ -77,8 +91,8 @@ class ReportController extends Controller
                 'sales' => $sales,
                 'summary' => $summary,
                 'filters' => [
-                    'date_from' => $dateFrom,
-                    'date_to' => $dateTo,
+                    'date_from' => $dateFrom ?? '',
+                    'date_to' => $dateTo ?? '',
                     'payment_method' => $request->payment_method ?? '',
                     'search' => $request->search ?? '',
                 ],
@@ -98,8 +112,8 @@ class ReportController extends Controller
                     ],
                 ],
                 [
-                    'date_from' => Carbon::now()->startOfMonth()->format('Y-m-d'),
-                    'date_to' => Carbon::now()->format('Y-m-d'),
+                    'date_from' => '',
+                    'date_to' => '',
                     'payment_method' => '',
                     'search' => '',
                 ],
@@ -110,10 +124,10 @@ class ReportController extends Controller
 
     public function salesExport(Request $request)
     {
-        $dateFrom = $request->date_from ?? Carbon::now()->startOfMonth()->format('Y-m-d');
-        $dateTo = $request->date_to ?? Carbon::now()->format('Y-m-d');
+        $dateFrom = $request->date_from;
+        $dateTo = $request->date_to;
 
-        $filename = 'laporan-penjualan-' . $dateFrom . '-to-' . $dateTo . '.xlsx';
+        $filename = 'laporan-penjualan-' . ($dateFrom ? $dateFrom : 'all') . '-to-' . ($dateTo ? $dateTo : 'all') . '.xlsx';
 
         return Excel::download(new SalesReportExport($dateFrom, $dateTo, $request->payment_method, $request->search), $filename);
     }
@@ -269,29 +283,47 @@ class ReportController extends Controller
                 'filters' => $request->all()
             ]);
 
-            $dateFrom = $request->date_from ?? Carbon::now()->startOfMonth()->format('Y-m-d');
-            $dateTo = $request->date_to ?? Carbon::now()->format('Y-m-d');
+            $dateFrom = $request->date_from;
+            $dateTo = $request->date_to;
 
             // Calculate Revenue
-            $sales = Sale::whereBetween('created_at', [$dateFrom . ' 00:00:00', $dateTo . ' 23:59:59'])->get();
-            $totalRevenue = $sales->sum('total');
-
+            $salesQuery = Sale::query();
+            
             // Calculate COGS (Cost of Goods Sold)
-            $totalCOGS = DB::table('sale_items')
+            $cogsQuery = DB::table('sale_items')
                 ->join('sales', 'sale_items.sale_id', '=', 'sales.id')
-                ->join('products', 'sale_items.product_id', '=', 'products.id')
-                ->whereBetween('sales.created_at', [$dateFrom . ' 00:00:00', $dateTo . ' 23:59:59'])
-                ->sum(DB::raw('sale_items.quantity * products.harga_beli'));
+                ->join('products', 'sale_items.product_id', '=', 'products.id');
 
             // Calculate Expenses
-            $expenses = Expense::with(['creator', 'updater'])->whereBetween('expense_date', [$dateFrom, $dateTo])->get();
-            $totalExpenses = $expenses->sum('amount');
-
+            $expensesQuery = Expense::with(['creator', 'updater']);
+            
             // Expenses by category
-            $expensesByCategory = Expense::whereBetween('expense_date', [$dateFrom, $dateTo])
-                ->select('category', DB::raw('SUM(amount) as total'))
-                ->groupBy('category')
-                ->get();
+            $expensesByCategoryQuery = Expense::select('category', DB::raw('SUM(amount) as total'))
+                ->groupBy('category');
+
+            if ($dateFrom && $dateTo) {
+                $salesQuery->whereBetween('created_at', [$dateFrom . ' 00:00:00', $dateTo . ' 23:59:59']);
+                $cogsQuery->whereBetween('sales.created_at', [$dateFrom . ' 00:00:00', $dateTo . ' 23:59:59']);
+                $expensesQuery->whereBetween('expense_date', [$dateFrom, $dateTo]);
+                $expensesByCategoryQuery->whereBetween('expense_date', [$dateFrom, $dateTo]);
+            } elseif ($dateFrom) {
+                $salesQuery->where('created_at', '>=', $dateFrom . ' 00:00:00');
+                $cogsQuery->where('sales.created_at', '>=', $dateFrom . ' 00:00:00');
+                $expensesQuery->where('expense_date', '>=', $dateFrom);
+                $expensesByCategoryQuery->where('expense_date', '>=', $dateFrom);
+            } elseif ($dateTo) {
+                $salesQuery->where('created_at', '<=', $dateTo . ' 23:59:59');
+                $cogsQuery->where('sales.created_at', '<=', $dateTo . ' 23:59:59');
+                $expensesQuery->where('expense_date', '<=', $dateTo);
+                $expensesByCategoryQuery->where('expense_date', '<=', $dateTo);
+            }
+
+            $sales = $salesQuery->get();
+            $totalRevenue = $sales->sum('total');
+            $totalCOGS = $cogsQuery->sum(DB::raw('sale_items.quantity * products.harga_beli'));
+            $expenses = $expensesQuery->get();
+            $totalExpenses = $expenses->sum('amount');
+            $expensesByCategory = $expensesByCategoryQuery->get();
 
             // Calculate Profit
             $grossProfit = $totalRevenue - $totalCOGS;
@@ -317,8 +349,8 @@ class ReportController extends Controller
                 'expenses' => $expenses,
                 'expensesByCategory' => $expensesByCategory,
                 'filters' => [
-                    'date_from' => $dateFrom,
-                    'date_to' => $dateTo,
+                    'date_from' => $dateFrom ?? '',
+                    'date_to' => $dateTo ?? '',
                 ],
             ]);
 
@@ -342,8 +374,8 @@ class ReportController extends Controller
                 'expenses' => [],
                 'expensesByCategory' => [],
                 'filters' => [
-                    'date_from' => Carbon::now()->startOfMonth()->format('Y-m-d'),
-                    'date_to' => Carbon::now()->format('Y-m-d'),
+                    'date_from' => '',
+                    'date_to' => '',
                 ],
                 'error' => 'Gagal memuat laporan: ' . $e->getMessage()
             ]);
@@ -352,10 +384,10 @@ class ReportController extends Controller
 
     public function financialExport(Request $request)
     {
-        $dateFrom = $request->date_from ?? Carbon::now()->startOfMonth()->format('Y-m-d');
-        $dateTo = $request->date_to ?? Carbon::now()->format('Y-m-d');
+        $dateFrom = $request->date_from;
+        $dateTo = $request->date_to;
 
-        $filename = 'laporan-keuangan-' . $dateFrom . '-to-' . $dateTo . '.xlsx';
+        $filename = 'laporan-keuangan-' . ($dateFrom ? $dateFrom : 'all') . '-to-' . ($dateTo ? $dateTo : 'all') . '.xlsx';
         return Excel::download(new FinancialReportExport($dateFrom, $dateTo), $filename);
     }
 
@@ -372,11 +404,17 @@ class ReportController extends Controller
 
             $query = Sale::with(['student.user', 'saleItems.product', 'creator', 'updater']);
 
-            // Default date range
-            $dateFrom = $request->date_from ?? Carbon::now()->startOfMonth()->format('Y-m-d');
-            $dateTo = $request->date_to ?? Carbon::now()->format('Y-m-d');
+            // Remove default date range
+            $dateFrom = $request->date_from;
+            $dateTo = $request->date_to;
 
-            $query->whereBetween('created_at', [$dateFrom . ' 00:00:00', $dateTo . ' 23:59:59']);
+            if ($dateFrom && $dateTo) {
+                $query->whereBetween('created_at', [$dateFrom . ' 00:00:00', $dateTo . ' 23:59:59']);
+            } elseif ($dateFrom) {
+                $query->where('created_at', '>=', $dateFrom . ' 00:00:00');
+            } elseif ($dateTo) {
+                $query->where('created_at', '<=', $dateTo . ' 23:59:59');
+            }
 
             // Filter by class
             if ($request->has('class') && $request->class) {
@@ -428,8 +466,8 @@ class ReportController extends Controller
                 'classes' => $classes,
                 'students' => $students,
                 'filters' => [
-                    'date_from' => $dateFrom,
-                    'date_to' => $dateTo,
+                    'date_from' => $dateFrom ?? '',
+                    'date_to' => $dateTo ?? '',
                     'class' => $request->class ?? '',
                     'student_id' => $request->student_id ?? '',
                     'search' => $request->search ?? '',
@@ -448,8 +486,8 @@ class ReportController extends Controller
                 'classes' => [],
                 'students' => [],
                 'filters' => [
-                    'date_from' => Carbon::now()->startOfMonth()->format('Y-m-d'),
-                    'date_to' => Carbon::now()->format('Y-m-d'),
+                    'date_from' => '',
+                    'date_to' => '',
                     'class' => '',
                     'student_id' => '',
                     'search' => '',
@@ -461,10 +499,10 @@ class ReportController extends Controller
 
     public function studentTransactionsExport(Request $request)
     {
-        $dateFrom = $request->date_from ?? Carbon::now()->startOfMonth()->format('Y-m-d');
-        $dateTo = $request->date_to ?? Carbon::now()->format('Y-m-d');
+        $dateFrom = $request->date_from;
+        $dateTo = $request->date_to;
 
-        $filename = 'laporan-transaksi-siswa-' . $dateFrom . '-to-' . $dateTo . '.xlsx';
+        $filename = 'laporan-transaksi-siswa-' . ($dateFrom ? $dateFrom : 'all') . '-to-' . ($dateTo ? $dateTo : 'all') . '.xlsx';
 
         return Excel::download(
             new StudentTransactionsExport($dateFrom, $dateTo, $request->class, $request->student_id, $request->search),
@@ -485,11 +523,17 @@ class ReportController extends Controller
 
             $query = StockAdjustment::with(['product.category', 'adjustedBy', 'creator', 'updater']);
 
-            // Default date range (this month)
-            $dateFrom = $request->date_from ?? Carbon::now()->startOfMonth()->format('Y-m-d');
-            $dateTo = $request->date_to ?? Carbon::now()->format('Y-m-d');
+            // Remove default date range
+            $dateFrom = $request->date_from;
+            $dateTo = $request->date_to;
 
-            $query->whereBetween('created_at', [$dateFrom . ' 00:00:00', $dateTo . ' 23:59:59']);
+            if ($dateFrom && $dateTo) {
+                $query->whereBetween('created_at', [$dateFrom . ' 00:00:00', $dateTo . ' 23:59:59']);
+            } elseif ($dateFrom) {
+                $query->where('created_at', '>=', $dateFrom . ' 00:00:00');
+            } elseif ($dateTo) {
+                $query->where('created_at', '<=', $dateTo . ' 23:59:59');
+            }
 
             // Filter by product
             if ($request->has('product_id') && $request->product_id) {
@@ -567,9 +611,17 @@ class ReportController extends Controller
             });
 
             // Calculate summary with profit/loss impact
-            $allAdjustments = StockAdjustment::with('product')
-                ->whereBetween('created_at', [$dateFrom . ' 00:00:00', $dateTo . ' 23:59:59'])
-                ->get();
+            $allAdjustmentsQuery = StockAdjustment::with('product');
+
+            if ($dateFrom && $dateTo) {
+                $allAdjustmentsQuery->whereBetween('created_at', [$dateFrom . ' 00:00:00', $dateTo . ' 23:59:59']);
+            } elseif ($dateFrom) {
+                $allAdjustmentsQuery->where('created_at', '>=', $dateFrom . ' 00:00:00');
+            } elseif ($dateTo) {
+                $allAdjustmentsQuery->where('created_at', '<=', $dateTo . ' 23:59:59');
+            }
+
+            $allAdjustments = $allAdjustmentsQuery->get();
 
             // Calculate cost and profit/loss impact based on purpose
             $totalCostImpact = 0;
@@ -712,8 +764,8 @@ class ReportController extends Controller
                 'products' => $products,
                 'adjusters' => $adjusters,
                 'filters' => [
-                    'date_from' => $dateFrom,
-                    'date_to' => $dateTo,
+                    'date_from' => $dateFrom ?? '',
+                    'date_to' => $dateTo ?? '',
                     'product_id' => $request->product_id ?? '',
                     'type' => $request->type ?? '',
                     'adjusted_by' => $request->adjusted_by ?? '',
@@ -752,8 +804,8 @@ class ReportController extends Controller
                 'products' => [],
                 'adjusters' => [],
                 'filters' => [
-                    'date_from' => Carbon::now()->startOfMonth()->format('Y-m-d'),
-                    'date_to' => Carbon::now()->format('Y-m-d'),
+                    'date_from' => '',
+                    'date_to' => '',
                     'product_id' => '',
                     'type' => '',
                     'adjusted_by' => '',
@@ -767,10 +819,10 @@ class ReportController extends Controller
 
     public function stockAdjustmentsExport(Request $request)
     {
-        $dateFrom = $request->date_from ?? Carbon::now()->startOfMonth()->format('Y-m-d');
-        $dateTo = $request->date_to ?? Carbon::now()->format('Y-m-d');
+        $dateFrom = $request->date_from;
+        $dateTo = $request->date_to;
 
-        $filename = 'laporan-penyesuaian-stok-' . $dateFrom . '-to-' . $dateTo . '.xlsx';
+        $filename = 'laporan-penyesuaian-stok-' . ($dateFrom ? $dateFrom : 'all') . '-to-' . ($dateTo ? $dateTo : 'all') . '.xlsx';
 
         return Excel::download(
             new StockAdjustmentsExport($dateFrom, $dateTo, $request->product_id, $request->type, $request->adjusted_by, $request->search, $request->client_name),

@@ -596,72 +596,91 @@ const printThermal = () => {
             <div style="font-weight: bold; font-size: 12px; text-align: center; margin-bottom: 5px;">DETAIL ITEM</div>
             <div style="border-bottom: 1px dashed black; margin-bottom: 6px;"></div>
 
-            <!-- Header -->
-            <div style="display: flex; justify-content: space-between; font-weight: bold; font-size: 10px; border-bottom: 1px dotted #999; padding-bottom: 4px; margin-bottom: 6px;">
-                <span style="flex: 2;">PRODUK</span>
-                <span style="flex: 1; text-align: center;">QTY</span>
-                <span style="flex: 1.5; text-align: right;">HARGA</span>
-                <span style="flex: 1.5; text-align: right;">AMOUNT</span>
+            <div v-for="(item, index) in adjustments.data" :key="item.id" style="margin-bottom: 10px; padding-bottom: 6px; border-bottom: 1px dashed #aaa;">
+                <!-- Item Number & Product Name -->
+                <div style="font-weight: bold; font-size: 12px;">
+                    {{ index + 1 }}. {{ item.product?.name || '-' }}
+                </div>
+
+                <!-- Barcode -->
+                <div style="font-size: 10px; font-family: monospace; color: #555; margin-bottom: 2px;">
+                    BC: {{ item.product?.barcode || '-' }}
+                </div>
+
+                <!-- Category -->
+                <div style="display: flex; justify-content: space-between; font-size: 11px;">
+                    <span>Kategori:</span>
+                    <span style="font-weight: bold;">{{ item.product?.category?.name || 'Tanpa Kategori' }}</span>
+                </div>
+
+                <!-- Type & Purpose -->
+                <div style="display: flex; justify-content: space-between; font-size: 11px;">
+                    <span>Tipe:</span>
+                    <span style="font-weight: bold;">{{ item.type === 'addition' ? '(+) Penambahan' : '(-) Pengurangan' }}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; font-size: 11px;">
+                    <span>Alasan:</span>
+                    <span>{{ getPurposeLabel(item.purpose) }}</span>
+                </div>
+
+                <!-- Per-item Customer Name (always shown) -->
+                <div style="display: flex; justify-content: space-between; font-size: 11px; margin-top: 2px;">
+                    <span>Pelanggan:</span>
+                    <span style="font-weight: bold;">{{ item.client_name || '-' }}</span>
+                </div>
+
+                <!-- Quantity -->
+                <div style="display: flex; justify-content: space-between; font-size: 11px; margin-top: 2px;">
+                    <span>Jumlah:</span>
+                    <span style="font-weight: bold;">{{ item.type === 'addition' ? '+' : '-' }}{{ item.quantity_adjusted }} {{ item.product?.unit || 'Pcs' }}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; font-size: 10px; color: #666;">
+                    <span>Stok:</span>
+                    <span>{{ item.quantity_before }} → {{ item.quantity_after }}</span>
+                </div>
+
+                <!-- Cost / Financial Impact -->
+                <div style="display: flex; justify-content: space-between; font-size: 11px; margin-top: 2px;">
+                    <span>Harga Beli/unit:</span>
+                    <span>{{ formatCurrency(item.product?.harga_beli || 0) }}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; font-size: 11px; font-weight: bold;">
+                    <span>Laba/Rugi:</span>
+                    <span>{{ (item.profit_loss_impact || 0) >= 0 ? '+' : '' }}{{ formatCurrency(item.profit_loss_impact || 0) }}</span>
+                </div>
+
+                <!-- Notes -->
+                <div v-if="item.notes" style="font-size: 10px; margin-top: 2px; font-style: italic; color: #555;">
+                    Catatan: {{ item.notes }}
+                </div>
+
+                <!-- Adjusted By, Date -->
+                <div style="display: flex; justify-content: space-between; font-size: 10px; color: #777; margin-top: 2px;">
+                    <span>Oleh: {{ item.adjusted_by?.name || '-' }}</span>
+                    <span>{{ formatDate(item.created_at) }}</span>
+                </div>
             </div>
-
-            <div v-for="(item, index) in adjustments.data" :key="item.id" style="margin-bottom: 8px;">
-                <!-- Product Name -->
-                <div style="font-weight: bold; font-size: 11px; margin-bottom: 2px;">
-                    {{ item.product?.name || '-' }}
-                </div>
-
-                <!-- Qty, Price, Amount Row -->
-                <div style="display: flex; justify-content: space-between; font-size: 11px; align-items: flex-start;">
-                    <!-- Spacer to align with header -->
-                    <span style="flex: 2; font-size: 10px; color: #555;">
-                        {{ item.type === 'addition' ? '(+) Penambahan' : '(-) Pengurangan' }} 
-                        <br> {{ getPurposeLabel(item.purpose) }}
-                    </span>
-                    <span style="flex: 1; text-align: center;">
-                        {{ item.quantity_adjusted }}
-                    </span>
-                    <span style="flex: 1.5; text-align: right;">
-                        {{ formatCurrency(item.product?.harga_beli || 0) }}
-                    </span>
-                    <span style="flex: 1.5; text-align: right; font-weight: bold;">
-                        {{ formatCurrency((item.product?.harga_beli || 0) * item.quantity_adjusted) }}
-                    </span>
-                </div>
-                
-                <!-- Notes and Date below amount -->
-                <div style="font-size: 9px; color: #777; margin-top: 2px; text-align: left;">
-                    <span v-if="item.notes" style="font-style: italic;">Catatan: {{ item.notes }} | </span>
-                    Oleh: {{ item.adjusted_by?.name || '-' }} | {{ formatDate(item.created_at) }}
-                </div>
-            </div>
-
-            <div style="border-top: 1px dashed black; margin-top: 6px; padding-top: 6px;"></div>
 
             <!-- Summary -->
-            <div style="margin-top: 4px;">
+            <div style="margin-top: 8px; border-top: 1px dashed black; padding-top: 6px;">
+                <div style="font-weight: bold; font-size: 12px; text-align: center; margin-bottom: 4px;">RINGKASAN</div>
                 <div style="display: flex; justify-content: space-between; font-size: 11px;">
                     <span>Total Penyesuaian:</span>
                     <span style="font-weight: bold;">{{ summary.total_adjustments }} item</span>
                 </div>
                 <div style="display: flex; justify-content: space-between; font-size: 11px;">
-                    <span>Total Pengurangan:</span>
-                    <span style="font-weight: bold;">-{{ summary.total_deductions }} pcs</span>
+                    <span>Penambahan:</span>
+                    <span style="font-weight: bold;">{{ summary.additions_count }} (+{{ summary.total_additions }})</span>
                 </div>
                 <div style="display: flex; justify-content: space-between; font-size: 11px;">
-                    <span>Total Penambahan:</span>
-                    <span style="font-weight: bold;">+{{ summary.total_additions }} pcs</span>
+                    <span>Pengurangan:</span>
+                    <span style="font-weight: bold;">{{ summary.deductions_count }} (-{{ summary.total_deductions }})</span>
                 </div>
             </div>
 
             <!-- Grand Total -->
-            <div style="margin-top: 8px; border-top: 1px dashed black; padding-top: 8px;">
+            <div style="margin-top: 5px; border-top: 1px dotted #999; padding-top: 5px;">
                 <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: bold;">
-                    <span>TOTAL AMOUNT:</span>
-                    <span>
-                        {{ formatCurrency(adjustments.data.reduce((sum, item) => sum + ((item.product?.harga_beli || 0) * item.quantity_adjusted), 0)) }}
-                    </span>
-                </div>
-                <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: bold; margin-top: 4px;">
                     <span>TOTAL LABA/RUGI:</span>
                     <span>{{ formatCurrency(adjustments.data.reduce((sum, item) => sum + (item.profit_loss_impact || 0), 0)) }}</span>
                 </div>

@@ -596,68 +596,17 @@ const printThermal = () => {
             <div style="font-weight: bold; font-size: 12px; text-align: center; margin-bottom: 5px;">DETAIL ITEM</div>
             <div style="border-bottom: 1px dashed black; margin-bottom: 6px;"></div>
 
-            <div v-for="(item, index) in adjustments.data" :key="item.id" style="margin-bottom: 10px; padding-bottom: 6px; border-bottom: 1px dashed #aaa;">
-                <!-- Item Number & Product Name -->
-                <div style="font-weight: bold; font-size: 12px;">
-                    {{ index + 1 }}. {{ item.product?.name || '-' }}
+            <div v-for="(item, index) in adjustments.data" :key="item.id" style="margin-bottom: 6px; padding-bottom: 4px; border-bottom: 1px dashed #eee;">
+                <!-- Product Name -->
+                <div style="font-weight: bold; font-size: 11px; margin-bottom: 2px;">
+                    {{ index + 1 }}. {{ item.product?.name || '-' }} 
+                    <span style="font-weight: normal; font-size: 10px;">({{ item.type === 'addition' ? '+' : '-' }})</span>
                 </div>
 
-                <!-- Barcode -->
-                <div style="font-size: 10px; font-family: monospace; color: #555; margin-bottom: 2px;">
-                    BC: {{ item.product?.barcode || '-' }}
-                </div>
-
-                <!-- Category -->
+                <!-- Quantity, Price, Amount -->
                 <div style="display: flex; justify-content: space-between; font-size: 11px;">
-                    <span>Kategori:</span>
-                    <span style="font-weight: bold;">{{ item.product?.category?.name || 'Tanpa Kategori' }}</span>
-                </div>
-
-                <!-- Type & Purpose -->
-                <div style="display: flex; justify-content: space-between; font-size: 11px;">
-                    <span>Tipe:</span>
-                    <span style="font-weight: bold;">{{ item.type === 'addition' ? '(+) Penambahan' : '(-) Pengurangan' }}</span>
-                </div>
-                <div style="display: flex; justify-content: space-between; font-size: 11px;">
-                    <span>Alasan:</span>
-                    <span>{{ getPurposeLabel(item.purpose) }}</span>
-                </div>
-
-                <!-- Per-item Customer Name (always shown) -->
-                <div style="display: flex; justify-content: space-between; font-size: 11px; margin-top: 2px;">
-                    <span>Pelanggan:</span>
-                    <span style="font-weight: bold;">{{ item.client_name || '-' }}</span>
-                </div>
-
-                <!-- Quantity -->
-                <div style="display: flex; justify-content: space-between; font-size: 11px; margin-top: 2px;">
-                    <span>Jumlah:</span>
-                    <span style="font-weight: bold;">{{ item.type === 'addition' ? '+' : '-' }}{{ item.quantity_adjusted }} {{ item.product?.unit || 'Pcs' }}</span>
-                </div>
-                <div style="display: flex; justify-content: space-between; font-size: 10px; color: #666;">
-                    <span>Stok:</span>
-                    <span>{{ item.quantity_before }} → {{ item.quantity_after }}</span>
-                </div>
-
-                <!-- Cost / Financial Impact -->
-                <div style="display: flex; justify-content: space-between; font-size: 11px; margin-top: 2px;">
-                    <span>Harga Beli/unit:</span>
-                    <span>{{ formatCurrency(item.product?.harga_beli || 0) }}</span>
-                </div>
-                <div style="display: flex; justify-content: space-between; font-size: 11px; font-weight: bold;">
-                    <span>Laba/Rugi:</span>
-                    <span>{{ (item.profit_loss_impact || 0) >= 0 ? '+' : '' }}{{ formatCurrency(item.profit_loss_impact || 0) }}</span>
-                </div>
-
-                <!-- Notes -->
-                <div v-if="item.notes" style="font-size: 10px; margin-top: 2px; font-style: italic; color: #555;">
-                    Catatan: {{ item.notes }}
-                </div>
-
-                <!-- Adjusted By, Date -->
-                <div style="display: flex; justify-content: space-between; font-size: 10px; color: #777; margin-top: 2px;">
-                    <span>Oleh: {{ item.adjusted_by?.name || '-' }}</span>
-                    <span>{{ formatDate(item.created_at) }}</span>
+                    <span>{{ Math.abs(item.quantity_adjusted) }} x {{ formatCurrency(item.product?.harga_beli || 0) }}</span>
+                    <span>{{ formatCurrency(Math.abs(item.quantity_adjusted) * (item.product?.harga_beli || 0)) }}</span>
                 </div>
             </div>
 

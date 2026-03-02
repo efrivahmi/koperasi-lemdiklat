@@ -51,7 +51,7 @@ const mainCategories = computed(() => {
 const subCategories = computed(() => {
     if (!selectedMainCategoryId.value) return [];
     return props.categories
-        .filter(c => c.parent_id === selectedMainCategoryId.value)
+        .filter(c => Number(c.parent_id) === Number(selectedMainCategoryId.value))
         .sort((a, b) => a.name.localeCompare(b.name));
 });
 

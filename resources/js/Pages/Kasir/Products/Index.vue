@@ -144,17 +144,34 @@ const deleteProduct = (product) => {
                                 @update:model-value="val => router.get(route('kasir.products.index'), { search: val }, { preserveState: true, replace: true })"
                                 class="w-full"
                             />
-                            <div v-else class="relative">
-                                <span class="absolute inset-y-0 left-0 flex items-center pl-3">
-                                    <svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-                                </span>
-                                <input 
-                                    v-model="search"
-                                    @keydown.enter="router.get(route('kasir.products.index'), { search: search }, { preserveState: true, replace: true })"
-                                    type="text" 
-                                    placeholder="Cari..." 
-                                    class="w-full pl-10 pr-4 py-2 border border-slate-600 rounded-lg bg-slate-900 text-white focus:ring-indigo-500 focus:border-indigo-500"
+                            <div v-else class="flex gap-2">
+                                <div class="relative flex-1">
+                                    <span class="absolute inset-y-0 left-0 flex items-center pl-3">
+                                        <svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                                    </span>
+                                    <input 
+                                        v-model="search"
+                                        @keydown.enter="router.get(route('kasir.products.index'), { search: search, sort: sortBy }, { preserveState: true, replace: true })"
+                                        type="text" 
+                                        placeholder="Cari nama / barcode..." 
+                                        class="w-full pl-10 pr-4 py-2.5 border border-slate-600 rounded-lg bg-slate-900 text-white focus:ring-indigo-500 focus:border-indigo-500 text-sm"
+                                    >
+                                </div>
+                                <button 
+                                    @click="router.get(route('kasir.products.index'), { search: search, sort: sortBy }, { preserveState: true, replace: true })"
+                                    class="px-4 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-medium rounded-lg transition-colors text-sm flex items-center gap-1.5 shrink-0"
                                 >
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                                    <span class="hidden sm:inline">Cari</span>
+                                </button>
+                                <button 
+                                    v-if="filters.search"
+                                    @click="router.get(route('kasir.products.index'), { sort: sortBy }, { preserveState: true, replace: true })"
+                                    class="px-3 py-2.5 bg-slate-700 hover:bg-slate-600 text-slate-300 font-medium rounded-lg transition-colors text-sm shrink-0 border border-white/10"
+                                    title="Bersihkan pencarian"
+                                >
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                                </button>
                             </div>
                         </template>
                         <template #actions>

@@ -17,10 +17,16 @@ const props = defineProps({
 });
 
 const search = ref(props.filters.search || '');
+const sortBy = ref(props.filters.sort || 'name_asc');
 const showAdjustmentModal = ref(false);
 const selectedProduct = ref(null);
 const customReason = ref('');
 const isLoading = ref(false);
+
+// Watch sort changes
+watch(sortBy, (newSort) => {
+    router.get(route('products.index'), { search: search.value, sort: newSort }, { preserveState: true, replace: true });
+});
 
 const adjustmentForm = useForm({
     type: 'deduction',
@@ -152,6 +158,27 @@ const deleteProduct = (product) => {
                             </div>
                         </template>
                         <template #actions>
+                            <!-- Sort Dropdown -->
+                            <div class="relative">
+                                <select 
+                                    v-model="sortBy"
+                                    class="appearance-none w-full sm:w-auto pl-3 pr-10 py-2.5 bg-slate-900/70 border border-slate-600 rounded-lg text-white text-sm font-medium focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all cursor-pointer"
+                                >
+                                    <option value="name_asc">Nama A - Z</option>
+                                    <option value="name_desc">Nama Z - A</option>
+                                    <option value="newest">Terbaru</option>
+                                    <option value="oldest">Terlama</option>
+                                    <option value="price_asc">Harga Termurah</option>
+                                    <option value="price_desc">Harga Termahal</option>
+                                    <option value="stock_asc">Stok Terkecil</option>
+                                    <option value="stock_desc">Stok Terbanyak</option>
+                                </select>
+                                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
+                                    <svg class="h-5 w-5 text-slate-400" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd" />
+                                    </svg>
+                                </div>
+                            </div>
                             <Link v-if="can('products.create')" :href="route('products.create')" class="w-full sm:w-auto inline-flex items-center justify-center px-5 py-2.5 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-semibold rounded-lg shadow-lg shadow-indigo-500/20 hover:shadow-indigo-500/40 transition-all duration-200 transform hover:-translate-y-0.5">
                                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
@@ -344,13 +371,17 @@ const deleteProduct = (product) => {
                                     :class="[
                                         link.active 
                                             ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/30' 
-                                            : 'bg-slate-800 text-slate-400 hover:bg-slate-700 hover:text-white border border-white/5'
+                                            : 'bg-slate-800 text-slate-400 hover:bg-slate-700 hover:text-white border border-white/5',
+                                        k !== 0 && k !== products.links.length - 1 ? 'hidden sm:inline-flex' : ''
                                     ]"
                                 />
                                 <span
                                     v-else
                                     v-html="link.label"
                                     class="px-3 py-1 text-xs font-medium rounded-md bg-slate-900/50 text-slate-600 border border-white/5 cursor-not-allowed"
+                                    :class="[
+                                        k !== 0 && k !== products.links.length - 1 ? 'hidden sm:inline-flex' : ''
+                                    ]"
                                 />
                              </template>
                         </div>

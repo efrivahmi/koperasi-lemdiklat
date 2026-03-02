@@ -53,21 +53,50 @@ class ProductController extends Controller
                   ->orWhere('barcode', 'like', '%' . $request->search . '%');
         }
 
-        // --- PENTING: MENGGUNAKAN OLDEST() ---
-        $products = $query->oldest()->paginate(10);
+        // Sort logic — default: A-Z by name
+        $sort = $request->input('sort', 'name_asc');
+        switch ($sort) {
+            case 'name_desc':
+                $query->orderBy('name', 'desc');
+                break;
+            case 'newest':
+                $query->orderBy('created_at', 'desc');
+                break;
+            case 'oldest':
+                $query->orderBy('created_at', 'asc');
+                break;
+            case 'price_asc':
+                $query->orderBy('harga_jual', 'asc');
+                break;
+            case 'price_desc':
+                $query->orderBy('harga_jual', 'desc');
+                break;
+            case 'stock_asc':
+                $query->orderBy('stock', 'asc');
+                break;
+            case 'stock_desc':
+                $query->orderBy('stock', 'desc');
+                break;
+            case 'name_asc':
+            default:
+                $query->orderBy('name', 'asc');
+                break;
+        }
+
+        $products = $query->paginate(10);
 
         // Check if we are in the Kasir route group
         if ($request->routeIs('kasir.*')) {
             return Inertia::render('Kasir/Products/Index', [
                 'products' => $products,
                 'categories' => Category::all(),
-                'filters' => $request->only(['search']),
+                'filters' => $request->only(['search', 'sort']),
             ]);
         }
 
         return Inertia::render('Admin/Products/Index', [
             'products' => $products,
-            'filters' => $request->only(['search'])
+            'filters' => $request->only(['search', 'sort'])
         ]);
     }
 

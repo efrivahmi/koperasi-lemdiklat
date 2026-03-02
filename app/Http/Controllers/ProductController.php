@@ -48,9 +48,12 @@ class ProductController extends Controller
     {
         $query = Product::with(['category.parent', 'creator', 'updater'])->withCount('stockIns');
 
-        if ($request->has('search')) {
-            $query->where('name', 'like', '%' . $request->search . '%')
-                  ->orWhere('barcode', 'like', '%' . $request->search . '%');
+        if ($request->has('search') && $request->search) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', '%' . $search . '%')
+                  ->orWhere('barcode', 'like', '%' . $search . '%');
+            });
         }
 
         // Sort logic — default: A-Z by name
@@ -83,7 +86,7 @@ class ProductController extends Controller
                 break;
         }
 
-        $products = $query->paginate(10);
+        $products = $query->paginate(10)->withQueryString();
 
         // Check if we are in the Kasir route group
         if ($request->routeIs('kasir.*')) {

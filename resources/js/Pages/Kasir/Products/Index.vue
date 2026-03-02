@@ -158,27 +158,6 @@ const deleteProduct = (product) => {
                             </div>
                         </template>
                         <template #actions>
-                            <!-- Sort Dropdown -->
-                            <div class="relative">
-                                <select 
-                                    v-model="sortBy"
-                                    class="appearance-none w-full sm:w-auto pl-3 pr-10 py-2.5 bg-slate-900/70 border border-slate-600 rounded-lg text-white text-sm font-medium focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all cursor-pointer"
-                                >
-                                    <option value="name_asc">Nama A - Z</option>
-                                    <option value="name_desc">Nama Z - A</option>
-                                    <option value="newest">Terbaru</option>
-                                    <option value="oldest">Terlama</option>
-                                    <option value="price_asc">Harga Termurah</option>
-                                    <option value="price_desc">Harga Termahal</option>
-                                    <option value="stock_asc">Stok Terkecil</option>
-                                    <option value="stock_desc">Stok Terbanyak</option>
-                                </select>
-                                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
-                                    <svg class="h-5 w-5 text-slate-400" viewBox="0 0 20 20" fill="currentColor">
-                                        <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd" />
-                                    </svg>
-                                </div>
-                            </div>
                             <Link v-if="can('products.create')" :href="route('kasir.products.create')" class="w-full sm:w-auto inline-flex items-center justify-center px-5 py-2.5 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-semibold rounded-lg shadow-lg shadow-indigo-500/20 hover:shadow-indigo-500/40 transition-all duration-200 transform hover:-translate-y-0.5">
                                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
@@ -193,6 +172,29 @@ const deleteProduct = (product) => {
                             </Link>
                         </template>
                     </TableToolbar>
+                </div>
+
+                <!-- Sort Filter Bar -->
+                <div class="mb-4 flex items-center gap-3">
+                    <div class="flex items-center gap-2">
+                        <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12"/>
+                        </svg>
+                        <span class="text-sm text-slate-400 hidden sm:inline">Urutkan:</span>
+                    </div>
+                    <select 
+                        v-model="sortBy"
+                        class="appearance-none pl-3 pr-8 py-2 bg-slate-800/50 border border-white/10 rounded-lg text-white text-sm font-medium focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all cursor-pointer backdrop-blur-sm"
+                    >
+                        <option value="name_asc">Nama A - Z</option>
+                        <option value="name_desc">Nama Z - A</option>
+                        <option value="newest">Terbaru</option>
+                        <option value="oldest">Terlama</option>
+                        <option value="price_asc">Harga Termurah</option>
+                        <option value="price_desc">Harga Termahal</option>
+                        <option value="stock_asc">Stok Terkecil</option>
+                        <option value="stock_desc">Stok Terbanyak</option>
+                    </select>
                 </div>
 
                 <!-- Product Table -->

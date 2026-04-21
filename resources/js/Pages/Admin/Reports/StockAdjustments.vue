@@ -582,7 +582,7 @@ const printThermal = () => {
         <!-- Thermal Print Layout (Hidden on Screen) -->
         <ThermalPrintLayout
             title="LAPORAN PENYESUAIAN STOK"
-            :subtitle="'Periode: ' + (filters?.date_from || 'Hari Ini') + ' s/d ' + (filters?.date_to || 'Hari Ini')"
+            :periode="`${filters?.date_from || 'Awal'} s/d ${filters?.date_to || 'Hari Ini'}`"
             :user="$page.props.auth.user"
         >
             <!-- Customer Name Section -->
@@ -610,8 +610,11 @@ const printThermal = () => {
 
                 <!-- Quantity x Price = Amount -->
                 <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: bold;">
-                    <span>{{ Math.abs(item.quantity_adjusted) }} x {{ formatCurrency(item.product?.harga_beli || 0) }}</span>
-                    <span>{{ formatCurrency(Math.abs(item.quantity_adjusted) * (item.product?.harga_beli || 0)) }}</span>
+                    <span>{{ Math.abs(item.quantity_adjusted) }} x {{ formatCurrency(item.product?.harga_jual || item.product?.harga_beli || 0) }}</span>
+                    <span>{{ formatCurrency(Math.abs(item.quantity_adjusted) * (item.product?.harga_jual || item.product?.harga_beli || 0)) }}</span>
+                </div>
+                <div style="font-size: 9px; color: #555;">
+                    HB: {{ formatCurrency(item.product?.harga_beli || 0) }}
                 </div>
             </div>
 
@@ -626,19 +629,3 @@ const printThermal = () => {
     </AuthenticatedLayout>
 </template>
 
-<style scoped>
-/* Print Styles for Stock Adjustments specifically */
-@media print {
-    body * {
-        visibility: hidden;
-    }
-    .thermal-print-container, .thermal-print-container * {
-        visibility: visible;
-    }
-    .thermal-print-container {
-        position: absolute;
-        left: 0;
-        top: 0;
-    }
-}
-</style>

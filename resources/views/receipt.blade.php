@@ -9,15 +9,28 @@
         @media print {
             @page {
                 size: 58mm auto;
-                margin: 0;
+                margin: 0 !important;
             }
-            body {
+            body, html {
                 width: 58mm;
-                margin: 0;
-                padding: 0;
+                max-width: 58mm;
+                margin: 0 !important;
+                padding: 0 !important;
+                box-sizing: border-box;
+                overflow: hidden;
             }
             .no-print {
                 display: none !important;
+            }
+            .receipt {
+                width: 58mm;
+                max-width: 58mm;
+                box-sizing: border-box;
+                overflow: hidden;
+            }
+            table {
+                width: 100%;
+                table-layout: fixed;
             }
         }
 

@@ -8,6 +8,10 @@ defineProps({
         type: String,
         default: '',
     },
+    periode: {
+        type: String,
+        default: '',
+    },
     user: {
         type: Object,
         default: null,
@@ -34,8 +38,12 @@ defineProps({
             <div v-if="subtitle" class="report-subtitle">{{ subtitle }}</div>
         </div>
 
-        <!-- Info (Date/User) -->
+        <!-- Info (Periode/Date/User) -->
         <div class="report-info">
+            <div v-if="periode" class="info-row">
+                <span>Periode:</span>
+                <span>{{ periode }}</span>
+            </div>
             <div class="info-row">
                 <span>Tanggal:</span>
                 <span>{{ new Date().toLocaleString('id-ID') }}</span>
@@ -61,6 +69,15 @@ defineProps({
 
 <style>
 @media print {
+    @page {
+        size: 58mm auto; /* Forces the printer driver to read 58mm paper */
+        margin: 0 !important;
+    }
+    body, html {
+        width: 58mm;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
     body * {
         visibility: hidden;
     }
@@ -72,7 +89,11 @@ defineProps({
         left: 0;
         top: 0;
         width: 58mm; /* Standard thermal paper width */
-        padding: 0 2mm; /* Small padding */
+        max-width: 58mm;
+        margin: 0;
+        padding: 2mm; /* Slight padding so text isn't cut off by the machine */
+        box-sizing: border-box;
+        overflow: hidden;
         font-family: Arial, Helvetica, sans-serif; /* Bold sans-serif for thermal readability */
         font-size: 12px;
         font-weight: bold;
@@ -87,12 +108,7 @@ defineProps({
     .thermal-print-container table {
         width: 100%;
         border-collapse: collapse;
-    }
-    
-    /* Hide URL/Page numbers if possible (browser dependent) */
-    @page {
-        size: 58mm auto;
-        margin: 0;
+        table-layout: fixed; /* Prevents table from expanding beyond 58mm */
     }
 }
 

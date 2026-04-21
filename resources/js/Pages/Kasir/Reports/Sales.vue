@@ -180,7 +180,7 @@ const printThermal = () => {
         <!-- Thermal Print Layout -->
         <ThermalPrintLayout
             title="LAPORAN PENJUALAN"
-            subtitle="Periode: Hari Ini"
+            :periode="`${searchForm.date_from || 'Awal'} s/d ${searchForm.date_to || 'Hari Ini'}`"
             :user="$page.props.auth.user"
         >
             <!-- Summary -->
@@ -215,26 +215,14 @@ const printThermal = () => {
                 <div v-else style="font-size: 9px;">
                     Pelanggan: Umum
                 </div>
-                <div style="font-size: 9px;">
-                    {{ sale.sale_items.length }} Item ({{ sale.sale_items.reduce((sum, i) => sum + i.quantity, 0) }} Pcs)
+                <div v-for="item in sale.sale_items" :key="item.id" style="font-size: 9px;">
+                    <div style="display: flex; justify-content: space-between;">
+                        <span>{{ item.quantity }}x @ {{ formatCurrency(item.price || item.harga_jual) }}</span>
+                        <span>{{ formatCurrency(item.quantity * (item.price || item.harga_jual)) }}</span>
+                    </div>
                 </div>
             </div>
         </ThermalPrintLayout>
     </AuthenticatedLayout>
 </template>
 
-<style scoped>
-@media print {
-    body * {
-        visibility: hidden;
-    }
-    .thermal-print-container, .thermal-print-container * {
-        visibility: visible;
-    }
-    .thermal-print-container {
-        position: absolute;
-        left: 0;
-        top: 0;
-    }
-}
-</style>

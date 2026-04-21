@@ -246,6 +246,7 @@ const printThermal = () => {
         <ThermalPrintLayout
             title="LAPORAN KEUANGAN"
             subtitle="Ringkasan Profit/Loss"
+            :periode="`${searchForm.date_from || 'Awal'} s/d ${searchForm.date_to || 'Hari Ini'}`"
             :user="$page.props.auth.user"
         >
             <div style="border-bottom: 1px dashed black; padding-bottom: 10px; margin-bottom: 10px;">
@@ -290,18 +291,3 @@ const printThermal = () => {
     </AuthenticatedLayout>
 </template>
 
-<style scoped>
-@media print {
-    body * {
-        visibility: hidden;
-    }
-    .thermal-print-container, .thermal-print-container * {
-        visibility: visible;
-    }
-    .thermal-print-container {
-        position: absolute;
-        left: 0;
-        top: 0;
-    }
-}
-</style>

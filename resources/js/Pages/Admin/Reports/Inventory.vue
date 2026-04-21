@@ -367,26 +367,12 @@ const printThermal = () => {
                     <span>Stok: {{ product.stock }}</span>
                     <span>{{ formatCurrency(product.stock * product.harga_beli) }}</span>
                 </div>
-                <div style="font-size: 9px; color: #555;">
-                    @ {{ formatCurrency(product.harga_beli) }}
+                <div style="display: flex; justify-content: space-between; font-size: 9px; color: #555;">
+                    <span>Beli: {{ formatCurrency(product.harga_beli) }}</span>
+                    <span>Jual: {{ formatCurrency(product.harga_jual) }}</span>
                 </div>
             </div>
         </ThermalPrintLayout>
     </AuthenticatedLayout>
 </template>
 
-<style scoped>
-@media print {
-    body * {
-        visibility: hidden;
-    }
-    .thermal-print-container, .thermal-print-container * {
-        visibility: visible;
-    }
-    .thermal-print-container {
-        position: absolute;
-        left: 0;
-        top: 0;
-    }
-}
-</style>

@@ -300,7 +300,7 @@
             Barang yang sudah dibeli tidak dapat dikembalikan<br>
             ================================<br>
             {{ config('school.website') }}<br>
-            Powered by Claude Code
+            Powered by Lab IT Lemdiklat
         </div>
     </div>
 

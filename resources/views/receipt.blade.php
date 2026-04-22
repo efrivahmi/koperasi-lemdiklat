@@ -245,8 +245,8 @@
                     @endif
                 </div>
                 <div class="item-detail">
-                    <span>{{ $item->quantity }} x Rp {{ number_format($item->product->harga_beli, 0, ',', '.') }}</span>
-                    <span>Rp {{ number_format($item->product->harga_beli * $item->quantity, 0, ',', '.') }}</span>
+                    <span>{{ $item->quantity }} x Rp {{ number_format($item->price, 0, ',', '.') }}</span>
+                    <span>Rp {{ number_format($item->subtotal, 0, ',', '.') }}</span>
                 </div>
             </div>
             @endforeach
@@ -254,15 +254,9 @@
 
         <!-- Summary -->
         <div class="summary">
-            @php
-                $totalBeli = 0;
-                foreach($sale->saleItems as $i) {
-                    $totalBeli += ($i->product->harga_beli * $i->quantity);
-                }
-            @endphp
             <div class="summary-row">
                 <span>Subtotal</span>
-                <span>Rp {{ number_format($totalBeli, 0, ',', '.') }}</span>
+                <span>Rp {{ number_format($sale->total, 0, ',', '.') }}</span>
             </div>
 
             @if($sale->payment_method === 'cash')
@@ -278,7 +272,7 @@
 
             <div class="summary-row total">
                 <span>TOTAL</span>
-                <span>Rp {{ number_format($totalBeli, 0, ',', '.') }}</span>
+                <span>Rp {{ number_format($sale->total, 0, ',', '.') }}</span>
             </div>
         </div>
 

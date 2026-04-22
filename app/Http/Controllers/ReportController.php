@@ -573,8 +573,9 @@ class ReportController extends Controller
                     $adjustment->adjustedBy->append('photo_url');
                 }
 
-                // Add harga_jual as direct top-level attribute for easy frontend access
+                // Add pricing as direct top-level attribute for easy frontend access
                 $adjustment->harga_jual = $adjustment->product ? $adjustment->product->harga_jual : 0;
+                $adjustment->harga_beli = $adjustment->product ? $adjustment->product->harga_beli : 0;
 
                 if ($adjustment->product) {
                     $hargaBeli = $adjustment->product->harga_beli;
@@ -780,6 +781,7 @@ class ReportController extends Controller
                     return [
                         'id' => $adj->id,
                         'harga_jual' => $adj->product ? $adj->product->harga_jual : 0,
+                        'harga_beli' => $adj->product ? $adj->product->harga_beli : 0,
                         'product' => $adj->product ? [
                             'name' => $adj->product->name,
                             'barcode' => $adj->product->barcode,

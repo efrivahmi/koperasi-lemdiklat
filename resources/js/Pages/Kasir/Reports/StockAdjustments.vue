@@ -343,7 +343,7 @@ const printThermal = () => {
                                     <th class="px-4 py-3 text-left text-xs font-semibold text-indigo-300 uppercase tracking-wider">Produk</th>
                                     <th class="px-4 py-3 text-left text-xs font-semibold text-indigo-300 uppercase tracking-wider">Tipe/Tujuan</th>
                                     <th class="px-4 py-3 text-center text-xs font-semibold text-indigo-300 uppercase tracking-wider">Qty</th>
-                                    <th class="px-4 py-3 text-right text-xs font-semibold text-indigo-300 uppercase tracking-wider">Finansial</th>
+                                    <th class="px-4 py-3 text-right text-xs font-semibold text-indigo-300 uppercase tracking-wider">Harga Jual</th>
                                     <th class="px-4 py-3 text-left text-xs font-semibold text-indigo-300 uppercase tracking-wider">Oleh</th>
                                     <th class="px-4 py-3 text-left text-xs font-semibold text-indigo-300 uppercase tracking-wider">Catatan</th>
                                     <th class="px-4 py-3 text-center text-xs font-semibold text-indigo-300 uppercase tracking-wider">Aksi</th>
@@ -384,11 +384,10 @@ const printThermal = () => {
                                         <div class="text-xs text-slate-500">Stok: {{ adjustment.quantity_before }} -> {{ adjustment.quantity_after }}</div>
                                     </td>
                                     <td class="px-4 py-3 text-right">
-                                        <div v-if="adjustment.revenue > 0" class="text-xs text-blue-400 mb-0.5">Rev: {{ formatCurrency(adjustment.revenue) }}</div>
-                                        <div class="text-sm font-semibold" :class="(adjustment.profit_loss_impact || 0) >= 0 ? 'text-emerald-400' : 'text-rose-400'">
-                                            {{ (adjustment.profit_loss_impact || 0) >= 0 ? '+' : '' }}{{ formatCurrency(adjustment.profit_loss_impact || 0) }}
+                                        <div class="text-sm font-semibold text-amber-400">
+                                            {{ formatCurrency(adjustment.product?.harga_jual ?? 0) }}
                                         </div>
-                                        <div class="text-xs text-slate-600">Laba/Rugi</div>
+                                        <div class="text-xs text-slate-500">Harga Jual</div>
                                     </td>
                                     <td class="px-4 py-3 text-sm text-slate-300">
                                         <div class="flex items-center gap-2">

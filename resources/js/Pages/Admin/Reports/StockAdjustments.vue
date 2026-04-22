@@ -608,13 +608,14 @@ const printThermal = () => {
                     Pelanggan: {{ item.client_name || '-' }}
                 </div>
 
+                <!-- Harga Jual line -->
+                <div style="font-size: 10px; margin-bottom: 2px;">
+                    HJ: {{ formatCurrency(item.product?.harga_jual ?? 0) }} | HB: {{ formatCurrency(item.product?.harga_beli ?? 0) }}
+                </div>
                 <!-- Quantity x Harga Jual = Amount -->
                 <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: bold;">
                     <span>{{ Math.abs(item.quantity_adjusted) }} x {{ formatCurrency(item.product?.harga_jual ?? 0) }}</span>
                     <span>{{ formatCurrency(Math.abs(item.quantity_adjusted) * (item.product?.harga_jual ?? 0)) }}</span>
-                </div>
-                <div style="font-size: 9px; color: #555;">
-                    HB: {{ formatCurrency(item.product?.harga_beli ?? 0) }}
                 </div>
             </div>
 

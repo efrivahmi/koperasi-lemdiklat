@@ -217,8 +217,8 @@ const printThermal = () => {
                 </div>
                 <div v-for="item in sale.sale_items" :key="item.id" style="font-size: 9px;">
                     <div style="display: flex; justify-content: space-between;">
-                        <span>{{ item.quantity }}x @ {{ formatCurrency(item.price || item.harga_jual) }}</span>
-                        <span>{{ formatCurrency(item.quantity * (item.price || item.harga_jual)) }}</span>
+                        <span>{{ item.product?.name }}: {{ item.quantity }}x @ {{ formatCurrency(item.price || item.product?.harga_jual || 0) }}</span>
+                        <span>{{ formatCurrency(item.quantity * (item.price || item.product?.harga_jual || 0)) }}</span>
                     </div>
                 </div>
             </div>

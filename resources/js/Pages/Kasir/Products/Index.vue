@@ -23,6 +23,11 @@ const selectedProduct = ref(null);
 const customReason = ref('');
 const isLoading = ref(false);
 
+// Keep search bar in sync with server-side filters
+watch(() => props.filters.search, (newSearch) => {
+    search.value = newSearch || '';
+});
+
 // Watch sort changes
 watch(sortBy, (newSort) => {
     router.get(route('kasir.products.index'), { search: search.value, sort: newSort }, { preserveState: true, replace: true });

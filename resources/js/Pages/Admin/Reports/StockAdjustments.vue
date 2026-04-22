@@ -608,13 +608,13 @@ const printThermal = () => {
                     Pelanggan: {{ item.client_name || '-' }}
                 </div>
 
-                <!-- Quantity x Price = Amount -->
+                <!-- Quantity x Harga Jual = Amount -->
                 <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: bold;">
-                    <span>{{ Math.abs(item.quantity_adjusted) }} x {{ formatCurrency(item.product?.harga_jual || item.product?.harga_beli || 0) }}</span>
-                    <span>{{ formatCurrency(Math.abs(item.quantity_adjusted) * (item.product?.harga_jual || item.product?.harga_beli || 0)) }}</span>
+                    <span>{{ Math.abs(item.quantity_adjusted) }} x {{ formatCurrency(item.product?.harga_jual ?? 0) }}</span>
+                    <span>{{ formatCurrency(Math.abs(item.quantity_adjusted) * (item.product?.harga_jual ?? 0)) }}</span>
                 </div>
                 <div style="font-size: 9px; color: #555;">
-                    HB: {{ formatCurrency(item.product?.harga_beli || 0) }}
+                    HB: {{ formatCurrency(item.product?.harga_beli ?? 0) }}
                 </div>
             </div>
 
@@ -622,7 +622,7 @@ const printThermal = () => {
             <div style="margin-top: 8px; border-top: 2px solid black; padding-top: 6px;">
                 <div style="display: flex; justify-content: space-between; font-size: 14px; font-weight: bold;">
                     <span>GRAND TOTAL:</span>
-                    <span>{{ formatCurrency((printItems || []).reduce((sum, item) => sum + (Math.abs(item.quantity_adjusted) * (item.product?.harga_beli || 0)), 0)) }}</span>
+                    <span>{{ formatCurrency((printItems || []).reduce((sum, item) => sum + (Math.abs(item.quantity_adjusted) * (item.product?.harga_jual ?? 0)), 0)) }}</span>
                 </div>
             </div>
         </ThermalPrintLayout>

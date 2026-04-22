@@ -23,6 +23,11 @@ const selectedProduct = ref(null);
 const customReason = ref('');
 const isLoading = ref(false);
 
+// Keep search bar in sync with server-side filters
+watch(() => props.filters.search, (newSearch) => {
+    search.value = newSearch || '';
+});
+
 // Watch sort changes
 watch(sortBy, (newSort) => {
     router.get(route('products.index'), { search: search.value, sort: newSort }, { preserveState: true, replace: true });
@@ -360,6 +365,7 @@ const deleteProduct = (product) => {
                             Menampilkan <span class="font-medium text-white">{{ products.from || 0 }}</span> sampai <span class="font-medium text-white">{{ products.to || 0 }}</span> dari <span class="font-medium text-white">{{ products.total }}</span> hasil
                         </div>
                         <div class="flex gap-1">
+                            <!-- TODO: Tambahkan info Total Nilai Aset -->
                              <template v-for="(link, k) in products.links" :key="k">
                                 <Link
                                     v-if="link.url"

@@ -74,8 +74,9 @@ defineProps({
         margin: 0 !important;
     }
     body, html {
-        width: 58mm;
-        margin: 0 !important;
+        width: 100%;
+        max-width: 58mm;
+        margin: 0 auto !important;
         padding: 0 !important;
     }
     body * {
@@ -88,10 +89,10 @@ defineProps({
         position: absolute;
         left: 0;
         top: 0;
-        width: 58mm; /* Standard thermal paper width */
+        width: 100%;
         max-width: 58mm;
-        margin: 0;
-        padding: 2mm; /* Slight padding so text isn't cut off by the machine */
+        margin: 0 auto;
+        padding: 0 4mm; /* Added horizontal padding so text isn't cut off by the machine */
         box-sizing: border-box;
         overflow: hidden;
         font-family: Arial, Helvetica, sans-serif; /* Bold sans-serif for thermal readability */

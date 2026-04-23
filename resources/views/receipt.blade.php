@@ -12,9 +12,9 @@
                 margin: 0 !important;
             }
             body, html {
-                width: 58mm;
+                width: 100%;
                 max-width: 58mm;
-                margin: 0 !important;
+                margin: 0 auto !important;
                 padding: 0 !important;
                 box-sizing: border-box;
                 overflow: hidden;
@@ -23,8 +23,8 @@
                 display: none !important;
             }
             .receipt {
-                width: 58mm;
-                max-width: 58mm;
+                width: 100%;
+                padding: 0 4mm; /* Added left/right padding to prevent cutoff */
                 box-sizing: border-box;
                 overflow: hidden;
             }
@@ -50,7 +50,9 @@
         }
 
         .receipt {
-            width: 100%;
+                width: 100%;
+                max-width: 58mm;
+                margin: 0 auto;
         }
 
         .header {
